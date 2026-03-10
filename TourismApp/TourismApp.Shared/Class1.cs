@@ -1,0 +1,6 @@
+﻿namespace TourismApp.Shared;
+
+public class Class1
+{
+
+}

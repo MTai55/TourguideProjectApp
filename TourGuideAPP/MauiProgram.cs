@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Supabase;
-
+using TourGuideAPP.Services;
 namespace TourGuideAPP;
 
 public static class MauiProgram
@@ -23,7 +23,10 @@ public static class MauiProgram
         );
         builder.Services.AddSingleton(supabase);
         builder.Services.AddSingleton<MainPage>();
-
+        
+        builder.Services.AddSingleton<LocationService>();
+        builder.Services.AddSingleton<GeofenceEngine>();
+        builder.Services.AddSingleton<POIService>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

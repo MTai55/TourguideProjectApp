@@ -96,3 +96,6 @@ C:\Users\diemc\OneDrive\Documents\Code\C#\csharp\TourismApp\TourismApp.Web\obj\D
 C:\Users\diemc\OneDrive\Documents\Code\C#\csharp\TourismApp\TourismApp.Web\obj\Debug\net10.0\TourismApp.Web.pdb
 C:\Users\diemc\OneDrive\Documents\Code\C#\csharp\TourismApp\TourismApp.Web\obj\Debug\net10.0\TourismApp.Web.genruntimeconfig.cache
 C:\Users\diemc\OneDrive\Documents\Code\C#\csharp\TourismApp\TourismApp.Web\obj\Debug\net10.0\ref\TourismApp.Web.dll
+C:\Users\diemc\OneDrive\Documents\Code\C#\csharp\TourismApp\TourismApp.Web\obj\Debug\net10.0\TourismApp.Web.csproj.AssemblyReference.cache
+C:\Users\diemc\OneDrive\Documents\Code\C#\csharp\TourismApp\TourismApp.Web\bin\Debug\net10.0\Newtonsoft.Json.dll
+C:\Users\diemc\OneDrive\Documents\Code\C#\csharp\TourismApp\TourismApp.Web\obj\Debug\net10.0\TourismA.DF5771A7.Up2Date

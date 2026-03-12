@@ -1,0 +1,68 @@
+@model TourismApp.Web.Models.DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; }
+
+<h4 class="fw-bold mb-4">📊 Dashboard</h4>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card p-4" style="border-left: 4px solid #3182ce">
+      <div class="text-muted small">Tổng địa điểm</div>
+      <div class="fs-2 fw-bold text-primary">@Model?.TotalPlaces</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-4" style="border-left: 4px solid #38a169">
+      <div class="text-muted small">Đã được duyệt</div>
+      <div class="fs-2 fw-bold text-success">@Model?.ApprovedPlaces</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-4" style="border-left: 4px solid #d69e2e">
+      <div class="text-muted small">Lượt ghé (30 ngày)</div>
+      <div class="fs-2 fw-bold text-warning">@Model?.TotalVisitsThisMonth</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-4" style="border-left: 4px solid #e53e3e">
+      <div class="text-muted small">Điểm đánh giá TB</div>
+      <div class="fs-2 fw-bold text-danger">⭐ @Model?.AvgRating.ToString("F1")</div>
+    </div>
+  </div>
+</div>
+
+<!-- Danh sách địa điểm -->
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-bold">🏪 Địa điểm của bạn</h6>
+    <a href="/Places/Create" class="btn btn-primary btn-sm">+ Thêm mới</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Tên</th><th>Địa chỉ</th><th>Đánh giá</th><th>Lượt ghé</th><th>Trạng thái</th><th></th></tr>
+      </thead>
+      <tbody>
+        @foreach (var p in Model?.Places ?? []) {
+          <tr>
+            <td><strong>@p.Name</strong></td>
+            <td><small class="text-muted">@p.Address</small></td>
+            <td>⭐ @p.AverageRating.ToString("F1")</td>
+            <td>@p.TotalVisits</td>
+            <td>
+              @if (p.IsApproved) {
+                <span class="badge bg-success">Đã duyệt</span>
+              } else {
+                <span class="badge bg-warning text-dark">Chờ duyệt</span>
+              }
+            </td>
+            <td>
+              <a href="/Places/Edit/@p.PlaceId" class="btn btn-sm btn-outline-primary">Sửa</a>
+              <a href="/Reviews?placeId=@p.PlaceId" class="btn btn-sm btn-outline-secondary">Đánh giá</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

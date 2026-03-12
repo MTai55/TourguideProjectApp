@@ -1,0 +1,49 @@
+@model List<TourismApp.Web.Models.PlaceViewModel>
+@{ ViewData["Title"] = "Địa điểm"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0">🏪 Quản lý Địa điểm</h4>
+  <a href="/Places/Create" class="btn btn-primary">+ Thêm địa điểm</a>
+</div>
+
+<!-- Tìm kiếm -->
+<form method="get" class="mb-3">
+  <div class="input-group">
+    <input name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm tên, địa chỉ...">
+    <button class="btn btn-outline-secondary">Tìm</button>
+  </div>
+</form>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>Tên</th><th>Địa chỉ</th><th>Danh mục</th><th>⭐</th><th>Ghé thăm</th><th>Trạng thái</th><th>Thao tác</th></tr>
+      </thead>
+      <tbody>
+        @foreach (var p in Model) {
+          <tr>
+            <td><strong>@p.Name</strong></td>
+            <td><small class="text-muted">@p.Address</small></td>
+            <td>@p.CategoryName</td>
+            <td>@p.AverageRating.ToString("F1")</td>
+            <td>@p.TotalVisits</td>
+            <td>
+              @if (p.IsApproved) { <span class="badge bg-success">Duyệt</span> }
+              else { <span class="badge bg-warning text-dark">Chờ</span> }
+            </td>
+            <td>
+              <a href="/Places/Edit/@p.PlaceId" class="btn btn-sm btn-outline-primary">✏️ Sửa</a>
+              <a href="/Reviews?placeId=@p.PlaceId" class="btn btn-sm btn-outline-info">⭐ Đánh giá</a>
+              <form method="post" action="/Places/Delete/@p.PlaceId" class="d-inline"
+                    onsubmit="return confirm('Xóa địa điểm này?')">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-sm btn-outline-danger">🗑️ Xóa</button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

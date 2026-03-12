@@ -1,29 +1,50 @@
+using TourismApp.Web.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ── MVC ───────────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
+
+// ── Session (lưu JWT token) ───────────────────────────────────
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// ── Cookie Authentication ─────────────────────────────────────
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options => {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    });
+builder.Services.AddAuthorization();
+
+// ── HttpClient gọi TourGuideAPI ───────────────────────────────
+var apiBase = builder.Configuration["ApiSettings:BaseUrl"]!;
+builder.Services.AddHttpClient<ApiService>(client => {
+    client.BaseAddress = new Uri(apiBase);
+});
+builder.Services.AddScoped<ApiService>();
+
+// ── HttpContextAccessor (đọc session trong service) ───────────
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
-{
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
 
-app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
-
+app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
+    pattern: "{controller=Auth}/{action=Login}/{id?}");
 
 app.Run();

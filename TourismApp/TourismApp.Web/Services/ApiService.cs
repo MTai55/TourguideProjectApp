@@ -16,15 +16,17 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
                 new AuthenticationHeaderValue("Bearer", token);
     }
 
-    // ── Helper gọi API ────────────────────────────────────────────
+    // ── Helper GET ────────────────────────────────────────────────
     private async Task<T?> GetAsync<T>(string url)
     {
         SetAuthHeader();
         var res = await http.GetAsync(url);
         var json = await res.Content.ReadAsStringAsync();
+        if (!res.IsSuccessStatusCode) return default;
         return JsonConvert.DeserializeObject<T>(json);
     }
 
+    // ── Helper POST ───────────────────────────────────────────────
     private async Task<(bool Success, T? Data, string Error)> PostAsync<T>(string url, object body)
     {
         SetAuthHeader();
@@ -37,6 +39,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
         return (false, default, json);
     }
 
+    // ── Helper PUT ────────────────────────────────────────────────
     private async Task<(bool Success, string Error)> PutAsync(string url, object body)
     {
         SetAuthHeader();
@@ -46,6 +49,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
         return (res.IsSuccessStatusCode, await res.Content.ReadAsStringAsync());
     }
 
+    // ── Helper DELETE ─────────────────────────────────────────────
     private async Task<bool> DeleteAsync(string url)
     {
         SetAuthHeader();
@@ -100,7 +104,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
         => GetAsync<DashboardViewModel>("/api/analytics/dashboard");
 }
 
-// Helper class cho response phân trang
+// ── Helper class phân trang ───────────────────────────────────────
 public class PlaceListResponse
 {
     public int Total { get; set; }

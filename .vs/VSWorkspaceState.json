@@ -2,14 +2,11 @@
   "ExpandedNodes": [
     "",
     "\\TourismApp",
+    "\\TourismApp\\TourGuideAPI",
+    "\\TourismApp\\TourGuideAPI\\Data",
+    "\\TourismApp\\TourGuideAPI\\Services",
     "\\TourismApp\\TourismApp.Web",
-    "\\TourismApp\\TourismApp.Web\\Services",
-    "\\TourismApp\\TourismApp.Web\\Views",
-    "\\TourismApp\\TourismApp.Web\\Views\\Auth",
-    "\\TourismApp\\TourismApp.Web\\Views\\Dashboard",
-    "\\TourismApp\\TourismApp.Web\\Views\\Places",
-    "\\TourismApp\\TourismApp.Web\\Views\\Reviews",
-    "\\TourismApp\\TourismApp.Web\\Views\\Shared"
+    "\\TourismApp\\TourismApp.Web\\Services"
   ],
   "PreviewInSolutionExplorer": false
 }

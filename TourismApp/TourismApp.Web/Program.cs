@@ -24,10 +24,10 @@ builder.Services.AddAuthorization();
 
 // ── HttpClient gọi TourGuideAPI ───────────────────────────────
 var apiBase = builder.Configuration["ApiSettings:BaseUrl"]!;
+Console.WriteLine($">>> API Base URL: {apiBase}");
 builder.Services.AddHttpClient<ApiService>(client => {
     client.BaseAddress = new Uri(apiBase);
 });
-builder.Services.AddScoped<ApiService>();
 
 // ── HttpContextAccessor (đọc session trong service) ───────────
 builder.Services.AddHttpContextAccessor();

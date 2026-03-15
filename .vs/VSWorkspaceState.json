@@ -4,12 +4,9 @@
     "\\TourismApp",
     "\\TourismApp\\TourGuideAPI",
     "\\TourismApp\\TourGuideAPI\\Data",
-    "\\TourismApp\\TourGuideAPI\\DTOs\\Auth",
-    "\\TourismApp\\TourGuideAPI\\DTOs\\Places",
-    "\\TourismApp\\TourGuideAPI\\DTOs\\Reviews",
-    "\\TourismApp\\TourGuideAPI\\DTOs\\Tracking",
-    "\\TourismApp\\TourGuideAPI\\Models"
+    "\\TourismApp\\TourGuideAPI\\Services",
+    "\\TourismApp\\TourismApp.Web",
+    "\\TourismApp\\TourismApp.Web\\Services"
   ],
-  "SelectedNode": "\\TourismApp\\TourGuideAPI\\appsettings.json",
   "PreviewInSolutionExplorer": false
 }

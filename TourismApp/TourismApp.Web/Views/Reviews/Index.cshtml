@@ -1,0 +1,45 @@
+@model List<TourismApp.Web.Models.ReviewViewModel>
+@{ ViewData["Title"] = "Đánh giá"; }
+
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="/Places" class="btn btn-outline-secondary btn-sm">← Quay lại</a>
+  <h4 class="fw-bold mb-0">⭐ Đánh giá của khách</h4>
+</div>
+
+@if (!Model.Any()) {
+  <div class="text-center text-muted py-5">Chưa có đánh giá nào.</div>
+}
+
+@foreach (var r in Model) {
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between">
+        <div>
+          <strong>@r.UserName</strong>
+          <span class="text-warning ms-2">
+            @for (int i = 1; i <= 5; i++) { @(i <= r.Rating ? "⭐" : "☆") }
+          </span>
+        </div>
+        <small class="text-muted">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+      </div>
+      <p class="mt-2 mb-2">@r.Comment</p>
+
+      @if (r.OwnerReply != null) {
+        <div class="bg-light rounded p-3 border-start border-primary border-3">
+          <small class="text-primary fw-bold">Phản hồi của bạn:</small>
+          <p class="mb-0">@r.OwnerReply</p>
+        </div>
+      } else {
+        <form method="post" action="/Reviews/Reply" class="mt-2">
+          @Html.AntiForgeryToken()
+          <input type="hidden" name="reviewId" value="@r.ReviewId">
+          <input type="hidden" name="placeId" value="@ViewBag.PlaceId">
+          <div class="input-group">
+            <input name="reply" class="form-control" placeholder="Nhập phản hồi..." required>
+            <button class="btn btn-primary">Gửi phản hồi</button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+} 

@@ -16,20 +16,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder mb)
     {
         mb.Entity<User>(e => {
+            e.ToTable("Users");
             e.HasKey(u => u.UserId);
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.Role).HasMaxLength(20).HasDefaultValue("User");
         });
 
         mb.Entity<Category>(e => {
+            e.ToTable("Categories");
             e.HasKey(c => c.CategoryId);
         });
 
         mb.Entity<Place>(e => {
+            e.ToTable("Places");
             e.HasKey(p => p.PlaceId);
-            e.Property(p => p.Latitude).HasColumnType("decimal(10,7)");
-            e.Property(p => p.Longitude).HasColumnType("decimal(10,7)");
-            e.HasIndex(p => new { p.Latitude, p.Longitude });
             e.HasOne(p => p.Owner)
              .WithMany(u => u.OwnedPlaces)
              .HasForeignKey(p => p.OwnerId)
@@ -37,6 +37,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
 
         mb.Entity<PlaceImage>(e => {
+            e.ToTable("PlaceImages");
             e.HasKey(i => i.ImageId);
             e.HasOne(i => i.Place)
              .WithMany(p => p.Images)
@@ -45,13 +46,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
 
         mb.Entity<UserTracking>(e => {
+            e.ToTable("UserTracking");
             e.HasKey(t => t.TrackId);
-            e.Property(t => t.Latitude).HasColumnType("decimal(10,7)");
-            e.Property(t => t.Longitude).HasColumnType("decimal(10,7)");
             e.HasIndex(t => new { t.UserId, t.RecordedAt });
         });
 
         mb.Entity<VisitHistory>(e => {
+            e.ToTable("VisitHistory");
             e.HasKey(v => v.VisitId);
             e.HasOne(v => v.User)
              .WithMany(u => u.VisitHistory)
@@ -64,9 +65,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         });
 
         mb.Entity<Review>(e => {
+            e.ToTable("Reviews");
             e.HasKey(r => r.ReviewId);
             e.HasIndex(r => new { r.UserId, r.PlaceId }).IsUnique();
-            e.Property(r => r.Rating).HasColumnType("tinyint");
+            e.Property(r => r.Rating).HasColumnType("smallint");
             e.HasOne(r => r.User)
              .WithMany(u => u.Reviews)
              .HasForeignKey(r => r.UserId)

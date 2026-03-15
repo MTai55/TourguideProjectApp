@@ -1,0 +1,65 @@
+@model TourismApp.Web.Models.CreatePlaceViewModel
+@{ ViewData["Title"] = "Chỉnh sửa địa điểm"; }
+
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="/Places" class="btn btn-outline-secondary btn-sm">← Quay lại</a>
+  <h4 class="fw-bold mb-0">✏️ Chỉnh sửa địa điểm</h4>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <form asp-action="Edit" asp-route-id="@ViewBag.PlaceId" method="post">
+      @Html.AntiForgeryToken()
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label asp-for="Name" class="form-label fw-semibold"></label>
+          <input asp-for="Name" class="form-control" placeholder="Tên địa điểm">
+          <span asp-validation-for="Name" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4">
+          <label asp-for="Phone" class="form-label fw-semibold"></label>
+          <input asp-for="Phone" class="form-control" placeholder="0901234567">
+        </div>
+        <div class="col-12">
+          <label asp-for="Address" class="form-label fw-semibold"></label>
+          <input asp-for="Address" class="form-control" placeholder="123 Đường ABC, Quận 1, TP.HCM">
+          <span asp-validation-for="Address" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Latitude" class="form-label fw-semibold"></label>
+          <input asp-for="Latitude" class="form-control" placeholder="10.7769">
+          <span asp-validation-for="Latitude" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Longitude" class="form-label fw-semibold"></label>
+          <input asp-for="Longitude" class="form-control" placeholder="106.7009">
+          <span asp-validation-for="Longitude" class="text-danger small"></span>
+        </div>
+        <div class="col-md-3">
+          <label asp-for="OpenTime" class="form-label fw-semibold"></label>
+          <input asp-for="OpenTime" type="time" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label asp-for="CloseTime" class="form-label fw-semibold"></label>
+          <input asp-for="CloseTime" type="time" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <label asp-for="PriceMin" class="form-label fw-semibold"></label>
+          <input asp-for="PriceMin" class="form-control" placeholder="35000">
+        </div>
+        <div class="col-md-3">
+          <label asp-for="PriceMax" class="form-label fw-semibold"></label>
+          <input asp-for="PriceMax" class="form-control" placeholder="150000">
+        </div>
+        <div class="col-12">
+          <label asp-for="Description" class="form-label fw-semibold"></label>
+          <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả địa điểm..."></textarea>
+        </div>
+        <div class="col-12 pt-2">
+          <button type="submit" class="btn btn-primary px-4">💾 Lưu thay đổi</button>
+          <a href="/Places" class="btn btn-outline-secondary ms-2">Hủy</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TourismApp.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+de2afa83116a2710a09b1a0f2b260c551c8e408b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ab178d74b09fcdd39f483287c4d6dec8d368ddf4")]
 [assembly: System.Reflection.AssemblyProductAttribute("TourismApp.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TourismApp.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

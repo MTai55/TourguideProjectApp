@@ -1,0 +1,43 @@
+@model TourismApp.Web.Models.RegisterViewModel
+@{ ViewData["Title"] = "Đăng ký"; Layout = "~/Views/Shared/_Layout.cshtml"; }
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg,#1e293b,#3182ce)">
+  <div class="card shadow-lg" style="width:460px;border-radius:16px;border:none">
+    <div class="card-body p-5">
+      <h2 class="text-center mb-1 fw-bold">🗺️ Đăng Ký</h2>
+      <p class="text-center text-muted mb-4">Tạo tài khoản chủ địa điểm</p>
+
+      @if (!ViewData.ModelState.IsValid) {
+        <div class="alert alert-danger">@Html.ValidationSummary(false)</div>
+      }
+
+      <form asp-action="Register" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Role" value="Owner">
+        <div class="mb-3">
+          <label asp-for="FullName" class="form-label fw-semibold"></label>
+          <input asp-for="FullName" class="form-control" placeholder="Nguyễn Văn A">
+          <span asp-validation-for="FullName" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+          <label asp-for="Email" class="form-label fw-semibold"></label>
+          <input asp-for="Email" class="form-control" placeholder="email@example.com">
+          <span asp-validation-for="Email" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+          <label asp-for="Phone" class="form-label fw-semibold"></label>
+          <input asp-for="Phone" class="form-control" placeholder="0901234567">
+        </div>
+        <div class="mb-4">
+          <label asp-for="Password" class="form-label fw-semibold"></label>
+          <input asp-for="Password" class="form-control" placeholder="Tối thiểu 6 ký tự">
+          <span asp-validation-for="Password" class="text-danger small"></span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-100">Tạo tài khoản</button>
+      </form>
+      <p class="text-center mt-3 mb-0 text-muted small">
+        Đã có tài khoản? <a asp-action="Login">Đăng nhập</a>
+      </p>
+    </div>
+  </div>
+</div>

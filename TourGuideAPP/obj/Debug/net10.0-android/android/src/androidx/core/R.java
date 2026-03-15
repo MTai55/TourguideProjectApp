@@ -21,11 +21,11 @@ public final class R {
 		public static final int fontStyle = 0x7f03021c;
 		public static final int fontVariationSettings = 0x7f03021d;
 		public static final int fontWeight = 0x7f03021e;
-		public static final int lStar = 0x7f030288;
-		public static final int nestedScrollViewStyle = 0x7f03037a;
-		public static final int queryPatterns = 0x7f0303be;
-		public static final int shortcutMatchRequired = 0x7f0303f2;
-		public static final int ttcIndex = 0x7f030500;
+		public static final int lStar = 0x7f030289;
+		public static final int nestedScrollViewStyle = 0x7f03037b;
+		public static final int queryPatterns = 0x7f0303bf;
+		public static final int shortcutMatchRequired = 0x7f0303f3;
+		public static final int ttcIndex = 0x7f030501;
 	}
 	public static final class color {
 		public static final int androidx_core_ripple_material_light = 0x7f05001b;
@@ -192,10 +192,10 @@ public final class R {
 		public static final int Widget_Compat_NotificationActionText = 0x7f10033e;
 	}
 	public static final class styleable {
-		public static final int[] Capability = new int[] { 0x7f0303be, 0x7f0303f2 };
+		public static final int[] Capability = new int[] { 0x7f0303bf, 0x7f0303f3 };
 		public static final int Capability_queryPatterns = 0;
 		public static final int Capability_shortcutMatchRequired = 1;
-		public static final int[] ColorStateListItem = new int[] { 0x010101a5, 0x0101031f, 0x01010647, 0x7f030031, 0x7f030288 };
+		public static final int[] ColorStateListItem = new int[] { 0x010101a5, 0x0101031f, 0x01010647, 0x7f030031, 0x7f030289 };
 		public static final int ColorStateListItem_alpha = 3;
 		public static final int ColorStateListItem_android_alpha = 1;
 		public static final int ColorStateListItem_android_color = 0;
@@ -210,7 +210,7 @@ public final class R {
 		public static final int FontFamily_fontProviderPackage = 5;
 		public static final int FontFamily_fontProviderQuery = 6;
 		public static final int FontFamily_fontProviderSystemFontFamily = 7;
-		public static final int[] FontFamilyFont = new int[] { 0x01010532, 0x01010533, 0x0101053f, 0x0101056f, 0x01010570, 0x7f030212, 0x7f03021c, 0x7f03021d, 0x7f03021e, 0x7f030500 };
+		public static final int[] FontFamilyFont = new int[] { 0x01010532, 0x01010533, 0x0101053f, 0x0101056f, 0x01010570, 0x7f030212, 0x7f03021c, 0x7f03021d, 0x7f03021e, 0x7f030501 };
 		public static final int FontFamilyFont_android_font = 0;
 		public static final int FontFamilyFont_android_fontStyle = 2;
 		public static final int FontFamilyFont_android_fontVariationSettings = 4;

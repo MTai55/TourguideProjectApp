@@ -38,6 +38,8 @@
                 Clicked="OnStartGpsClicked"
                 HorizontalOptions="Center" />
 
+       <Button Text="🗺️ Xem bản đồ"
+              Clicked="OnMapClicked"
+               HorizontalOptions="Center" />
     </VerticalStackLayout>
-
 </ContentPage>

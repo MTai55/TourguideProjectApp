@@ -2,7 +2,8 @@
 using Supabase;
 using TourGuideAPP.Services;
 namespace TourGuideAPP;
-
+using SkiaSharp.Views.Maui.Controls.Hosting;
+using TourGuideAPP.Views;
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
@@ -10,6 +11,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseSkiaSharp()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -27,6 +29,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<GeofenceEngine>();
         builder.Services.AddSingleton<POIService>();
+        builder.Services.AddSingleton<NarrationService>();
+        builder.Services.AddTransient<MapPage>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

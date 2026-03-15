@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+             x:Class="TourGuideAPP.Views.MapPage"
+             Title="Bản đồ">
+
+    <Grid>
+        <mapsui:MapControl x:Name="MyMap" />
+
+        <Frame BackgroundColor="White"
+               VerticalOptions="End"
+               Margin="10"
+               Padding="10"
+               CornerRadius="10">
+            <Label x:Name="NearestPOILabel"
+                   Text="🏛️ Chưa có POI gần đây"
+                   FontSize="14"
+                   HorizontalOptions="Center" />
+        </Frame>
+    </Grid>
+
+</ContentPage>

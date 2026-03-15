@@ -41,5 +41,9 @@
        <Button Text="🗺️ Xem bản đồ"
               Clicked="OnMapClicked"
                HorizontalOptions="Center" />
+
+        <Button Text="📷 Quét QR Code"
+        Clicked="OnQRScanClicked"
+        HorizontalOptions="Center" />
     </VerticalStackLayout>
 </ContentPage>

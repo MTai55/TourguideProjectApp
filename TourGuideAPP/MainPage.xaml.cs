@@ -1,5 +1,6 @@
 ﻿using Supabase;
 using TourGuideAPP.Services;
+using TourGuideAPP.Views;
 
 
 namespace TourGuideAPP;
@@ -23,7 +24,10 @@ public partial class MainPage : ContentPage
         _poiService = poiService;
          _narrationService = narrationService;
     }
-
+        private async void OnQRScanClicked(object sender, EventArgs e)
+    {
+         await Navigation.PushAsync(new QRScanPage(_narrationService));
+    }
     protected override async void OnAppearing()
     {
         base.OnAppearing();

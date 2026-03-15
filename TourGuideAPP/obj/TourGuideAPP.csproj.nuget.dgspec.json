@@ -93,6 +93,10 @@
               "target": "Package",
               "version": "[0.7.4, )"
             },
+            "ZXing.Net.Maui.Controls": {
+              "target": "Package",
+              "version": "[0.7.4, )"
+            },
             "postgrest-csharp": {
               "target": "Package",
               "version": "[3.5.1, )"
@@ -432,6 +436,10 @@
               "autoReferenced": true
             },
             "ZXing.Net.Maui": {
+              "target": "Package",
+              "version": "[0.7.4, )"
+            },
+            "ZXing.Net.Maui.Controls": {
               "target": "Package",
               "version": "[0.7.4, )"
             },
@@ -777,6 +785,10 @@
               "target": "Package",
               "version": "[0.7.4, )"
             },
+            "ZXing.Net.Maui.Controls": {
+              "target": "Package",
+              "version": "[0.7.4, )"
+            },
             "postgrest-csharp": {
               "target": "Package",
               "version": "[3.5.1, )"
@@ -1111,6 +1123,10 @@
               "version": "[10.0.10, )"
             },
             "ZXing.Net.Maui": {
+              "target": "Package",
+              "version": "[0.7.4, )"
+            },
+            "ZXing.Net.Maui.Controls": {
               "target": "Package",
               "version": "[0.7.4, )"
             },

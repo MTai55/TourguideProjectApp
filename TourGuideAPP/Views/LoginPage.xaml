@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TourGuideAPP.Views.LoginPage"
+             BackgroundColor="#1A1A2E"
+             Title="Đăng nhập">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="32" Spacing="16" VerticalOptions="Center">
+
+            <!-- Logo -->
+            <VerticalStackLayout Spacing="4" Margin="0,40,0,30">
+                <Label Text="🗺️ TourGuide"
+                       FontSize="36"
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center"/>
+                <Label Text="Khám phá ẩm thực Sài Gòn"
+                       FontSize="14"
+                       TextColor="#8888AA"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Email -->
+            <Frame BackgroundColor="#16213E" CornerRadius="12" Padding="0" BorderColor="#0F3460">
+                <Entry x:Name="EmailEntry"
+                       Placeholder="Email"
+                       PlaceholderColor="#8888AA"
+                       TextColor="White"
+                       BackgroundColor="Transparent"
+                       Keyboard="Email"
+                       Margin="16,12"/>
+            </Frame>
+
+            <!-- Password -->
+            <Frame BackgroundColor="#16213E" CornerRadius="12" Padding="0" BorderColor="#0F3460">
+                <Entry x:Name="PasswordEntry"
+                       Placeholder="Mật khẩu"
+                       PlaceholderColor="#8888AA"
+                       TextColor="White"
+                       BackgroundColor="Transparent"
+                       IsPassword="True"
+                       Margin="16,12"/>
+            </Frame>
+
+            <!-- Error label -->
+            <Label x:Name="ErrorLabel"
+                   Text=""
+                   TextColor="#E94560"
+                   FontSize="13"
+                   HorizontalOptions="Center"
+                   IsVisible="False"/>
+
+            <!-- Login button -->
+            <Button Text="Đăng nhập"
+                    Clicked="OnLoginClicked"
+                    BackgroundColor="#0F3460"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="52"
+                    FontAttributes="Bold"
+                    Margin="0,8,0,0"/>
+
+            <!-- Guest button -->
+            <Button Text="Tiếp tục không đăng nhập"
+                    Clicked="OnGuestClicked"
+                    BackgroundColor="Transparent"
+                    TextColor="#8888AA"
+                    CornerRadius="12"
+                    HeightRequest="44"
+                    BorderColor="#0F3460"
+                    BorderWidth="1"/>
+
+            <!-- Register link -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                <Label Text="Chưa có tài khoản?"
+                       TextColor="#8888AA"
+                       FontSize="14"
+                       VerticalOptions="Center"/>
+                <Label Text="Đăng ký ngay"
+                       TextColor="#4FC3F7"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRegisterTapped"/>
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -34,6 +34,10 @@ public static class MauiProgram
         builder.Services.AddSingleton<NarrationService>();
         builder.Services.AddTransient<MapPage>();
         builder.Services.AddTransient<QRScanPage>();
+        builder.Services.AddSingleton<AuthService>();
+        builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddTransient<RegisterPage>();
+         builder.Services.AddTransient<AuthService>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

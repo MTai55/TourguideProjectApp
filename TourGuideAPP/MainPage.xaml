@@ -1,49 +1,225 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="TourGuideAPP.MainPage">
+             x:Class="TourGuideAPP.MainPage"
+             BackgroundColor="#F5F5F5"
+             Shell.NavBarIsVisible="False">
 
-    <VerticalStackLayout Padding="30" Spacing="16"
-                         VerticalOptions="Center">
+    <Grid RowDefinitions="Auto,Auto,*">
 
-        <Label Text="TourGuide App"
-               FontSize="32"
-               FontAttributes="Bold"
-               HorizontalOptions="Center" />
+        <!-- Header -->
+        <Grid Grid.Row="0" BackgroundColor="#1A1A2E" Padding="16,48,16,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-        <Label x:Name="StatusLabel"
-               Text="Đang kết nối..."
-               FontSize="13"
-               HorizontalOptions="Center" />
+            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                <Label x:Name="UserLabel"
+                       Text="👤 Khách"
+                       FontSize="12"
+                       TextColor="#8888AA"/>
+                <Label Text="📍 Khánh Hội, Quận 4"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       TextColor="White"/>
+            </VerticalStackLayout>
 
-        <Label x:Name="GpsLabel"
-               Text="📍 Chờ GPS..."
-               FontSize="13"
-               HorizontalOptions="Center" />
+            <HorizontalStackLayout Grid.Column="1" Spacing="12">
+                <Button Text="🗺️"
+                        Clicked="OnMapClicked"
+                        BackgroundColor="#0F3460"
+                        TextColor="White"
+                        CornerRadius="20"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        Padding="0"/>
+                <Button x:Name="LoginButton"
+                        Text="Đăng nhập"
+                        Clicked="OnLoginClicked"
+                        BackgroundColor="#E94560"
+                        TextColor="White"
+                        CornerRadius="20"
+                        HeightRequest="40"
+                        FontSize="13"
+                        Padding="12,0"/>
+                <Button x:Name="LogoutButton"
+                        Text="Đăng xuất"
+                        Clicked="OnLogoutClicked"
+                        BackgroundColor="#E94560"
+                        TextColor="White"
+                        CornerRadius="20"
+                        HeightRequest="40"
+                        FontSize="13"
+                        Padding="12,0"
+                        IsVisible="False"/>
+            </HorizontalStackLayout>
+        </Grid>
 
-        <Label x:Name="POILabel"
-               Text="🏛️ Chưa có POI nào gần đây"
-               FontSize="14"
-               FontAttributes="Bold"
-               HorizontalOptions="Center"
-               TextColor="DarkBlue" />
+        <!-- Search + Action Buttons -->
+        <VerticalStackLayout Grid.Row="1" BackgroundColor="#1A1A2E" Padding="16,0,16,16" Spacing="12">
 
-        <Label x:Name="POICountLabel"
-               Text=""
-               FontSize="12"
-               HorizontalOptions="Center"
-               TextColor="Gray" />
+            <!-- Search Bar -->
+            <Frame BackgroundColor="White" CornerRadius="12" Padding="0" BorderColor="Transparent">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Label Grid.Column="0" Text="🔍" FontSize="18" VerticalOptions="Center" Margin="12,0,0,0"/>
+                    <Entry Grid.Column="1"
+                           Placeholder="Tìm quán ăn..."
+                           PlaceholderColor="#AAAAAA"
+                           TextColor="#333333"
+                           BackgroundColor="Transparent"
+                           Margin="8,8"/>
+                </Grid>
+            </Frame>
 
-        <Button Text="Bắt đầu GPS + Geofence"
-                Clicked="OnStartGpsClicked"
-                HorizontalOptions="Center" />
+            <!-- Action Buttons -->
+            <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                <Button Text="🚀 GPS"
+                        Clicked="OnStartGpsClicked"
+                        BackgroundColor="#0F3460"
+                        TextColor="White"
+                        CornerRadius="20"
+                        HeightRequest="40"
+                        Padding="16,0"
+                        FontSize="13"/>
+                <Button Text="📷 Quét QR"
+                        Clicked="OnQRScanClicked"
+                        BackgroundColor="#0F3460"
+                        TextColor="White"
+                        CornerRadius="20"
+                        HeightRequest="40"
+                        Padding="16,0"
+                        FontSize="13"/>
+                <Button Text="🎙️ Thuyết minh"
+                        Clicked="OnNarrationClicked"
+                        BackgroundColor="#0F3460"
+                        TextColor="White"
+                        CornerRadius="20"
+                        HeightRequest="40"
+                        Padding="16,0"
+                        FontSize="13"/>
+            </HorizontalStackLayout>
 
-       <Button Text="🗺️ Xem bản đồ"
-              Clicked="OnMapClicked"
-               HorizontalOptions="Center" />
+        </VerticalStackLayout>
 
-        <Button Text="📷 Quét QR Code"
-        Clicked="OnQRScanClicked"
-        HorizontalOptions="Center" />
-    </VerticalStackLayout>
+        <!-- Content -->
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout Padding="16" Spacing="16">
+
+                <!-- GPS Status Card -->
+                <Frame x:Name="GpsCard"
+                       BackgroundColor="White"
+                       CornerRadius="12"
+                       Padding="16"
+                       BorderColor="#E0E0E0"
+                       IsVisible="False">
+                    <VerticalStackLayout Spacing="4">
+                        <Label x:Name="GpsLabel"
+                               Text="📍 Chờ GPS..."
+                               FontSize="13"
+                               TextColor="#666666"/>
+                        <Label x:Name="POILabel"
+                               Text="🏛️ Chưa có POI gần đây"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#E94560"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Status -->
+                <Label x:Name="StatusLabel"
+                       Text=""
+                       FontSize="12"
+                       TextColor="#AAAAAA"
+                       HorizontalOptions="Center"/>
+
+                <!-- Categories -->
+                <Label Text="Danh mục"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="#1A1A2E"/>
+
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                    <HorizontalStackLayout Spacing="12">
+                        <Frame BackgroundColor="#E94560" CornerRadius="20" Padding="16,8" BorderColor="Transparent">
+                            <Label Text="🍜 Tất cả" TextColor="White" FontSize="13"/>
+                        </Frame>
+                        <Frame BackgroundColor="White" CornerRadius="20" Padding="16,8" BorderColor="#E0E0E0">
+                            <Label Text="🍺 Quán nhậu" TextColor="#333333" FontSize="13"/>
+                        </Frame>
+                        <Frame BackgroundColor="White" CornerRadius="20" Padding="16,8" BorderColor="#E0E0E0">
+                            <Label Text="☕ Cà phê" TextColor="#333333" FontSize="13"/>
+                        </Frame>
+                        <Frame BackgroundColor="White" CornerRadius="20" Padding="16,8" BorderColor="#E0E0E0">
+                            <Label Text="🍲 Cơm" TextColor="#333333" FontSize="13"/>
+                        </Frame>
+                        <Frame BackgroundColor="White" CornerRadius="20" Padding="16,8" BorderColor="#E0E0E0">
+                            <Label Text="🧋 Trà sữa" TextColor="#333333" FontSize="13"/>
+                        </Frame>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Nearby Section -->
+                <Label Text="🏛️ Địa điểm nổi bật"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="#1A1A2E"/>
+
+                <!-- Place Cards -->
+                <CollectionView x:Name="PlacesCollection"
+                                SelectionMode="Single"
+                                SelectionChanged="OnPlaceSelected">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="0"
+                                   BorderColor="#E0E0E0"
+                                   Margin="0,0,0,12">
+                                <Grid RowDefinitions="180,Auto">
+
+                                    <!-- Place Image -->
+                                    <Image Grid.Row="0"
+                                           Source="{Binding ImageUrl}"
+                                           Aspect="AspectFill"
+                                           HeightRequest="180"/>
+
+                                    <!-- Info -->
+                                    <VerticalStackLayout Grid.Row="1" Padding="12" Spacing="4">
+                                        <Label Text="{Binding Name}"
+                                               FontSize="16"
+                                               FontAttributes="Bold"
+                                               TextColor="#1A1A2E"/>
+                                        <Label Text="{Binding Description}"
+                                               FontSize="13"
+                                               TextColor="#666666"
+                                               MaxLines="2"
+                                               LineBreakMode="TailTruncation"/>
+                                        <HorizontalStackLayout Spacing="16" Margin="0,4,0,0">
+                                            <Label Text="{Binding Address, StringFormat='📍 {0}'}"
+                                                   FontSize="12"
+                                                   TextColor="#AAAAAA"/>
+                                            <Label Text="{Binding OpenTime, StringFormat='🕐 {0}'}"
+                                                   FontSize="12"
+                                                   TextColor="#AAAAAA"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label x:Name="POICountLabel"
+                       Text=""
+                       FontSize="12"
+                       TextColor="#AAAAAA"
+                       HorizontalOptions="Center"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
 </ContentPage>

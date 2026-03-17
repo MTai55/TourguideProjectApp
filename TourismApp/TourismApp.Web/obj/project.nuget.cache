@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "QnIshVjJZbk=",
+  "dgSpecHash": "iteooQrX2TM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\csharp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj",
+  "projectFilePath": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\TourGuideProjectApp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\diemc\\.nuget\\packages\\microsoft.aspnetcore.http.connections.client\\10.0.5\\microsoft.aspnetcore.http.connections.client.10.0.5.nupkg.sha512",
+    "C:\\Users\\diemc\\.nuget\\packages\\microsoft.aspnetcore.signalr.client\\10.0.5\\microsoft.aspnetcore.signalr.client.10.0.5.nupkg.sha512",
+    "C:\\Users\\diemc\\.nuget\\packages\\microsoft.aspnetcore.signalr.client.core\\10.0.5\\microsoft.aspnetcore.signalr.client.core.10.0.5.nupkg.sha512",
     "C:\\Users\\diemc\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512"
   ],
   "logs": []

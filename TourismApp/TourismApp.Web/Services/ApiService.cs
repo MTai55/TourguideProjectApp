@@ -69,15 +69,22 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
     // ══════════════════════════════════════════════════════════════
     // PLACES
     // ══════════════════════════════════════════════════════════════
-    public Task<PlaceListResponse?> GetPlacesAsync(int page = 1, string? search = null)
+    public Task<PlaceListResponse?> GetPlacesAsync(
+    int page = 1, string? search = null,
+    string? categoryId = null,
+    string? isApproved = null,
+    string? sortBy = null)
     {
         var url = $"/api/places?page={page}";
         if (!string.IsNullOrEmpty(search)) url += $"&search={search}";
+        if (!string.IsNullOrEmpty(categoryId)) url += $"&categoryId={categoryId}";
+        if (!string.IsNullOrEmpty(isApproved)) url += $"&isApproved={isApproved}";
+        if (!string.IsNullOrEmpty(sortBy)) url += $"&sortBy={sortBy}";
         return GetAsync<PlaceListResponse>(url);
     }
 
     public Task<PlaceViewModel?> GetPlaceAsync(int id)
-        => GetAsync<PlaceViewModel>($"/api/places/{id}");
+    => GetAsync<PlaceViewModel>($"/api/places/{id}");
 
     public Task<(bool, PlaceViewModel?, string)> CreatePlaceAsync(CreatePlaceViewModel vm)
         => PostAsync<PlaceViewModel>("/api/places", vm);

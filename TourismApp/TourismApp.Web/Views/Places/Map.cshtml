@@ -1,0 +1,51 @@
+@using TourismApp.Web.Models
+@model List<TourismApp.Web.Models.PlaceViewModel>
+@{ ViewData["Title"] = "Bản đồ địa điểm"; }
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0">🗺️ Bản đồ địa điểm</h4>
+  <span class="badge bg-primary">@Model.Count địa điểm</span>
+</div>
+
+<div class="card shadow-sm">
+  <div id="map" style="height:600px;border-radius:12px"></div>
+</div>
+
+@section Scripts {
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const places = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+
+  const map = L.map('map').setView([10.7769, 106.7009], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  places.forEach(p => {
+    if (!p.latitude || !p.longitude) return;
+    const marker = L.marker([p.latitude, p.longitude]).addTo(map);
+    marker.bindPopup(`
+      <div style="min-width:200px">
+        <strong>${p.name}</strong><br>
+        <small class="text-muted">${p.address}</small><br>
+        <span class="text-warning">★</span> ${p.averageRating?.toFixed(1) ?? '0.0'}
+        &nbsp;|&nbsp; 📍 ${p.totalVisits} lượt ghé<br>
+        <div class="mt-2">
+          <a href="/Places/Edit/${p.placeId}" class="btn btn-sm btn-primary">Sửa</a>
+          <a href="/Reviews?placeId=${p.placeId}" class="btn btn-sm btn-outline-secondary ms-1">Đánh giá</a>
+        </div>
+      </div>
+    `);
+  });
+
+  // Fit map to all markers
+  if (places.length > 0) {
+    const bounds = places
+      .filter(p => p.latitude && p.longitude)
+      .map(p => [p.latitude, p.longitude]);
+    if (bounds.length) map.fitBounds(bounds, { padding: [50, 50] });
+  }
+</script>
+}

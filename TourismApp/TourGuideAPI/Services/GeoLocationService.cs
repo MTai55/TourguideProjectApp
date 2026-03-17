@@ -73,6 +73,11 @@ public class GeoLocationService(AppDbContext db, IConfiguration config) : IGeoLo
         p.AverageRating, p.TotalReviews, p.TotalVisits,
         p.Category?.Name,
         p.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl,
-        Math.Round(distKm, 2)
+        Math.Round(distKm, 2),
+        p.Specialty,       
+        p.PricePerPerson,  
+        p.District,        
+        p.HasParking,      
+        p.HasAircon       
     );
 }

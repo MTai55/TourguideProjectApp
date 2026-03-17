@@ -60,6 +60,12 @@ public class AuthController(ApiService api) : Controller
         return RedirectToAction("Index", "Dashboard");
     }
 
+    // GET /Auth/AccessDenied
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
+
     // GET /Auth/Logout
     public IActionResult Logout()
     {

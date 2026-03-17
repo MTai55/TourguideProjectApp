@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\csharp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj": {}
+    "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\TourGuideProjectApp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj": {}
   },
   "projects": {
-    "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\csharp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj": {
+    "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\TourGuideProjectApp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\csharp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj",
+        "projectUniqueName": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\TourGuideProjectApp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj",
         "projectName": "TourismApp.Web",
-        "projectPath": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\csharp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj",
+        "projectPath": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\TourGuideProjectApp\\TourismApp\\TourismApp.Web\\TourismApp.Web.csproj",
         "packagesPath": "C:\\Users\\diemc\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\csharp\\TourismApp\\TourismApp.Web\\obj\\",
+        "outputPath": "C:\\Users\\diemc\\OneDrive\\Documents\\Code\\C#\\TourGuideProjectApp\\TourismApp\\TourismApp.Web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -51,6 +51,10 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Microsoft.AspNetCore.SignalR.Client": {
+              "target": "Package",
+              "version": "[10.0.5, )"
+            },
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.4, )"
@@ -75,7 +79,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

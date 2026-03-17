@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using TourGuideAPI.Data;
@@ -11,33 +12,73 @@ namespace TourGuideAPI.Controllers;
 
 [ApiController]
 [Route("api/places")]
+[EnableRateLimiting("general")]
 public class PlacesController(AppDbContext db, IGeoLocationService geo) : ControllerBase
 {
     // GET /api/places?search=&categoryId=&page=
     [HttpGet]
     public async Task<IActionResult> GetAll(
-        [FromQuery] string? search, [FromQuery] int? categoryId,
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    [FromQuery] string? search,
+    [FromQuery] int? categoryId,
+    [FromQuery] bool? isApproved,
+    [FromQuery] string? sortBy,
+    [FromQuery] string? district,
+    [FromQuery] int? maxPrice,
+    [FromQuery] string? specialty,
+    [FromQuery] bool? hasAircon,
+    [FromQuery] bool? hasParking,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20)
     {
         var query = db.Places
             .Include(p => p.Category)
             .Include(p => p.Images.Where(i => i.IsMain))
-            .Where(p => p.IsApproved && p.IsActive);
+            .Where(p => p.IsActive);
 
         if (!string.IsNullOrEmpty(search))
-            query = query.Where(p => p.Name.Contains(search) || p.Address.Contains(search));
-        if (categoryId.HasValue)
-            query = query.Where(p => p.CategoryId == categoryId);
+        {
+            var s = search.ToLower();
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(s) ||
+                p.Address.ToLower().Contains(s) ||
+                (p.Specialty != null && p.Specialty.ToLower().Contains(s)));
+        }
+
+        if (categoryId.HasValue) query = query.Where(p => p.CategoryId == categoryId);
+        if (isApproved.HasValue) query = query.Where(p => p.IsApproved == isApproved);
+        if (!string.IsNullOrEmpty(district)) query = query.Where(p => p.District == district);
+        if (maxPrice.HasValue) query = query.Where(p => p.PricePerPerson <= maxPrice);
+        if (hasAircon.HasValue) query = query.Where(p => p.HasAircon == hasAircon);
+        if (hasParking.HasValue) query = query.Where(p => p.HasParking == hasParking);
+        if (!string.IsNullOrEmpty(specialty))
+        {
+            var s = specialty.ToLower();
+            query = query.Where(p => p.Specialty != null && p.Specialty.ToLower().Contains(s));
+        }
+
+        query = sortBy switch
+        {
+            "name" => query.OrderBy(p => p.Name),
+            "rating" => query.OrderByDescending(p => p.AverageRating),
+            "visits" => query.OrderByDescending(p => p.TotalVisits),
+            "price_asc" => query.OrderBy(p => p.PricePerPerson),
+            "price_desc" => query.OrderByDescending(p => p.PricePerPerson),
+            _ => query.OrderByDescending(p => p.AverageRating)
+        };
 
         var total = await query.CountAsync();
         var items = await query
-            .OrderByDescending(p => p.AverageRating)
             .Skip((page - 1) * pageSize).Take(pageSize)
-            .Select(p => new PlaceDto(p.PlaceId, p.Name, p.Description, p.Address,
+            .Select(p => new PlaceDto(
+                p.PlaceId, p.Name, p.Description, p.Address,
                 p.Latitude, p.Longitude, p.Phone,
                 p.OpenTime.ToString(), p.CloseTime.ToString(),
                 p.AverageRating, p.TotalReviews, p.TotalVisits,
-                p.Category!.Name, p.Images.FirstOrDefault()!.ImageUrl, null))
+                p.Category!.Name,
+                p.Images.FirstOrDefault()!.ImageUrl,
+                null,
+                p.Specialty, p.PricePerPerson, p.District,
+                p.HasParking, p.HasAircon))
             .ToListAsync();
 
         return Ok(new { total, page, pageSize, items });

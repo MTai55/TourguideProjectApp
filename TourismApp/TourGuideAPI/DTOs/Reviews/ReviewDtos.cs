@@ -3,7 +3,10 @@ namespace TourGuideAPI.DTOs.Reviews;
 public record CreateReviewDto(
     int PlaceId,
     byte Rating,
-    string? Comment
+    string? Comment,
+    byte? TasteRating = null,
+    byte? PriceRating = null,
+    byte? SpaceRating = null
 );
 
 public record ReviewDto(
@@ -13,5 +16,8 @@ public record ReviewDto(
     byte Rating,
     string? Comment,
     string? OwnerReply,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    byte? TasteRating,
+    byte? PriceRating,
+    byte? SpaceRating
 );

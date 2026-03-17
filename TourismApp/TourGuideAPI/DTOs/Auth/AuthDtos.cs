@@ -18,6 +18,7 @@ public record AuthResponseDto(
     string FullName,
     string Email,
     string Role,
-    string Token,
+    string AccessToken,
+    string RefreshToken,
     DateTime ExpiresAt
 );

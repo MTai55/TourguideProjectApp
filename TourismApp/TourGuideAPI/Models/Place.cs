@@ -14,6 +14,11 @@ public class Place
     public TimeOnly? CloseTime { get; set; }
     public decimal? PriceMin { get; set; }
     public decimal? PriceMax { get; set; }
+    public string? Specialty { get; set; }
+    public int? PricePerPerson { get; set; }
+    public string? District { get; set; }
+    public bool HasParking { get; set; }
+    public bool HasAircon { get; set; }
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalVisits { get; set; }

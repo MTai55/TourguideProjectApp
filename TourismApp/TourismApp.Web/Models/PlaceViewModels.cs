@@ -19,6 +19,11 @@ public class PlaceViewModel
     public string? CategoryName { get; set; }
     public string? MainImageUrl { get; set; }
     public bool IsApproved { get; set; }
+    public string? Specialty { get; set; }
+    public int? PricePerPerson { get; set; }
+    public string? District { get; set; }
+    public bool HasParking { get; set; }
+    public bool HasAircon { get; set; }
 }
 
 public class CreatePlaceViewModel
@@ -58,4 +63,7 @@ public class ReviewViewModel
     public DateTime CreatedAt { get; set; }
     public int PlaceId { get; set; }
     public string PlaceName { get; set; } = string.Empty;
+    public byte? TasteRating { get; set; }
+    public byte? PriceRating { get; set; }
+    public byte? SpaceRating { get; set; }
 }

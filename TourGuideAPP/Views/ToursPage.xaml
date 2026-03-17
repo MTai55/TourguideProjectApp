@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TourGuideAPP.Views.ToursPage"
+             Title="Tour">
+
+    <Grid RowDefinitions="Auto,*" Padding="16">
+        <!-- Header -->
+        <Border BackgroundColor="{StaticResource Surface}"
+                Stroke="{StaticResource Gray100}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 16"
+                Padding="16"
+                Margin="0,8,0,12">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Chọn gói tour phù hợp"
+                       FontSize="20"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource Primary}" />
+                <Label Text="Gợi ý theo sở thích, ngân sách, thời gian."
+                       FontSize="13"
+                       TextColor="{StaticResource Muted}" />
+
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <Entry x:Name="SearchEntry"
+                           Grid.Column="0"
+                           Placeholder="Tìm tour (ăn vặt, hải sản, cafe...)"
+                           BackgroundColor="Transparent"
+                           TextColor="{StaticResource OnSurface}"
+                           PlaceholderColor="{StaticResource Muted}" />
+                    <Button Grid.Column="1"
+                            Text="Lọc"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="White"
+                            CornerRadius="14"
+                            Padding="16,10"
+                            Clicked="OnFilterClicked" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- List -->
+        <CollectionView Grid.Row="1"
+                        x:Name="ToursCollection"
+                        ItemsSource="{Binding Tours}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="{StaticResource Surface}"
+                            Stroke="{StaticResource Gray100}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 16"
+                            Padding="14"
+                            Margin="0,0,0,12">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
+                            <Label Grid.Row="0"
+                                   Grid.Column="0"
+                                   Text="{Binding Title}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Primary}" />
+                            <Border Grid.Row="0"
+                                    Grid.Column="1"
+                                    BackgroundColor="{StaticResource Secondary}"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 999"
+                                    Padding="10,4">
+                                <Label Text="{Binding Tag}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Primary}" />
+                            </Border>
+
+                            <Label Grid.Row="1"
+                                   Grid.ColumnSpan="2"
+                                   Text="{Binding Description}"
+                                   FontSize="13"
+                                   TextColor="{StaticResource Muted}"
+                                   LineBreakMode="TailTruncation"
+                                   MaxLines="2" />
+
+                            <HorizontalStackLayout Grid.Row="2"
+                                                   Grid.Column="0"
+                                                   Spacing="12">
+                                <Label Text="{Binding DurationText, StringFormat='⏱️ {0}'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Muted}" />
+                                <Label Text="{Binding BudgetText, StringFormat='💰 {0}'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Muted}" />
+                            </HorizontalStackLayout>
+
+                            <Button Grid.Row="2"
+                                    Grid.Column="1"
+                                    Text="Chọn"
+                                    BackgroundColor="{StaticResource Tertiary}"
+                                    TextColor="White"
+                                    CornerRadius="14"
+                                    Padding="16,10"
+                                    Clicked="OnSelectTourClicked"
+                                    CommandParameter="{Binding Id}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
+

@@ -4,6 +4,7 @@ public class LocationService
 {
     private CancellationTokenSource? _cts;
     public event Action<Location>? LocationChanged;
+    public Location? LastKnownLocation { get; private set; }
 
     public async Task StartAsync()
     {
@@ -31,6 +32,7 @@ public class LocationService
                     var location = await Geolocation.GetLocationAsync(request, _cts.Token);
                     if (location != null)
                     {
+                        LastKnownLocation = location;
                         LocationChanged?.Invoke(location);
                         Console.WriteLine($"📍 Vị trí: {location.Latitude}, {location.Longitude}");
                     }

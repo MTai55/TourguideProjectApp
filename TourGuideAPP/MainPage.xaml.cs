@@ -1,6 +1,7 @@
-﻿using Supabase;
+using Supabase;
 using TourGuideAPP.Services;
 using TourGuideAPP.Views;
+using TourGuideAPP.Data.Models;
 
 namespace TourGuideAPP;
 
@@ -12,11 +13,12 @@ public partial class MainPage : ContentPage
     private readonly POIService _poiService;
     private readonly NarrationService _narrationService;
     private readonly AuthService _authService;
+    private readonly PlaceService _placeService;
     private string? _lastSpokenPOIId;
 
     public MainPage(Supabase.Client supabase, LocationService locationService,
                     GeofenceEngine geofenceEngine, POIService poiService,
-                    NarrationService narrationService, AuthService authService)
+                    NarrationService narrationService, AuthService authService, PlaceService placeService)
     {
         InitializeComponent();
         _supabase = supabase;
@@ -25,6 +27,7 @@ public partial class MainPage : ContentPage
         _poiService = poiService;
         _narrationService = narrationService;
         _authService = authService;
+        _placeService = placeService;
     }
 
     protected override async void OnAppearing()
@@ -32,6 +35,7 @@ public partial class MainPage : ContentPage
         base.OnAppearing();
         await TestConnection();
         await LoadPOIs();
+        await LoadPlaces();
         UpdateAuthUI();
     }
 
@@ -48,14 +52,20 @@ public partial class MainPage : ContentPage
         try
         {
             await _supabase.InitializeAsync();
-            StatusLabel.Text = "✅ Supabase OK!";
+            StatusLabel.IsVisible = false;
+            StatusLabel.Text = string.Empty;
         }
         catch (Exception ex)
         {
-            StatusLabel.Text = $"❌ {ex.Message}";
+            StatusLabel.Text = $"❌ Không kết nối được dữ liệu. {ex.Message}";
+            StatusLabel.IsVisible = true;
         }
     }
-
+        private async Task LoadPlaces()
+        {
+            var places = await _placeService.GetAllPlacesAsync();
+            PlacesCollection.ItemsSource = places;
+        }
     private async Task LoadPOIs()
     {
         var pois = await _poiService.GetAllPOIsAsync();
@@ -90,7 +100,7 @@ public partial class MainPage : ContentPage
                 }
                 else
                 {
-                    POILabel.Text = "🏛️ Không có POI gần đây";
+                    POILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
                     _lastSpokenPOIId = null;
                 }
             });
@@ -98,11 +108,25 @@ public partial class MainPage : ContentPage
         await _locationService.StartAsync();
     }
 
-    private async void OnMapClicked(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new MapPage(
-            _locationService, _poiService, _geofenceEngine, _narrationService));
-    }
+            private async void OnMapClicked(object sender, EventArgs e)
+            {
+                await Navigation.PushAsync(new MapPage(
+                    _locationService, _poiService, _geofenceEngine, _narrationService));
+            }
+            // Khi user bấm vào 1 địa điểm trong danh sách
+       // Xử lý khi user bấm vào card địa điểm
+// BindingContext của Frame chính là Place object trong danh sách
+            private async void OnPlaceTapped(object sender, EventArgs e)
+            {
+                if (sender is Frame frame && frame.BindingContext is Place place)
+                    await Navigation.PushAsync(new PlaceDetailPage(
+                        place,
+                        _authService,
+                        _locationService,
+                        _poiService,
+                        _geofenceEngine,
+                        _narrationService));
+            }
 
     private async void OnQRScanClicked(object sender, EventArgs e)
     {
@@ -134,8 +158,4 @@ private async void OnNarrationClicked(object sender, EventArgs e)
     await _narrationService.SpeakAsync("Chào mừng bạn đến với khu vực Khánh Hội!");
 }
 
-private void OnPlaceSelected(object sender, SelectionChangedEventArgs e)
-{
-    // Sau này navigate đến PlaceDetailPage
-}
 }

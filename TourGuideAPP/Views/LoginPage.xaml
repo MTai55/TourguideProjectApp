@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TourGuideAPP.Views.LoginPage"
-             BackgroundColor="#1A1A2E"
+             BackgroundColor="{StaticResource Secondary}"
              Title="Đăng nhập">
 
     <ScrollView>
@@ -13,31 +13,31 @@
                 <Label Text="🗺️ TourGuide"
                        FontSize="36"
                        FontAttributes="Bold"
-                       TextColor="White"
+                       TextColor="{StaticResource Primary}"
                        HorizontalOptions="Center"/>
                 <Label Text="Khám phá ẩm thực Sài Gòn"
                        FontSize="14"
-                       TextColor="#8888AA"
+                       TextColor="{StaticResource Muted}"
                        HorizontalOptions="Center"/>
             </VerticalStackLayout>
 
             <!-- Email -->
-            <Frame BackgroundColor="#16213E" CornerRadius="12" Padding="0" BorderColor="#0F3460">
+            <Frame BackgroundColor="{StaticResource Surface}" CornerRadius="12" Padding="0" BorderColor="{StaticResource Gray100}">
                 <Entry x:Name="EmailEntry"
                        Placeholder="Email"
-                       PlaceholderColor="#8888AA"
-                       TextColor="White"
+                       PlaceholderColor="{StaticResource Muted}"
+                       TextColor="{StaticResource OnSurface}"
                        BackgroundColor="Transparent"
                        Keyboard="Email"
                        Margin="16,12"/>
             </Frame>
 
             <!-- Password -->
-            <Frame BackgroundColor="#16213E" CornerRadius="12" Padding="0" BorderColor="#0F3460">
+            <Frame BackgroundColor="{StaticResource Surface}" CornerRadius="12" Padding="0" BorderColor="{StaticResource Gray100}">
                 <Entry x:Name="PasswordEntry"
                        Placeholder="Mật khẩu"
-                       PlaceholderColor="#8888AA"
-                       TextColor="White"
+                       PlaceholderColor="{StaticResource Muted}"
+                       TextColor="{StaticResource OnSurface}"
                        BackgroundColor="Transparent"
                        IsPassword="True"
                        Margin="16,12"/>
@@ -54,7 +54,7 @@
             <!-- Login button -->
             <Button Text="Đăng nhập"
                     Clicked="OnLoginClicked"
-                    BackgroundColor="#0F3460"
+                    BackgroundColor="{StaticResource Primary}"
                     TextColor="White"
                     CornerRadius="12"
                     HeightRequest="52"
@@ -65,20 +65,20 @@
             <Button Text="Tiếp tục không đăng nhập"
                     Clicked="OnGuestClicked"
                     BackgroundColor="Transparent"
-                    TextColor="#8888AA"
+                    TextColor="{StaticResource Primary}"
                     CornerRadius="12"
                     HeightRequest="44"
-                    BorderColor="#0F3460"
+                    BorderColor="{StaticResource Primary}"
                     BorderWidth="1"/>
 
             <!-- Register link -->
             <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
                 <Label Text="Chưa có tài khoản?"
-                       TextColor="#8888AA"
+                       TextColor="{StaticResource Muted}"
                        FontSize="14"
                        VerticalOptions="Center"/>
                 <Label Text="Đăng ký ngay"
-                       TextColor="#4FC3F7"
+                       TextColor="{StaticResource Tertiary}"
                        FontSize="14"
                        FontAttributes="Bold"
                        VerticalOptions="Center">

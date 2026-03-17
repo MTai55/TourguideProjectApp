@@ -7,15 +7,38 @@
     xmlns:views="clr-namespace:TourGuideAPP.Views"
     Title="TourGuideAPP">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <!-- Bottom tab bar (4 utilities) -->
+    <TabBar Route="MainTabs">
+        <ShellContent
+            Title="Tour"
+            Route="ToursPage"
+            Icon="icon_tour.svg"
+            ContentTemplate="{DataTemplate views:ToursPage}" />
 
+        <ShellContent
+            Title="Nổi bật"
+            Route="MainPage"
+            Icon="icon_trending.svg"
+            ContentTemplate="{DataTemplate local:MainPage}" />
+
+        <ShellContent
+            Title="Bản đồ"
+            Route="MapPage"
+            Icon="icon_map.svg"
+            ContentTemplate="{DataTemplate views:MapPage}" />
+
+        <ShellContent
+            Title="Cá nhân"
+            Route="AccountPage"
+            Icon="icon_account.svg"
+            ContentTemplate="{DataTemplate views:AccountPage}" />
+    </TabBar>
+
+    <!-- Auth pages (still navigable) -->
     <ShellContent
         Title="Login"
         ContentTemplate="{DataTemplate views:LoginPage}"
         Route="LoginPage"
-        Shell.NavBarIsVisible="False"/>
+        Shell.NavBarIsVisible="False" />
 
 </Shell>

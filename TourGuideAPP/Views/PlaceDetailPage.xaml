@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TourGuideAPP.Views.PlaceDetailPage"
+             BackgroundColor="#F5F5F5"
+             Title="{Binding Name}">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- Ảnh bìa -->
+            <Image x:Name="MainImage"
+                   HeightRequest="250"
+                   Aspect="AspectFill"/>
+
+            <!-- Thông tin chính -->
+            <Frame BackgroundColor="White" CornerRadius="0" Padding="16" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="8">
+
+                    <!-- Tên + Rating -->
+                    <Label x:Name="NameLabel"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           TextColor="#1A1A2E"/>
+
+                    <HorizontalStackLayout Spacing="12">
+                        <Label x:Name="RatingLabel"
+                               FontSize="14"
+                               TextColor="#FF9800"/>
+                        <Label x:Name="ReviewsLabel"
+                               FontSize="14"
+                               TextColor="#AAAAAA"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Mô tả -->
+                    <Label x:Name="DescriptionLabel"
+                           FontSize="14"
+                           TextColor="#666666"
+                           LineBreakMode="WordWrap"/>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Divider -->
+            <BoxView HeightRequest="8" BackgroundColor="#F5F5F5"/>
+
+            <!-- Thông tin chi tiết -->
+            <Frame BackgroundColor="White" CornerRadius="0" Padding="16" BorderColor="Transparent">
+                <VerticalStackLayout Spacing="16">
+
+                    <Label Text="Thông tin"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           TextColor="#1A1A2E"/>
+
+                    <!-- Địa chỉ -->
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="📍" FontSize="18" VerticalOptions="Start"/>
+                        <Label x:Name="AddressLabel"
+                               FontSize="14"
+                               TextColor="#444444"
+                               LineBreakMode="WordWrap"
+                               HorizontalOptions="FillAndExpand"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Giờ mở cửa -->
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="🕐" FontSize="18"/>
+                        <Label x:Name="OpenTimeLabel"
+                               FontSize="14"
+                               TextColor="#444444"/>
+                    </HorizontalStackLayout>
+
+                    <!-- SĐT -->
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="📞" FontSize="18"/>
+                        <Label x:Name="PhoneLabel"
+                               FontSize="14"
+                               TextColor="#444444"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Giá -->
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="💰" FontSize="18"/>
+                        <Label x:Name="PriceLabel"
+                               FontSize="14"
+                               TextColor="#444444"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Website -->
+                    <HorizontalStackLayout Spacing="12">
+                        <Label Text="🌐" FontSize="18"/>
+                        <Label x:Name="WebsiteLabel"
+                               FontSize="14"
+                               TextColor="#4FC3F7"/>
+                    </HorizontalStackLayout>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Divider -->
+            <BoxView HeightRequest="8" BackgroundColor="#F5F5F5"/>
+
+            <!-- Nút hành động -->
+            <Frame BackgroundColor="White" CornerRadius="0" Padding="16" BorderColor="Transparent">
+                <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+
+                    <!-- Chỉ đường -->
+                    <Button Text="🗺️ Chỉ đường"
+                            Clicked="OnDirectionsClicked"
+                            BackgroundColor="#0F3460"
+                            TextColor="White"
+                            CornerRadius="20"
+                            HeightRequest="44"
+                            Padding="16,0"/>
+
+                    <!-- Đánh giá (yêu cầu đăng nhập) -->
+                    <Button Text="⭐ Đánh giá"
+                            Clicked="OnReviewClicked"
+                            BackgroundColor="#E94560"
+                            TextColor="White"
+                            CornerRadius="20"
+                            HeightRequest="44"
+                            Padding="16,0"/>
+
+                </HorizontalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,14 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TourGuideAPP.MainPage"
-             BackgroundColor="#F5F5F5"
+             BackgroundColor="{StaticResource Secondary}"
              Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="Auto,Auto,*">
 
         <!-- Header -->
-        <Grid Grid.Row="0" BackgroundColor="#1A1A2E" Padding="16,48,16,16">
+        <Grid Grid.Row="0" BackgroundColor="{StaticResource Primary}" Padding="16,48,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -18,7 +18,7 @@
                 <Label x:Name="UserLabel"
                        Text="👤 Khách"
                        FontSize="12"
-                       TextColor="#8888AA"/>
+                       TextColor="{StaticResource Secondary}"/>
                 <Label Text="📍 Khánh Hội, Quận 4"
                        FontSize="16"
                        FontAttributes="Bold"
@@ -28,7 +28,7 @@
             <HorizontalStackLayout Grid.Column="1" Spacing="12">
                 <Button Text="🗺️"
                         Clicked="OnMapClicked"
-                        BackgroundColor="#0F3460"
+                        BackgroundColor="{StaticResource PrimaryDark}"
                         TextColor="White"
                         CornerRadius="20"
                         WidthRequest="40"
@@ -37,7 +37,7 @@
                 <Button x:Name="LoginButton"
                         Text="Đăng nhập"
                         Clicked="OnLoginClicked"
-                        BackgroundColor="#E94560"
+                        BackgroundColor="{StaticResource Tertiary}"
                         TextColor="White"
                         CornerRadius="20"
                         HeightRequest="40"
@@ -46,7 +46,7 @@
                 <Button x:Name="LogoutButton"
                         Text="Đăng xuất"
                         Clicked="OnLogoutClicked"
-                        BackgroundColor="#E94560"
+                        BackgroundColor="{StaticResource Tertiary}"
                         TextColor="White"
                         CornerRadius="20"
                         HeightRequest="40"
@@ -57,16 +57,16 @@
         </Grid>
 
         <!-- Search + Action Buttons -->
-        <VerticalStackLayout Grid.Row="1" BackgroundColor="#1A1A2E" Padding="16,0,16,16" Spacing="12">
+        <VerticalStackLayout Grid.Row="1" BackgroundColor="{StaticResource Primary}" Padding="16,0,16,16" Spacing="12">
 
             <!-- Search Bar -->
-            <Frame BackgroundColor="White" CornerRadius="12" Padding="0" BorderColor="Transparent">
+            <Frame BackgroundColor="{StaticResource Surface}" CornerRadius="12" Padding="0" BorderColor="Transparent">
                 <Grid ColumnDefinitions="Auto,*">
                     <Label Grid.Column="0" Text="🔍" FontSize="18" VerticalOptions="Center" Margin="12,0,0,0"/>
                     <Entry Grid.Column="1"
                            Placeholder="Tìm quán ăn..."
                            PlaceholderColor="#AAAAAA"
-                           TextColor="#333333"
+                           TextColor="{StaticResource OnSurface}"
                            BackgroundColor="Transparent"
                            Margin="8,8"/>
                 </Grid>
@@ -76,7 +76,7 @@
             <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
                 <Button Text="🚀 GPS"
                         Clicked="OnStartGpsClicked"
-                        BackgroundColor="#0F3460"
+                        BackgroundColor="{StaticResource PrimaryDark}"
                         TextColor="White"
                         CornerRadius="20"
                         HeightRequest="40"
@@ -84,7 +84,7 @@
                         FontSize="13"/>
                 <Button Text="📷 Quét QR"
                         Clicked="OnQRScanClicked"
-                        BackgroundColor="#0F3460"
+                        BackgroundColor="{StaticResource PrimaryDark}"
                         TextColor="White"
                         CornerRadius="20"
                         HeightRequest="40"
@@ -92,7 +92,7 @@
                         FontSize="13"/>
                 <Button Text="🎙️ Thuyết minh"
                         Clicked="OnNarrationClicked"
-                        BackgroundColor="#0F3460"
+                        BackgroundColor="{StaticResource PrimaryDark}"
                         TextColor="White"
                         CornerRadius="20"
                         HeightRequest="40"
@@ -119,7 +119,7 @@
                                FontSize="13"
                                TextColor="#666666"/>
                         <Label x:Name="POILabel"
-                               Text="🏛️ Chưa có POI gần đây"
+                               Text="🏛️ Chưa xác định điểm gần nhất"
                                FontSize="14"
                                FontAttributes="Bold"
                                TextColor="#E94560"/>
@@ -131,7 +131,8 @@
                        Text=""
                        FontSize="12"
                        TextColor="#AAAAAA"
-                       HorizontalOptions="Center"/>
+                       HorizontalOptions="Center"
+                       IsVisible="False"/>
 
                 <!-- Categories -->
                 <Label Text="Danh mục"
@@ -166,50 +167,49 @@
                        TextColor="#1A1A2E"/>
 
                 <!-- Place Cards -->
-                <CollectionView x:Name="PlacesCollection"
-                                SelectionMode="Single"
-                                SelectionChanged="OnPlaceSelected">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame BackgroundColor="White"
-                                   CornerRadius="12"
-                                   Padding="0"
-                                   BorderColor="#E0E0E0"
-                                   Margin="0,0,0,12">
-                                <Grid RowDefinitions="180,Auto">
-
-                                    <!-- Place Image -->
-                                    <Image Grid.Row="0"
-                                           Source="{Binding ImageUrl}"
-                                           Aspect="AspectFill"
-                                           HeightRequest="180"/>
-
-                                    <!-- Info -->
-                                    <VerticalStackLayout Grid.Row="1" Padding="12" Spacing="4">
-                                        <Label Text="{Binding Name}"
-                                               FontSize="16"
-                                               FontAttributes="Bold"
-                                               TextColor="#1A1A2E"/>
-                                        <Label Text="{Binding Description}"
-                                               FontSize="13"
-                                               TextColor="#666666"
-                                               MaxLines="2"
-                                               LineBreakMode="TailTruncation"/>
-                                        <HorizontalStackLayout Spacing="16" Margin="0,4,0,0">
-                                            <Label Text="{Binding Address, StringFormat='📍 {0}'}"
-                                                   FontSize="12"
-                                                   TextColor="#AAAAAA"/>
-                                            <Label Text="{Binding OpenTime, StringFormat='🕐 {0}'}"
-                                                   FontSize="12"
-                                                   TextColor="#AAAAAA"/>
-                                        </HorizontalStackLayout>
-                                    </VerticalStackLayout>
-
-                                </Grid>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                <CollectionView x:Name="PlacesCollection">
+    <CollectionView.ItemTemplate>
+        <DataTemplate>
+            <Frame BackgroundColor="White"
+                   CornerRadius="12"
+                   Padding="0"
+                   BorderColor="#E0E0E0"
+                   Margin="0,0,0,12">
+                
+                <!-- Thêm TapGestureRecognizer trực tiếp vào Frame -->
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPlaceTapped"/>
+                </Frame.GestureRecognizers>
+                
+                <Grid RowDefinitions="180,Auto">
+                    <Image Grid.Row="0"
+                           Source="{Binding ImageUrl}"
+                           Aspect="AspectFill"
+                           HeightRequest="180"/>
+                    <VerticalStackLayout Grid.Row="1" Padding="12" Spacing="4">
+                        <Label Text="{Binding Name}"
+                               FontSize="16"
+                               FontAttributes="Bold"
+                               TextColor="#1A1A2E"/>
+                        <Label Text="{Binding Description}"
+                               FontSize="13"
+                               TextColor="#666666"
+                               MaxLines="2"
+                               LineBreakMode="TailTruncation"/>
+                        <HorizontalStackLayout Spacing="16" Margin="0,4,0,0">
+                            <Label Text="{Binding Address, StringFormat='📍 {0}'}"
+                                   FontSize="12"
+                                   TextColor="#AAAAAA"/>
+                            <Label Text="{Binding OpenTime, StringFormat='🕐 {0}'}"
+                                   FontSize="12"
+                                   TextColor="#AAAAAA"/>
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Grid>
+            </Frame>
+        </DataTemplate>
+    </CollectionView.ItemTemplate>
+</CollectionView>
 
                 <Label x:Name="POICountLabel"
                        Text=""

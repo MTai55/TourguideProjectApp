@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Supabase;
 using TourGuideAPP.Services;
 using ZXing.Net.Maui.Controls;
-namespace TourGuideAPP;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using TourGuideAPP.Views;
+
+namespace TourGuideAPP;
 public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
@@ -27,6 +28,8 @@ public static class MauiProgram
         );
         builder.Services.AddSingleton(supabase);
         builder.Services.AddSingleton<MainPage>();
+        builder.Services.AddTransient<ToursPage>();
+        builder.Services.AddTransient<AccountPage>();
         
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<GeofenceEngine>();
@@ -37,7 +40,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AuthService>();
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<RegisterPage>();
-         builder.Services.AddTransient<AuthService>();
+        builder.Services.AddSingleton<PlaceService>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

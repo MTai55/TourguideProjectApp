@@ -8,14 +8,15 @@
     <Grid>
         <mapsui:MapControl x:Name="MyMap" />
 
-        <Frame BackgroundColor="White"
+        <Frame BackgroundColor="{StaticResource Surface}"
                VerticalOptions="End"
                Margin="10"
                Padding="10"
                CornerRadius="10">
             <Label x:Name="NearestPOILabel"
-                   Text="🏛️ Chưa có POI gần đây"
+                   Text="🏛️ Chưa xác định điểm gần nhất"
                    FontSize="14"
+                   TextColor="{StaticResource Primary}"
                    HorizontalOptions="Center" />
         </Frame>
     </Grid>

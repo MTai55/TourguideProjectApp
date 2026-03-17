@@ -44,7 +44,6 @@ public partial class LoginPage : ContentPage
 
     private async void OnRegisterTapped(object sender, EventArgs e)
     {
-        await Navigation.PushAsync(new RegisterPage(
-            Handler.MauiContext.Services.GetService<AuthService>()!));
+        await Navigation.PushAsync(new RegisterPage(_authService));
     }
 }

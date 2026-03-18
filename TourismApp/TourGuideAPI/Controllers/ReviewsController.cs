@@ -25,7 +25,8 @@ public class ReviewsController(AppDbContext db) : ControllerBase
             .Skip((page - 1) * 20).Take(20)
             .Select(r => new ReviewDto(
                 r.ReviewId, r.User!.FullName, r.User.AvatarUrl,
-                r.Rating, r.Comment, r.OwnerReply, r.CreatedAt))
+                r.Rating, r.Comment, r.OwnerReply, r.CreatedAt,
+                r.TasteRating, r.PriceRating, r.SpaceRating))
             .ToListAsync();
         return Ok(reviews);
     }
@@ -38,9 +39,18 @@ public class ReviewsController(AppDbContext db) : ControllerBase
         if (dto.Rating is < 1 or > 5)
             return BadRequest(new { message = "Rating phải từ 1–5." });
         if (await db.Reviews.AnyAsync(r => r.UserId == UserId && r.PlaceId == dto.PlaceId))
-            return Conflict(new { message = "Bạn đã đánh giá địa điểm này rồi." });
+            return Conflict(new { message = "Bạn đã đánh giá quán này rồi." });
 
-        var review = new Review { UserId = UserId, PlaceId = dto.PlaceId, Rating = dto.Rating, Comment = dto.Comment };
+        var review = new Review
+        {
+            UserId = UserId,
+            PlaceId = dto.PlaceId,
+            Rating = dto.Rating,
+            Comment = dto.Comment,
+            TasteRating = dto.TasteRating,
+            PriceRating = dto.PriceRating,
+            SpaceRating = dto.SpaceRating
+        };
         db.Reviews.Add(review);
         await db.SaveChangesAsync();
 

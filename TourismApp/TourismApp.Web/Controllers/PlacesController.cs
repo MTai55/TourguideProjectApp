@@ -9,13 +9,23 @@ public class PlacesController(ApiService api) : Controller
     private bool IsLoggedIn => HttpContext.Session.GetString("JwtToken") != null;
 
     // GET /Places
-    public async Task<IActionResult> Index(string? search, int page = 1)
+    public async Task<IActionResult> Index(
+    string? search, int page = 1,
+    string? categoryId = null,
+    string? isApproved = null,
+    string? sortBy = null)
     {
         if (!IsLoggedIn) return RedirectToAction("Login", "Auth");
-        var result = await api.GetPlacesAsync(page, search);
+
+        var result = await api.GetPlacesAsync(page, search, categoryId, isApproved, sortBy);
+
         ViewBag.Search = search;
         ViewBag.Page = page;
         ViewBag.Total = result?.Total ?? 0;
+        ViewBag.CategoryId = categoryId;
+        ViewBag.IsApproved = isApproved;
+        ViewBag.SortBy = sortBy;
+
         return View(result?.Items ?? []);
     }
 
@@ -89,5 +99,12 @@ public class PlacesController(ApiService api) : Controller
         await api.DeletePlaceAsync(id);
         TempData["Success"] = "Đã xóa địa điểm.";
         return RedirectToAction("Index");
+    }
+
+    public async Task<IActionResult> Map()
+    {
+        if (!IsLoggedIn) return RedirectToAction("Login", "Auth");
+        var result = await api.GetPlacesAsync(page: 1);
+        return View(result?.Items ?? []);
     }
 }

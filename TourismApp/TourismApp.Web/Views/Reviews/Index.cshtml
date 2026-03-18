@@ -1,8 +1,9 @@
+@using TourismApp.Web.Models
 @model List<TourismApp.Web.Models.ReviewViewModel>
 @{ ViewData["Title"] = "Đánh giá"; }
 
 <div class="d-flex align-items-center gap-2 mb-4">
-  <a href="/Places" class="btn btn-outline-secondary btn-sm">← Quay lại</a>
+  <a asp-controller="Places" asp-action="Index" class="btn btn-outline-secondary btn-sm">← Quay lại</a>
   <h4 class="fw-bold mb-0">⭐ Đánh giá của khách</h4>
 </div>
 
@@ -40,6 +41,25 @@
           </div>
         </form>
       }
+      @if (r.TasteRating.HasValue || r.PriceRating.HasValue || r.SpaceRating.HasValue) {
+          <div class="d-flex gap-3 mt-2 mb-2">
+            @if (r.TasteRating.HasValue) {
+              <small><span class="text-muted">🍽️ Vị ngon:</span>
+                <span class="text-warning">@(new string('★', r.TasteRating.Value))@(new string('☆', 5 - r.TasteRating.Value))</span>
+              </small>
+            }
+            @if (r.PriceRating.HasValue) {
+              <small><span class="text-muted">💰 Giá cả:</span>
+                <span class="text-warning">@(new string('★', r.PriceRating.Value))@(new string('☆', 5 - r.PriceRating.Value))</span>
+              </small>
+            }
+            @if (r.SpaceRating.HasValue) {
+              <small><span class="text-muted">🪑 Không gian:</span>
+                <span class="text-warning">@(new string('★', r.SpaceRating.Value))@(new string('☆', 5 - r.SpaceRating.Value))</span>
+              </small>
+            }
+          </div>
+        }
     </div>
   </div>
 } 

@@ -1,44 +1,149 @@
+@using TourismApp.Web.Models
 @model List<TourismApp.Web.Models.PlaceViewModel>
 @{ ViewData["Title"] = "Địa điểm"; }
+@{
+  var catId    = (string?)ViewBag.CategoryId ?? "";
+  var approved = (string?)ViewBag.IsApproved ?? "";
+  var sort     = (string?)ViewBag.SortBy ?? "";
+  var dist     = (string?)ViewBag.District ?? "";
+  var maxPrc   = (string?)ViewBag.MaxPrice ?? "";
+}
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h4 class="fw-bold mb-0">🏪 Quản lý Địa điểm</h4>
-  <a href="/Places/Create" class="btn btn-primary">+ Thêm địa điểm</a>
+  <div>
+    <h4 class="fw-bold mb-0">🍜 Quản lý Quán ăn</h4>
+    <small class="text-muted">Tổng @ViewBag.Total quán</small>
+  </div>
+  <a asp-controller="Places" asp-action="Create" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Thêm quán mới
+  </a>
 </div>
 
-<!-- Tìm kiếm -->
-<form method="get" class="mb-3">
-  <div class="input-group">
-    <input name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm tên, địa chỉ...">
-    <button class="btn btn-outline-secondary">Tìm</button>
-  </div>
-</form>
+<!-- Search & Filter -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body py-3">
+    <form method="get" class="row g-2 align-items-end">
 
+      <!-- Tìm kiếm -->
+      <div class="col-md-3">
+        <input name="search" value="@ViewBag.Search" class="form-control"
+               placeholder="🔍 Tên quán, món ăn...">
+      </div>
+
+      <!-- Loại hình -->
+      <div class="col-md-2">
+        <select name="categoryId" class="form-select">
+          <option value="">Tất cả loại</option>
+          <option value="1" @Html.Raw(catId=="1"?"selected":"")>🍽️ Nhà hàng</option>
+          <option value="2" @Html.Raw(catId=="2"?"selected":"")>🥢 Ăn vặt</option>
+          <option value="3" @Html.Raw(catId=="3"?"selected":"")>☕ Cà phê</option>
+          <option value="4" @Html.Raw(catId=="4"?"selected":"")>🧋 Trà sữa</option>
+          <option value="5" @Html.Raw(catId=="5"?"selected":"")>🍰 Bánh & Tráng miệng</option>
+        </select>
+      </div>
+
+      <!-- Quận -->
+      <div class="col-md-2">
+        <select name="district" class="form-select">
+          <option value="">Tất cả quận</option>
+          @foreach (var q in new[]{"Quận 1","Quận 3","Quận 4","Quận 5","Quận 10","Phú Nhuận","Bình Thạnh","Gò Vấp"}) {
+            <option value="@q" @Html.Raw(dist==q?"selected":"")>@q</option>
+          }
+        </select>
+      </div>
+
+      <!-- Giá/người -->
+      <div class="col-md-2">
+        <select name="maxPrice" class="form-select">
+          <option value="">Mọi giá</option>
+          <option value="30000"  @Html.Raw(maxPrc=="30000" ?"selected":"")>Dưới 30k</option>
+          <option value="50000"  @Html.Raw(maxPrc=="50000" ?"selected":"")>Dưới 50k</option>
+          <option value="100000" @Html.Raw(maxPrc=="100000"?"selected":"")>Dưới 100k</option>
+          <option value="200000" @Html.Raw(maxPrc=="200000"?"selected":"")>Dưới 200k</option>
+        </select>
+      </div>
+
+      <!-- Sắp xếp -->
+      <div class="col-md-2">
+        <select name="sortBy" class="form-select">
+          <option value=""           @Html.Raw(sort==""          ?"selected":"")>Sao cao nhất</option>
+          <option value="name"       @Html.Raw(sort=="name"      ?"selected":"")>Tên A-Z</option>
+          <option value="visits"     @Html.Raw(sort=="visits"    ?"selected":"")>Đông khách nhất</option>
+          <option value="price_asc"  @Html.Raw(sort=="price_asc" ?"selected":"")>Giá thấp nhất</option>
+          <option value="price_desc" @Html.Raw(sort=="price_desc"?"selected":"")>Giá cao nhất</option>
+        </select>
+      </div>
+
+      <!-- Trạng thái -->
+      <div class="col-md-1">
+        <select name="isApproved" class="form-select">
+          <option value="">Tất cả</option>
+          <option value="true"  @Html.Raw(approved=="true" ?"selected":"")>✅ Duyệt</option>
+          <option value="false" @Html.Raw(approved=="false"?"selected":"")>⏳ Chờ</option>
+        </select>
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-md-1">
+        <button class="btn btn-primary btn-sm w-100">Lọc</button>
+      </div>
+      <div class="col-12">
+        <a asp-controller="Places" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+          Xóa lọc
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Bảng danh sách -->
 <div class="card shadow-sm">
   <div class="table-responsive">
-    <table class="table table-hover mb-0">
+    <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
-        <tr><th>Tên</th><th>Địa chỉ</th><th>Danh mục</th><th>⭐</th><th>Ghé thăm</th><th>Trạng thái</th><th>Thao tác</th></tr>
+        <tr>
+          <th>Tên</th><th>Địa chỉ</th><th>Loại</th>
+          <th>Món đặc trưng</th><th>Giá/người</th>
+          <th>⭐</th><th>Ghé</th><th>Trạng thái</th><th>Thao tác</th>
+        </tr>
       </thead>
       <tbody>
+        @if (!Model.Any()) {
+          <tr><td colspan="9" class="text-center text-muted py-5">Chưa có quán nào</td></tr>
+        }
         @foreach (var p in Model) {
           <tr>
             <td><strong>@p.Name</strong></td>
             <td><small class="text-muted">@p.Address</small></td>
-            <td>@p.CategoryName</td>
-            <td>@p.AverageRating.ToString("F1")</td>
+            <td><span class="badge bg-light text-dark">@p.CategoryName</span></td>
+            <td><small class="text-muted">@p.Specialty</small></td>
+            <td>
+              @if (p.PricePerPerson.HasValue) {
+                <span class="text-success fw-semibold">~@p.PricePerPerson.Value.ToString("N0")đ</span>
+              }
+            </td>
+            <td><span class="text-warning">★</span> @p.AverageRating.ToString("F1")</td>
             <td>@p.TotalVisits</td>
             <td>
-              @if (p.IsApproved) { <span class="badge bg-success">Duyệt</span> }
-              else { <span class="badge bg-warning text-dark">Chờ</span> }
+              @if (p.IsApproved) {
+                <span class="badge bg-success-subtle text-success">Duyệt</span>
+              } else {
+                <span class="badge bg-warning-subtle text-warning">Chờ</span>
+              }
             </td>
             <td>
-              <a href="/Places/Edit/@p.PlaceId" class="btn btn-sm btn-outline-primary">✏️ Sửa</a>
-              <a href="/Reviews?placeId=@p.PlaceId" class="btn btn-sm btn-outline-info">⭐ Đánh giá</a>
-              <form method="post" action="/Places/Delete/@p.PlaceId" class="d-inline"
-                    onsubmit="return confirm('Xóa địa điểm này?')">
+              <a asp-controller="Places" asp-action="Edit" asp-route-id="@p.PlaceId"
+                 class="btn btn-sm btn-outline-primary">✏️</a>
+              <a asp-controller="Reviews" asp-action="Index" asp-route-placeId="@p.PlaceId"
+                 class="btn btn-sm btn-outline-info">⭐</a>
+              <a asp-controller="Places" asp-action="Map"
+                 class="btn btn-sm btn-outline-success">🗺️</a>
+              <form method="post" asp-controller="Places" asp-action="Delete"
+                    asp-route-id="@p.PlaceId" class="d-inline"
+                    onsubmit="return confirm('Xóa quán này?')">
                 @Html.AntiForgeryToken()
-                <button class="btn btn-sm btn-outline-danger">🗑️ Xóa</button>
+                <button class="btn btn-sm btn-outline-danger">🗑️</button>
               </form>
             </td>
           </tr>
@@ -46,4 +151,32 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination -->
+  @{
+    var totalPages  = (int)Math.Ceiling((double)ViewBag.Total / 20);
+    var currentPage = (int)(ViewBag.Page ?? 1);
+  }
+  @if (totalPages > 1) {
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+      <small class="text-muted">Trang @currentPage / @totalPages</small>
+      <nav><ul class="pagination pagination-sm mb-0">
+        @if (currentPage > 1) {
+          <li class="page-item">
+            <a class="page-link" href="?page=@(currentPage-1)&search=@ViewBag.Search&categoryId=@catId&isApproved=@approved&sortBy=@sort&district=@dist&maxPrice=@maxPrc">‹</a>
+          </li>
+        }
+        @for (int i = Math.Max(1, currentPage-2); i <= Math.Min(totalPages, currentPage+2); i++) {
+          <li class="page-item @(i==currentPage?"active":"")">
+            <a class="page-link" href="?page=@i&search=@ViewBag.Search&categoryId=@catId&isApproved=@approved&sortBy=@sort&district=@dist&maxPrice=@maxPrc">@i</a>
+          </li>
+        }
+        @if (currentPage < totalPages) {
+          <li class="page-item">
+            <a class="page-link" href="?page=@(currentPage+1)&search=@ViewBag.Search&categoryId=@catId&isApproved=@approved&sortBy=@sort&district=@dist&maxPrice=@maxPrc">›</a>
+          </li>
+        }
+      </ul></nav>
+    </div>
+  }
 </div>

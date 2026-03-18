@@ -15,7 +15,12 @@ public record PlaceDto(
     int TotalVisits,
     string? CategoryName,
     string? MainImageUrl,
-    double? DistanceKm
+    double? DistanceKm,
+    string? Specialty,
+    int? PricePerPerson,
+    string? District,
+    bool HasParking,
+    bool HasAircon
 );
 
 public record CreatePlaceDto(
@@ -29,7 +34,12 @@ public record CreatePlaceDto(
     string? CloseTime,
     int? CategoryId,
     decimal? PriceMin,
-    decimal? PriceMax
+    decimal? PriceMax,
+    string? Specialty,
+    int? PricePerPerson,
+    string? District,
+    bool HasParking = false,
+    bool HasAircon = false
 );
 
 public record NearbyQueryDto(

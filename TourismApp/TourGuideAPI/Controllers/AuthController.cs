@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TourGuideAPI.DTOs.Auth;
 using TourGuideAPI.Services;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace TourGuideAPI.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[EnableRateLimiting("auth")]
 public class AuthController(IAuthService auth) : ControllerBase
 {
     // POST /api/auth/register
@@ -27,7 +29,26 @@ public class AuthController(IAuthService auth) : ControllerBase
         var result = await auth.LoginAsync(dto);
         if (result == null)
             return Unauthorized(new { message = "Email hoặc mật khẩu không đúng." });
+        return Ok(result); ;
+    }
+
+    // POST /api/auth/refresh
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto dto)
+    {
+        var result = await auth.RefreshAsync(dto.RefreshToken);
+        if (result == null)
+            return Unauthorized(new { message = "Refresh token không hợp lệ hoặc đã hết hạn." });
         return Ok(result);
+    }
+
+    // POST /api/auth/revoke  [Authorize]
+    [HttpPost("revoke")]
+    [Authorize]
+    public async Task<IActionResult> Revoke([FromBody] RefreshTokenRequestDto dto)
+    {
+        await auth.RevokeAsync(dto.RefreshToken);
+        return Ok(new { revoked = true });
     }
 
     // GET /api/auth/me  (yêu cầu đăng nhập)

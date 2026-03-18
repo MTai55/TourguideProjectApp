@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserTracking> UserTracking { get; set; }
     public DbSet<VisitHistory> VisitHistory { get; set; }
     public DbSet<Review> Reviews { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -30,6 +31,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         mb.Entity<Place>(e => {
             e.ToTable("Places");
             e.HasKey(p => p.PlaceId);
+            e.Property(p => p.Specialty).HasMaxLength(500);
+            e.Property(p => p.District).HasMaxLength(50);
             e.HasOne(p => p.Owner)
              .WithMany(u => u.OwnedPlaces)
              .HasForeignKey(p => p.OwnerId)
@@ -69,6 +72,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasKey(r => r.ReviewId);
             e.HasIndex(r => new { r.UserId, r.PlaceId }).IsUnique();
             e.Property(r => r.Rating).HasColumnType("smallint");
+            e.Property(r => r.TasteRating).HasColumnType("smallint");
+            e.Property(r => r.PriceRating).HasColumnType("smallint");
+            e.Property(r => r.SpaceRating).HasColumnType("smallint");
             e.HasOne(r => r.User)
              .WithMany(u => u.Reviews)
              .HasForeignKey(r => r.UserId)
@@ -79,13 +85,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
              .OnDelete(DeleteBehavior.Restrict);
         });
 
+        mb.Entity<RefreshToken>(e => {
+            e.ToTable("RefreshTokens");
+            e.HasKey(t => t.Id);
+            e.HasIndex(t => t.Token).IsUnique();
+            e.HasOne(t => t.User)
+             .WithMany()
+             .HasForeignKey(t => t.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
         mb.Entity<Category>().HasData(
-            new Category { CategoryId = 1, Name = "Nhà hàng", Icon = "🍜", ColorHex = "#FF5733" },
-            new Category { CategoryId = 2, Name = "Cà phê", Icon = "☕", ColorHex = "#8B4513" },
-            new Category { CategoryId = 3, Name = "Khách sạn", Icon = "🏨", ColorHex = "#2196F3" },
-            new Category { CategoryId = 4, Name = "Tham quan", Icon = "🏛️", ColorHex = "#4CAF50" },
-            new Category { CategoryId = 5, Name = "Vui chơi", Icon = "🎡", ColorHex = "#9C27B0" },
-            new Category { CategoryId = 6, Name = "Mua sắm", Icon = "🛍️", ColorHex = "#FF9800" }
+            new Category { CategoryId = 1, Name = "Nhà hàng", Icon = "🍽️", ColorHex = "#ef4444" },
+            new Category { CategoryId = 2, Name = "Quán ăn vặt", Icon = "🥢", ColorHex = "#f97316" },
+            new Category { CategoryId = 3, Name = "Cà phê", Icon = "☕", ColorHex = "#8b5cf6" },
+            new Category { CategoryId = 4, Name = "Trà sữa & Đồ uống", Icon = "🧋", ColorHex = "#ec4899" },
+            new Category { CategoryId = 5, Name = "Bánh & Tráng miệng", Icon = "🍰", ColorHex = "#eab308" }
         );
     }
 }

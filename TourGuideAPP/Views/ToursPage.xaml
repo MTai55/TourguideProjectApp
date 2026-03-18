@@ -4,7 +4,7 @@
              x:Class="TourGuideAPP.Views.ToursPage"
              Title="Tour">
 
-    <Grid RowDefinitions="Auto,*" Padding="16">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16">
         <!-- Header -->
         <Border BackgroundColor="{StaticResource Surface}"
                 Stroke="{StaticResource Gray100}"
@@ -39,8 +39,70 @@
             </VerticalStackLayout>
         </Border>
 
+        <!-- Filters -->
+        <Border Grid.Row="1"
+                x:Name="FilterPanel"
+                IsVisible="False"
+                BackgroundColor="{StaticResource Surface}"
+                Stroke="{StaticResource Gray100}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 16"
+                Padding="16"
+                Margin="0,0,0,12">
+            <VerticalStackLayout Spacing="12">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                        <Label Text="Thời gian"
+                               FontSize="12"
+                               TextColor="{StaticResource Muted}" />
+                        <Picker x:Name="DurationPicker"
+                                Title="Chọn thời gian" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1" Spacing="6">
+                        <Label Text="Ngân sách tối đa (mỗi người)"
+                               FontSize="12"
+                               TextColor="{StaticResource Muted}" />
+                        <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                            <Slider x:Name="BudgetSlider"
+                                    Minimum="50"
+                                    Maximum="500"
+                                    Value="200"
+                                    ValueChanged="OnBudgetChanged"
+                                    HorizontalOptions="FillAndExpand" />
+                            <Label x:Name="BudgetValueLabel"
+                                   Text="200k"
+                                   FontSize="12"
+                                   TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout Grid.Column="0" Spacing="6">
+                        <Label Text="Ưu tiên"
+                               FontSize="12"
+                               TextColor="{StaticResource Muted}" />
+                        <HorizontalStackLayout Spacing="12" VerticalOptions="Center">
+                            <Label Text="Đi bộ ít"
+                                   FontSize="13"
+                                   TextColor="{StaticResource OnSurface}" />
+                            <Switch x:Name="LowWalkingSwitch" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1"
+                            Text="Áp dụng"
+                            BackgroundColor="{StaticResource Tertiary}"
+                            TextColor="White"
+                            CornerRadius="14"
+                            Padding="16,10"
+                            Clicked="OnApplyFiltersClicked" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+
         <!-- List -->
-        <CollectionView Grid.Row="1"
+        <CollectionView Grid.Row="2"
                         x:Name="ToursCollection"
                         ItemsSource="{Binding Tours}"
                         SelectionMode="None">
@@ -85,6 +147,9 @@
                                        FontSize="12"
                                        TextColor="{StaticResource Muted}" />
                                 <Label Text="{Binding BudgetText, StringFormat='💰 {0}'}"
+                                       FontSize="12"
+                                       TextColor="{StaticResource Muted}" />
+                                <Label Text="{Binding StopsText}"
                                        FontSize="12"
                                        TextColor="{StaticResource Muted}" />
                             </HorizontalStackLayout>

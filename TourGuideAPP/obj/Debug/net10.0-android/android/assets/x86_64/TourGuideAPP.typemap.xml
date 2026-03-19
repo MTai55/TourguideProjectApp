@@ -1,4 +1,4 @@
-<api type="debug" assembly-name="TourGuideAPP" mvid="4bd12fbd75314b109d7797872b234ca0">
+<api type="debug" assembly-name="TourGuideAPP" mvid="d2849d504da84f95a24149f1072bfbb3">
   <java-to-managed>
     <entry java-name="crc641e4bd3b8957cb754/MainActivity" managed-name="TourGuideAPP.MainActivity, TourGuideAPP" managed-type-token-id="33554442" />
     <entry java-name="crc641e4bd3b8957cb754/MainApplication" managed-name="TourGuideAPP.MainApplication, TourGuideAPP" managed-type-token-id="33554443" />

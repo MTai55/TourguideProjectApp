@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="maccatalyst-x64">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/TourGuideAPP/bin/Debug/net10.0-maccatalyst/maccatalyst-x64/libHarfBuzzSharp.framework.zip!/" />
+      <root url="jar://$PROJECT_DIR$/TourGuideAPP/bin/Debug/net10.0-maccatalyst/maccatalyst-x64/libSkiaSharp.framework.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

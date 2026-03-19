@@ -1,0 +1,76 @@
+@model List<TourismApp.Web.Models.UserViewModel>
+@{ ViewData["Title"] = "Quản lý Users"; }
+
+<h4 class="fw-bold mb-4">👥 Quản lý Tài khoản</h4>
+
+<div class="card shadow-sm mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2">
+      <div class="col-md-4">
+        <input name="search" value="@ViewBag.Search" class="form-control"
+               placeholder="Tìm email, tên...">
+      </div>
+      <div class="col-md-2">
+        <select name="role" class="form-select">
+          <option value="">Tất cả role</option>
+          <option value="Admin">Admin</option>
+          <option value="Owner">Chủ quán</option>
+          <option value="User">Người dùng</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-primary">Tìm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr>
+        <th>Tên</th><th>Email</th><th>SĐT</th><th>Role</th><th>Trạng thái</th><th>Thao tác</th>
+      </tr></thead>
+      <tbody>
+        @foreach (var u in Model) {
+          <tr>
+            <td><strong>@u.FullName</strong></td>
+            <td>@u.Email</td>
+            <td>@u.Phone</td>
+            <td>
+              @switch(u.Role) {
+                case "Admin": <span class="badge bg-purple" style="background:#7c3aed">Admin</span>; break;
+                case "Owner": <span class="badge bg-success">Chủ quán</span>; break;
+                default:      <span class="badge bg-secondary">User</span>; break;
+              }
+            </td>
+            <td>
+              @if (u.IsActive) { <span class="badge bg-success-subtle text-success">Hoạt động</span> }
+              else { <span class="badge bg-danger-subtle text-danger">Đã khóa</span> }
+            </td>
+            <td>
+              <!-- Khóa/Mở khóa -->
+              <form method="post" asp-action="ToggleLock" asp-route-id="@u.UserId" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button class="btn btn-sm @(u.IsActive?"btn-outline-danger":"btn-outline-success")">
+                  @(u.IsActive ? "🔒 Khóa" : "🔓 Mở")
+                </button>
+              </form>
+              <!-- Đổi role -->
+              <form method="post" asp-action="ChangeRole" class="d-inline ms-1">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@u.UserId">
+                <select name="role" class="form-select form-select-sm d-inline w-auto"
+                        onchange="this.form.submit()">
+                  <option value="User"  @Html.Raw(u.Role=="User" ?"selected":"")>User</option>
+                  <option value="Owner" @Html.Raw(u.Role=="Owner"?"selected":"")>Owner</option>
+                  <option value="Admin" @Html.Raw(u.Role=="Admin"?"selected":"")>Admin</option>
+                </select>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

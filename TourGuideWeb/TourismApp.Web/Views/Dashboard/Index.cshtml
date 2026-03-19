@@ -1,0 +1,170 @@
+@using TourismApp.Web.Models
+@model TourismApp.Web.Models.DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; }
+
+<!-- Stat Cards (Tổng quan hệ thống) -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card stat-card p-4">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small mb-1">Tổng quán ăn</div>
+          <div class="fs-2 fw-bold">@Model?.TotalPlaces</div>
+        </div>
+        <div class="icon bg-primary bg-opacity-10 text-primary">🏪</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-4">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small mb-1">Quán đang hoạt động</div>
+          <div class="fs-2 fw-bold text-success">@Model?.ApprovedPlaces</div>
+        </div>
+        <div class="icon bg-success bg-opacity-10 text-success">✅</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-4">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small mb-1">Lượt ghé (30 ngày)</div>
+          <div class="fs-2 fw-bold text-warning">@Model?.TotalVisitsThisMonth</div>
+        </div>
+        <div class="icon bg-warning bg-opacity-10 text-warning">📍</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card p-4">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="text-muted small mb-1">Đánh giá TB</div>
+          <div class="fs-2 fw-bold text-danger">⭐ @Model?.AvgRating.ToString("F1")</div>
+        </div>
+        <div class="icon bg-danger bg-opacity-10 text-danger">⭐</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard chủ quán -->
+<h4 class="fw-bold mb-4">🍜 Quán của tôi</h4>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card p-4 border-0 shadow-sm">
+      <div class="text-muted small">Số quán của tôi</div>
+      <div class="fs-2 fw-bold text-primary">@Model?.TotalPlaces</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-4 border-0 shadow-sm">
+      <div class="text-muted small">Quán đang hoạt động</div>
+      <div class="fs-2 fw-bold text-success">@Model?.ApprovedPlaces</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-4 border-0 shadow-sm">
+      <div class="text-muted small">Lượt ghé (30 ngày)</div>
+      <div class="fs-2 fw-bold text-warning">@Model?.TotalVisitsThisMonth</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card p-4 border-0 shadow-sm">
+      <div class="text-muted small">Đánh giá TB</div>
+      <div class="fs-2 fw-bold text-danger">⭐ @Model?.AvgRating.ToString("F1")</div>
+    </div>
+  </div>
+</div>
+
+<!-- Quán chờ duyệt -->
+@if (Model?.Places?.Any(p => !p.IsApproved) == true) {
+  <div class="alert alert-warning">
+    <i class="bi bi-clock me-2"></i>
+    Bạn có @Model.Places.Count(p => !p.IsApproved) quán đang chờ Admin duyệt.
+  </div>
+}
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="card shadow-sm p-4">
+      <h6 class="fw-bold mb-3">📈 Lượt ghé thăm 7 ngày gần nhất</h6>
+      <canvas id="visitsChart" height="100"></canvas>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card shadow-sm p-4">
+      <h6 class="fw-bold mb-3">🏷️ Phân loại quán ăn</h6>
+      <canvas id="categoryChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Bảng địa điểm -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+    <h6 class="mb-0 fw-bold">🍜 Quán ăn của bạn</h6>
+    <a href="/Places" class="btn btn-outline-primary btn-sm">Xem tất cả →</a>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Tên</th><th>Địa chỉ</th><th>⭐</th><th>Ghé</th><th>Trạng thái</th><th></th></tr>
+      </thead>
+      <tbody>
+        @foreach (var p in Model?.Places ?? []) {
+          <tr>
+            <td><strong>@p.Name</strong></td>
+            <td><small class="text-muted">@p.Address</small></td>
+            <td><span class="text-warning">★</span> @p.AverageRating.ToString("F1")</td>
+            <td>@p.TotalVisits</td>
+            <td>
+              @if (p.IsApproved) { <span class="badge bg-success-subtle text-success">Quán đang hoạt động</span> }
+              else { <span class="badge bg-warning-subtle text-warning">Chờ duyệt</span> }
+            </td>
+            <td>
+              <a href="/Places/Edit/@p.PlaceId" class="btn btn-sm btn-outline-primary">Sửa</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Biểu đồ lượt ghé thăm 7 ngày
+new Chart(document.getElementById('visitsChart'), {
+  type: 'line',
+  data: {
+    labels: ['T2','T3','T4','T5','T6','T7','CN'],
+    datasets: [{
+      label: 'Lượt ghé',
+      data: [12,19,8,25,22,30,18],
+      borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)',
+      tension: 0.4, fill: true
+    }]
+  },
+  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+});
+
+// Biểu đồ danh mục
+new Chart(document.getElementById('categoryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Nhà hàng','Ăn vặt','Cà phê','Trà sữa','Bánh & TM'],
+    datasets: [{
+      data: [10,15,8,12,5], // dữ liệu mẫu
+      backgroundColor: ['#ef4444','#f97316','#8b5cf6','#ec4899','#eab308']
+    }]
+  },
+  options: { plugins: { legend: { position: 'bottom' } } }
+});
+</script>
+}

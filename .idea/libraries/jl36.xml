@@ -1,8 +1,9 @@
 <component name="libraryTable">
   <library name="jl36">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/TourGuideAPP/obj/Debug/net10.0-android/lp/153/jl/classes.jar!/" />
-      <root url="jar://$PROJECT_DIR$/TourGuideAPP/obj/Debug/net10.0-android/lp/153/jl/res.zip!/" />
+      <root url="jar://$PROJECT_DIR$/csharp/TourGuideAPP/obj/Debug/net10.0-android/lp/135/jl/res.zip!/" />
+      <root url="jar://$PROJECT_DIR$/csharp/TourGuideAPP/obj/Debug/net10.0-android/lp/135/jl/annotations.zip!/" />
+      <root url="jar://$PROJECT_DIR$/csharp/TourGuideAPP/obj/Debug/net10.0-android/lp/135/jl/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

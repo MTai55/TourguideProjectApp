@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TourGuideProjectApp.iml" filepath="$PROJECT_DIR$/TourGuideProjectApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/c# project.iml" filepath="$PROJECT_DIR$/c# project.iml" />
     </modules>
   </component>
 </project>

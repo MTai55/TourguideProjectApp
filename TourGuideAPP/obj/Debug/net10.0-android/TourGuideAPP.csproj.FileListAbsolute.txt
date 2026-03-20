@@ -1214,7 +1214,6 @@ D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\assets\x86_6
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\assets\x86_64\_Microsoft.Android.Resource.Designer.jlo.xml
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\assets\x86_64\_Microsoft.Android.Resource.Designer.typemap.xml
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\__environment__.txt
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\typemaps.x86_64.ll
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\AndroidManifest.xml
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\AndroidManifest.xml
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\src\mono\MonoRuntimeProvider.java
@@ -1222,8 +1221,6 @@ D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\src\mono\Jav
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\assets\machine.config
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\bin\mono.android.jar
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\static.flag
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\environment.x86_64.ll
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\marshal_methods.x86_64.ll
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\src\androidx\activity\ktx\R.java
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\src\androidx\activity\R.java
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\src\androidx\annotation\experimental\R.java
@@ -1588,13 +1585,6 @@ D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\assets\OpenSans-Semi
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\bin\packaged_resources
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\src\com\companyname\tourguideapp\R.java
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\_CompileJava.FileList.txt
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\compressed_assemblies.x86_64.ll
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\typemaps.x86_64.o
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\environment.x86_64.o
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\compressed_assemblies.x86_64.o
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\marshal_methods.x86_64.o
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\jni_remap.x86_64.o
-D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\app_shared_libraries\x86_64\libxamarin-app.so
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\bin\classes.dex
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\bin\classes2.dex
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\stamp\_CleanIntermediateIfNeeded.stamp
@@ -1961,6 +1951,16 @@ D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\resizetizer\r\drawab
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\resizetizer\r\drawable-xxxhdpi\icon_map.png
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\resizetizer\r\drawable-xxxhdpi\icon_tour.png
 D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\resizetizer\r\drawable-xxxhdpi\icon_trending.png
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\typemaps.x86_64.ll
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\environment.x86_64.ll
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\marshal_methods.x86_64.ll
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\compressed_assemblies.x86_64.ll
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\typemaps.x86_64.o
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\environment.x86_64.o
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\compressed_assemblies.x86_64.o
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\marshal_methods.x86_64.o
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\android\jni_remap.x86_64.o
+D:\c# project\csharp\TourGuideAPP\obj\Debug\net10.0-android\app_shared_libraries\x86_64\libxamarin-app.so
 C:\Users\diemc\OneDrive\Documents\Code\C#\TourGuideProjectApp\TourGuideApp\bin\Debug\net10.0-android\TourGuideAPP.runtimeconfig.json
 C:\Users\diemc\OneDrive\Documents\Code\C#\TourGuideProjectApp\TourGuideApp\bin\Debug\net10.0-android\TourGuideAPP.dll
 C:\Users\diemc\OneDrive\Documents\Code\C#\TourGuideProjectApp\TourGuideApp\bin\Debug\net10.0-android\TourGuideAPP.pdb

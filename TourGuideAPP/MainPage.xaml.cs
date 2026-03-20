@@ -14,11 +14,13 @@ public partial class MainPage : ContentPage
     private readonly NarrationService _narrationService;
     private readonly AuthService _authService;
     private readonly PlaceService _placeService;
+    private readonly UserProfileService _profileService;
     private string? _lastSpokenPOIId;
 
     public MainPage(Supabase.Client supabase, LocationService locationService,
                     GeofenceEngine geofenceEngine, POIService poiService,
-                    NarrationService narrationService, AuthService authService, PlaceService placeService)
+                    NarrationService narrationService, AuthService authService, PlaceService placeService,
+                    UserProfileService profileService)
     {
         InitializeComponent();
         _supabase = supabase;
@@ -28,6 +30,7 @@ public partial class MainPage : ContentPage
         _narrationService = narrationService;
         _authService = authService;
         _placeService = placeService;
+        _profileService = profileService;
     }
 
     protected override async void OnAppearing()
@@ -61,11 +64,18 @@ public partial class MainPage : ContentPage
             StatusLabel.IsVisible = true;
         }
     }
-        private async Task LoadPlaces()
-        {
-            var places = await _placeService.GetAllPlacesAsync();
-            PlacesCollection.ItemsSource = places;
-        }
+       private async Task LoadPlaces()
+{
+    var places = await _placeService.GetAllPlacesAsync();
+    
+    // Đảm bảo cập nhật UI trên main thread
+    MainThread.BeginInvokeOnMainThread(() =>
+    {
+        PlacesCollection.ItemsSource = null; // Reset trước
+        PlacesCollection.ItemsSource = places;
+        Console.WriteLine($"✅ Set ItemsSource: {places.Count} items");
+    });
+}
     private async Task LoadPOIs()
     {
         var pois = await _poiService.GetAllPOIsAsync();
@@ -76,7 +86,7 @@ public partial class MainPage : ContentPage
     {
         if (!_authService.IsLoggedIn)
         {
-             await Navigation.PushAsync(new LoginPage(_authService));
+             await Shell.Current.GoToAsync("//LoginPage");
             return;
         }
 
@@ -110,8 +120,14 @@ public partial class MainPage : ContentPage
 
             private async void OnMapClicked(object sender, EventArgs e)
             {
-                await Navigation.PushAsync(new MapPage(
-                    _locationService, _poiService, _geofenceEngine, _narrationService));
+                if (Shell.Current is AppShell appShell)
+                {
+                    appShell.ActivateMapTab();
+                }
+                else
+                {
+                    await Shell.Current.GoToAsync("//MainTabs/MapPage");
+                }
             }
             // Khi user bấm vào 1 địa điểm trong danh sách
        // Xử lý khi user bấm vào card địa điểm
@@ -125,7 +141,8 @@ public partial class MainPage : ContentPage
                         _locationService,
                         _poiService,
                         _geofenceEngine,
-                        _narrationService));
+                        _narrationService,
+                        _profileService));
             }
 
     private async void OnQRScanClicked(object sender, EventArgs e)
@@ -135,13 +152,14 @@ public partial class MainPage : ContentPage
            await Shell.Current.GoToAsync("//LoginPage");
             return;
         }
-        await Navigation.PushAsync(new QRScanPage(_narrationService));
+        await Navigation.PushAsync(new QRScanPage(_narrationService, _profileService, _placeService));
     }
 
     private async void OnLogoutClicked(object sender, EventArgs e)
     {
         await _authService.LogoutAsync();
-        await Shell.Current.GoToAsync("//LoginPage");
+        UpdateAuthUI();
+        StatusLabel.Text = "❌ Đã đăng xuất. Vui lòng đăng nhập để dùng thêm chức năng";
     }
     private async void OnLoginClicked(object sender, EventArgs e)
 {

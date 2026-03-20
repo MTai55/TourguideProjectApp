@@ -110,13 +110,16 @@ public partial class ToursPage : ContentPage
         var geofenceEngine = sp?.GetService<GeofenceEngine>();
         var narrationService = sp?.GetService<NarrationService>();
 
-        if (locationService is null || poiService is null || geofenceEngine is null || narrationService is null)
+        var profileService = sp?.GetService<UserProfileService>();
+        var authService = sp?.GetService<AuthService>();
+
+        if (locationService is null || poiService is null || geofenceEngine is null || narrationService is null || profileService is null || authService is null)
         {
             await DisplayAlertAsync("Thiếu dịch vụ", "Không khởi tạo được các dịch vụ để mở tour chi tiết.", "OK");
             return;
         }
 
-        await Navigation.PushAsync(new TourDetailPage(selected, locationService, poiService, geofenceEngine, narrationService));
+        await Navigation.PushAsync(new TourDetailPage(selected, locationService, poiService, geofenceEngine, narrationService, profileService, authService));
     }
 
     private void RebuildTours()

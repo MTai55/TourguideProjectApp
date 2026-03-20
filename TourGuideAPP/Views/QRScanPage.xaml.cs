@@ -6,12 +6,16 @@ namespace TourGuideAPP.Views;
 public partial class QRScanPage : ContentPage
 {
     private readonly NarrationService _narrationService;
+    private readonly UserProfileService _profileService;
+    private readonly PlaceService _placeService;
     private bool _isProcessing = false;
 
-    public QRScanPage(NarrationService narrationService)
+    public QRScanPage(NarrationService narrationService, UserProfileService profileService, PlaceService placeService)
     {
         InitializeComponent();
         _narrationService = narrationService;
+        _profileService = profileService;
+        _placeService = placeService;
     }
 
     protected override async void OnAppearing()
@@ -48,6 +52,25 @@ public partial class QRScanPage : ContentPage
             BarcodeReader.IsDetecting = false;
             ResultLabel.Text = $"✅ Đã quét: {text}";
             await _narrationService.SpeakAsync(text);
+
+            // QR code có thể là ID place (số) hoặc đường dẫn/chuỗi dữ liệu.
+            if (int.TryParse(text, out var placeId))
+            {
+                var place = _placeService.GetCachedPlaces().FirstOrDefault(p => p.PlaceId == placeId);
+                if (place != null)
+                {
+                    await _profileService.AddHistoryByQRAsync(place);
+                    await DisplayAlert("Check-in QR", $"Đã ghi nhận bạn đã đến {place.Name} qua QR code", "OK");
+                }
+                else
+                {
+                    await DisplayAlert("QR không hợp lệ", "Không tìm thấy địa điểm với mã QR này", "OK");
+                }
+            }
+            else
+            {
+                await DisplayAlert("QR đã quét", "Mã QR không chứa placeId, chỉ ghi nhận raw text", "OK");
+            }
 
             await Task.Delay(3000);
             BarcodeReader.IsDetecting = true;

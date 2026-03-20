@@ -60,7 +60,23 @@ public class Place : BaseModel
     [Column("OwnerId")]
     public int? OwnerId { get; set; }
 
-    // Dùng để hiển thị UI
+    // Cột mới bạn của bạn thêm vào
+    [Column("Specialty")]
+    public string? Specialty { get; set; }
+
+    [Column("PricePerPerson")]
+    public int? PricePerPerson { get; set; }
+
+    [Column("District")]
+    public string? District { get; set; }
+
+    [Column("HasParking")]
+    public bool? HasParking { get; set; }
+
+    [Column("HasAircon")]
+    public bool? HasAircon { get; set; }
+
+    // Dùng để hiển thị UI — không map với DB
     public string ImageUrl { get; set; } = "https://via.placeholder.com/400x200";
     public string OpenTimeDisplay => OpenTime != null ? $"{OpenTime} - {CloseTime}" : "Chưa cập nhật";
     public string RatingDisplay => AverageRating.HasValue ? $"⭐ {AverageRating:F1}" : "Chưa có đánh giá";

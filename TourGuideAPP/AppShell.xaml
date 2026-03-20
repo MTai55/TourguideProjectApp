@@ -5,9 +5,25 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:TourGuideAPP"
     xmlns:views="clr-namespace:TourGuideAPP.Views"
-    Title="TourGuideAPP">
+    Title="TourGuideAPP"
+    Shell.TabBarBackgroundColor="White"
+    Shell.TabBarForegroundColor="#FF5722"
+    Shell.TabBarUnselectedColor="#A36765"
+    Shell.TabBarTitleColor="#FF5722"
+    BackgroundColor="#FFEBE6">
 
-    <!-- Bottom tab bar (4 utilities) -->
+    <Shell.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Shell" ApplyToDerivedTypes="True">
+                <Setter Property="Shell.TabBarBackgroundColor" Value="White"/>
+                <Setter Property="Shell.TabBarForegroundColor" Value="#FF5722"/>
+                <Setter Property="Shell.TabBarUnselectedColor" Value="#A36765"/>
+                <Setter Property="Shell.TabBarTitleColor" Value="#FF5722"/>
+                <Setter Property="Shell.BackgroundColor" Value="#FFEBE6"/>
+            </Style>
+        </ResourceDictionary>
+    </Shell.Resources>
+
     <TabBar Route="MainTabs">
         <ShellContent
             Title="Tour"
@@ -34,7 +50,6 @@
             ContentTemplate="{DataTemplate views:AccountPage}" />
     </TabBar>
 
-    <!-- Auth pages (still navigable) -->
     <ShellContent
         Title="Login"
         ContentTemplate="{DataTemplate views:LoginPage}"

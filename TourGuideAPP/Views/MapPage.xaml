@@ -13,11 +13,19 @@
                Margin="10"
                Padding="10"
                CornerRadius="10">
-            <Label x:Name="NearestPOILabel"
-                   Text="🏛️ Chưa xác định điểm gần nhất"
-                   FontSize="14"
-                   TextColor="{StaticResource Primary}"
-                   HorizontalOptions="Center" />
+            <VerticalStackLayout>
+                <Label x:Name="NearestPOILabel"
+                       Text="🏛️ Chưa xác định điểm gần nhất"
+                       FontSize="14"
+                       TextColor="{StaticResource Primary}"
+                       HorizontalOptions="Center" />
+                <Button Text="✔️ Check-in chỗ gần nhất"
+                        Clicked="OnNearestCheckInClicked"
+                        BackgroundColor="#4CAF50"
+                        TextColor="White"
+                        CornerRadius="14"
+                        FontSize="12"/>
+            </VerticalStackLayout>
         </Frame>
     </Grid>
 

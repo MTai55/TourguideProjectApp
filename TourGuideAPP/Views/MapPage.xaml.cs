@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
+using TourGuideAPP.Data.Models;
 using TourGuideAPP.Services;
 
 namespace TourGuideAPP.Views;
@@ -16,24 +17,31 @@ public partial class MapPage : ContentPage
     private readonly POIService _poiService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
+    private readonly UserProfileService _profileService;
+    private readonly AuthService _authService;
     private string? _lastSpokenPOIId;
-    private readonly (double lat, double lon, string? name)? _destination;
+    private POI? _nearestPoi;
+    private (double lat, double lon, string? name)? _destination;
     private readonly HttpClient _http = new();
 
     public MapPage(LocationService locationService, POIService poiService,
-                   GeofenceEngine geofenceEngine, NarrationService narrationService)
+                   GeofenceEngine geofenceEngine, NarrationService narrationService,
+                   UserProfileService profileService, AuthService authService)
     {
         InitializeComponent();
         _locationService = locationService;
         _poiService = poiService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
+        _profileService = profileService;
+        _authService = authService;
     }
 
     public MapPage(LocationService locationService, POIService poiService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
+                   UserProfileService profileService, AuthService authService,
                    double destinationLat, double destinationLon, string? destinationName = null)
-        : this(locationService, poiService, geofenceEngine, narrationService)
+        : this(locationService, poiService, geofenceEngine, narrationService, profileService, authService)
     {
         _destination = (destinationLat, destinationLon, destinationName);
     }
@@ -103,7 +111,8 @@ public partial class MapPage : ContentPage
 
                 if (nearest != null)
                 {
-                    NearestPOILabel.Text = $"🏛️ Gần: {nearest.Name}";
+                    _nearestPoi = nearest;
+                    NearestPOILabel.Text = $"🏛️ Gần: {nearest.Name} ({GetDistanceMeters(location.Latitude, location.Longitude, nearest.Latitude, nearest.Longitude):F0}m)";
                     if (_lastSpokenPOIId != nearest.Id)
                     {
                         _lastSpokenPOIId = nearest.Id;
@@ -113,11 +122,59 @@ public partial class MapPage : ContentPage
                 }
                 else
                 {
+                    _nearestPoi = null;
                     NearestPOILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
                     _lastSpokenPOIId = null;
                 }
             });
         };
+    }
+
+    private async void OnNearestCheckInClicked(object sender, EventArgs e)
+    {
+        if (!_authService.IsLoggedIn)
+        {
+            await Shell.Current.GoToAsync("//LoginPage");
+            return;
+        }
+
+        if (_nearestPoi is null)
+        {
+            await DisplayAlert("Không có điểm", "Không xác định được địa điểm gần nhất để check-in.", "OK");
+            return;
+        }
+
+        var current = _locationService.LastKnownLocation;
+        if (current is null)
+        {
+            await DisplayAlert("Lỗi GPS", "Chưa có vị trí GPS. Vui lòng bật GPS.", "OK");
+            return;
+        }
+
+        var distance = GetDistanceMeters(current.Latitude, current.Longitude, _nearestPoi.Latitude, _nearestPoi.Longitude);
+        if (distance <= 100)
+        {
+            await _profileService.AddHistoryByGpsAsync(_nearestPoi);
+            await DisplayAlert("Check-in thành công", $"Đã ghi lịch sử đến {_nearestPoi.Name} (GPS).", "OK");
+        }
+        else
+        {
+            await DisplayAlert("Chưa đến gần", $"Khoảng cách còn {distance:F0}m. Hãy đến gần hơn để check-in.", "OK");
+        }
+    }
+
+    private static double GetDistanceMeters(double lat1, double lon1, double lat2, double lon2)
+    {
+        static double ToRad(double deg) => deg * Math.PI / 180;
+
+        var R = 6371000;
+        var dLat = ToRad(lat2 - lat1);
+        var dLon = ToRad(lon2 - lon1);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
+                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        return R * c;
     }
 
     private async Task ShowRouteToDestinationAsync((double lat, double lon, string? name) destination)

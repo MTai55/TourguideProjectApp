@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TourGuideAPP.Views.TripHistoryPage"
+             Title="Lịch sử hành trình">
+
+    <VerticalStackLayout Padding="16" Spacing="12">
+        <Label Text="Lịch sử đã đi" FontSize="20" FontAttributes="Bold"/>
+        <CollectionView x:Name="HistoryCollection" SelectionMode="None" EmptyView="Chưa có lịch sử">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BorderColor="Gray" CornerRadius="12" Padding="10" Margin="0,0,0,8">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Name}" FontAttributes="Bold"/>
+                            <Label Text="{Binding Address}" FontSize="12" TextColor="Gray"/>
+                            <Label Text="{Binding VisitedAt, StringFormat='{0:G}'}" FontSize="12" TextColor="Gray"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Button Text="Xóa toàn bộ" Clicked="OnClearAllClicked" BackgroundColor="#E94560" TextColor="White"/>
+    </VerticalStackLayout>
+</ContentPage>

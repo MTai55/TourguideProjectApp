@@ -49,6 +49,8 @@ public class AuthService
             return false;
         }
     }
+    // Lấy email của user đang đăng nhập
+    public string? CurrentUserEmail => _supabase.Auth.CurrentUser?.Email;
 
     public async Task LogoutAsync()
     {

@@ -27,9 +27,14 @@ public static class MauiProgram
             Constants.SupabaseKey
         );
         builder.Services.AddSingleton(supabase);
-        builder.Services.AddSingleton<MainPage>();
+        // Đổi từ Singleton sang Transient để OnAppearing luôn được gọi
+        builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<ToursPage>();
         builder.Services.AddTransient<AccountPage>();
+        builder.Services.AddTransient<FavoritesPage>();
+        builder.Services.AddTransient<TripHistoryPage>();
+        builder.Services.AddTransient<NotesPage>();
+        builder.Services.AddTransient<WishlistPage>();
         
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<GeofenceEngine>();
@@ -38,9 +43,12 @@ public static class MauiProgram
         builder.Services.AddTransient<MapPage>();
         builder.Services.AddTransient<QRScanPage>();
         builder.Services.AddSingleton<AuthService>();
+        builder.Services.AddSingleton<UserProfileService>();
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<RegisterPage>();
         builder.Services.AddSingleton<PlaceService>();
+        builder.Services.AddSingleton<FavoriteService>();
+        builder.Services.AddSingleton<WishlistService>();
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

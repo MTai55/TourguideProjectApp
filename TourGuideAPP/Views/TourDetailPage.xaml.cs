@@ -10,13 +10,17 @@ public partial class TourDetailPage : ContentPage
     private readonly POIService _poiService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
+    private readonly UserProfileService _profileService;
+    private readonly AuthService _authService;
 
     public TourDetailPage(
         ToursPage.TourCard tour,
         LocationService locationService,
         POIService poiService,
         GeofenceEngine geofenceEngine,
-        NarrationService narrationService)
+        NarrationService narrationService,
+        UserProfileService profileService,
+        AuthService authService)
     {
         InitializeComponent();
         _tour = tour;
@@ -24,6 +28,8 @@ public partial class TourDetailPage : ContentPage
         _poiService = poiService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
+        _profileService = profileService;
+        _authService = authService;
 
         TitleLabel.Text = tour.Title;
         MetaLabel.Text = $"{tour.DurationText} • {tour.BudgetText} • {tour.StopsText}";
@@ -39,14 +45,16 @@ public partial class TourDetailPage : ContentPage
             return;
         }
 
-        await Navigation.PushAsync(new MapPage(
-            _locationService,
-            _poiService,
-            _geofenceEngine,
-            _narrationService,
-            first.Latitude,
-            first.Longitude,
-            first.Name));
+        if (Shell.Current is AppShell appShell)
+        {
+            appShell.ActivateMapTab();
+        }
+        else
+        {
+            await Shell.Current.GoToAsync("//MainTabs/MapPage");
+        }
+
+        // Nếu cần thêm dữ liệu đích (destination), có thể dùng service trung gian ở đây.
     }
 }
 

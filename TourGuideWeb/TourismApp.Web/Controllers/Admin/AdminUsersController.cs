@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TourismApp.Web.Services;
 using TourismApp.Web.Filters;
+using TourismApp.Web.Models;
 
 namespace TourismApp.Web.Controllers.Admin;
 

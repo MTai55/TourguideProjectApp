@@ -1,0 +1,40 @@
+@using TourismApp.Web.Models
+@model List<TourismApp.Web.Models.ComplaintViewModel>
+@{ ViewData["Title"] = "Xử lý khiếu nại"; }
+
+<h4 class="fw-bold mb-4">⚠️ Xử lý khiếu nại</h4>
+
+@foreach (var c in Model) {
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between">
+        <div>
+          <h6 class="fw-bold">@c.Title</h6>
+          <small class="text-muted">Từ: @c.UserName | @c.CreatedAt.ToString("dd/MM/yyyy")</small>
+        </div>
+        <span class="badge bg-warning text-dark">@c.Status</span>
+      </div>
+      <p class="mt-2">@c.Content</p>
+
+      @if (c.Status == "Pending") {
+        <form method="post" asp-action="Resolve" asp-route-id="@c.ComplaintId">
+          @Html.AntiForgeryToken()
+          <div class="row g-2 mt-2">
+            <div class="col-md-6">
+              <textarea name="note" class="form-control" rows="2"
+                        placeholder="Ghi chú phản hồi..." required></textarea>
+            </div>
+            <div class="col-md-6 d-flex gap-2 align-items-start">
+              <button name="status" value="Resolved" class="btn btn-success">✅ Giải quyết</button>
+              <button name="status" value="Rejected" class="btn btn-danger">❌ Từ chối</button>
+            </div>
+          </div>
+        </form>
+      } else if (!string.IsNullOrEmpty(c.AdminNote)) {
+        <div class="bg-light rounded p-2 mt-2">
+          <small class="fw-bold">Phản hồi Admin:</small> @c.AdminNote
+        </div>
+      }
+    </div>
+  </div>
+}

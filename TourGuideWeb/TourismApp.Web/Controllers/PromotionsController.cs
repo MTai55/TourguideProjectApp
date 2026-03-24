@@ -10,9 +10,10 @@ public class PromotionsController(ApiService api) : Controller
 {
     public async Task<IActionResult> Index()
     {
-        var places = await api.GetPlacesAsync(page: 1);
-        ViewBag.Places = places?.Items ?? [];
-        return View();
+        var places = await api.GetMyPlacesAsync();
+        var promos = await api.GetPromotionsAllAsync();
+        ViewBag.Places = places?.Items ?? new List<PlaceViewModel>();
+        return View(promos ?? new List<PromotionViewModel>());  // ← không null
     }
 
     public IActionResult Create(int placeId)

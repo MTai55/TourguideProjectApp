@@ -1,0 +1,98 @@
+@using TourismApp.Web.Models
+@model List<TourismApp.Web.Models.ComplaintViewModel>
+@{ ViewData["Title"] = "Xử lý Khiếu nại"; }
+
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pt-2">
+  <div>
+    <h2 class="text-4xl font-extrabold tracking-tight text-on-surface">Xử lý Khiếu nại</h2>
+    <p class="text-on-surface-variant text-sm font-medium mt-1">Giải quyết các khiếu nại từ chủ quán.</p>
+  </div>
+  <div class="flex gap-2">
+    @foreach (var (status, label, color) in new (string, string, string)[] {
+      ("Pending",    "Chờ xử lý", "bg-amber-50 text-amber-700"),
+      ("Processing", "Đang xử lý","bg-blue-50 text-blue-700"),
+      ("Resolved",   "Đã giải quyết","bg-emerald-50 text-emerald-700"),
+      ("All",        "Tất cả",    "bg-surface-container-low text-on-surface"),
+    })
+    {
+      <a asp-controller="AdminComplaints" asp-action="Index" asp-route-status="@status"
+         class="px-4 py-2 font-bold rounded-xl text-xs @color hover:opacity-80 transition-all">
+        @label
+      </a>
+    }
+  </div>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+  <div class="flex flex-col items-center py-20 text-center bg-surface-container-lowest rounded-xl">
+    <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">check_circle</span>
+    <p class="font-bold text-on-surface">Không có khiếu nại nào</p>
+    <p class="text-sm text-on-surface-variant mt-1">Tất cả khiếu nại đã được xử lý!</p>
+  </div>
+}
+
+<div class="space-y-4">
+  @foreach (var c in Model ?? new List<ComplaintViewModel>())
+  {
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 class="font-bold text-base">@c.Title</h3>
+          <div class="flex items-center gap-3 mt-1">
+            <span class="text-xs text-on-surface-variant">👤 @c.UserName</span>
+            <span class="text-xs text-on-surface-variant">📅 @c.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-bold
+                         @(c.Type == "fake_review" ? "bg-red-50 text-red-700" : c.Type == "policy" ? "bg-amber-50 text-amber-700" : "bg-slate-100 text-slate-600")">
+              @(c.Type == "fake_review" ? "Review giả" : c.Type == "policy" ? "Vi phạm chính sách" : "Khác")
+            </span>
+          </div>
+        </div>
+        @{
+          var (badgeBg, badgeText) = c.Status switch {
+            "Pending"    => ("bg-amber-100 text-amber-700",   "⏳ Chờ xử lý"),
+            "Processing" => ("bg-blue-100 text-blue-700",     "🔄 Đang xử lý"),
+            "Resolved"   => ("bg-emerald-100 text-emerald-700","✅ Đã giải quyết"),
+            "Rejected"   => ("bg-red-100 text-red-700",       "❌ Từ chối"),
+            _            => ("bg-slate-100 text-slate-600",   c.Status),
+          };
+        }
+        <span class="px-3 py-1.5 rounded-xl text-xs font-bold @badgeBg shrink-0">@badgeText</span>
+      </div>
+
+      <p class="text-sm text-on-surface leading-relaxed mb-4 bg-surface-container-low rounded-xl p-4">
+        @c.Content
+      </p>
+
+      @if (!string.IsNullOrEmpty(c.AdminNote))
+      {
+        <div class="bg-primary/5 rounded-xl p-4 border-l-4 border-primary mb-4">
+          <p class="text-xs font-bold text-primary mb-1">Phản hồi Admin</p>
+          <p class="text-sm text-on-surface">@c.AdminNote</p>
+        </div>
+      }
+
+      @if (c.Status == "Pending" || c.Status == "Processing")
+      {
+        <form method="post" asp-controller="AdminComplaints" asp-action="Resolve" asp-route-id="@c.ComplaintId">
+          @Html.AntiForgeryToken()
+          <div class="flex flex-col sm:flex-row gap-3">
+            <textarea name="note" rows="2" required
+                      class="flex-1 px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                      placeholder="Nhập phản hồi cho chủ quán..."></textarea>
+            <div class="flex sm:flex-col gap-2 shrink-0">
+              <button name="status" value="Resolved" type="submit"
+                      class="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-50 text-emerald-700 font-bold rounded-xl text-sm hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">check_circle</span> Giải quyết
+              </button>
+              <button name="status" value="Rejected" type="submit"
+                      class="flex-1 sm:flex-none px-4 py-2.5 bg-red-50 text-red-700 font-bold rounded-xl text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">cancel</span> Từ chối
+              </button>
+            </div>
+          </div>
+        </form>
+      }
+    </div>
+  }
+</div>

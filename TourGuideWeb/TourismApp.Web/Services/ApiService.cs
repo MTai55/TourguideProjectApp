@@ -70,12 +70,12 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
     // PLACES
     // ══════════════════════════════════════════════════════════════
     public Task<PlaceListResponse?> GetPlacesAsync(
-    int page = 1, string? search = null,
+    int page = 1, int pageSize = 20, string? search = null,
     string? categoryId = null, string? isApproved = null,
     string? sortBy = null, string? district = null,
     string? maxPrice = null)
     {
-        var url = $"/api/places?page={page}";
+        var url = $"/api/places?page={page}&pageSize={pageSize}";
         if (!string.IsNullOrEmpty(search)) url += $"&search={search}";
         if (!string.IsNullOrEmpty(categoryId)) url += $"&categoryId={categoryId}";
         if (!string.IsNullOrEmpty(isApproved)) url += $"&isApproved={isApproved}";
@@ -86,7 +86,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
     }
 
     public Task<PlaceViewModel?> GetPlaceAsync(int id)
-    => GetAsync<PlaceViewModel>($"/api/places/{id}");
+        => GetAsync<PlaceViewModel>($"/api/places/{id}");
 
     public Task<(bool, PlaceViewModel?, string)> CreatePlaceAsync(CreatePlaceViewModel vm)
         => PostAsync<PlaceViewModel>("/api/places", vm);
@@ -96,6 +96,16 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
 
     public Task<bool> DeletePlaceAsync(int id)
         => DeleteAsync($"/api/places/{id}");
+
+    public Task<PlaceListResponse?> GetMyPlacesAsync(int page = 1, string? search = null)
+    {
+        var url = $"/api/places/mine?page={page}";
+        if (!string.IsNullOrEmpty(search)) url += $"&search={search}";
+        return GetAsync<PlaceListResponse>(url);
+    }
+
+    public Task<(bool, string)> UpdateOpenStatusAsync(int id, string openStatus)
+        => PutAsync($"/api/places/{id}/status", openStatus);
 
     // ══════════════════════════════════════════════════════════════
     // REVIEWS
@@ -114,12 +124,14 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
 
     public Task<(bool, string)> ShowReviewAsync(int id)
         => PutAsync($"/api/admin/reviews/{id}/show", new { });
+    public Task<(bool, string)> CreateComplaintAsync(CreateComplaintViewModel vm)
+    => PutAsync("/api/complaints", vm);
 
     // ══════════════════════════════════════════════════════════════
     // PROMOTIONS
     // ══════════════════════════════════════════════════════════════
-    public Task<List<PromotionViewModel>?> GetPromotionsAsync(int placeId)
-        => GetAsync<List<PromotionViewModel>>($"/api/promotions/{placeId}");
+    public Task<List<PromotionViewModel>?> GetPromotionsAllAsync()
+        => GetAsync<List<PromotionViewModel>>("/api/promotions/mine"); 
 
     public Task<(bool, PromotionViewModel?, string)> CreatePromotionAsync(CreatePromotionViewModel vm)
         => PostAsync<PromotionViewModel>("/api/promotions", vm);
@@ -156,8 +168,8 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
     public Task<(bool, string)> ChangeUserRoleAsync(int id, string role)
         => PutAsync($"/api/admin/users/{id}/role", new { role });
 
-    public Task<PlaceListResponse?> GetAdminPlacesAsync(bool pendingOnly = false)
-        => GetAsync<PlaceListResponse>($"/api/admin/places?pendingOnly={pendingOnly}");
+    public Task<List<PlaceViewModel>?> GetAdminPlacesAsync(bool pendingOnly = false)
+        => GetAsync<List<PlaceViewModel>>($"/api/admin/places?pendingOnly={pendingOnly}");
 
     public Task<(bool, string)> ApprovePlaceAsync(int id)
         => PutAsync($"/api/admin/places/{id}/approve", new { });

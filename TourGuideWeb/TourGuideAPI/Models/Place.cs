@@ -22,8 +22,10 @@ public class Place
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalVisits { get; set; }
-    public bool IsApproved { get; set; }
+    public string Status { get; set; } = "Pending";
+    public string OpenStatus { get; set; } = "Closed";
     public bool IsActive { get; set; } = true;
+    public bool IsApproved => Status == "Active";
     public int? CategoryId { get; set; }
     public int OwnerId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -35,6 +37,8 @@ public class Place
     public ICollection<PlaceImage> Images { get; set; } = [];
     public ICollection<Review> Reviews { get; set; } = [];
     public ICollection<VisitHistory> VisitHistory { get; set; } = [];
+    public ICollection<Message> Messages { get; set; } = [];
+    public ICollection<Promotion> Promotions { get; set; } = [];
 }
 
 public class PlaceImage

@@ -20,13 +20,13 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = TourGuideAPP
-build_property.ProjectDir = D:\c# project\csharp\TourGuideAPP\
+build_property.ProjectDir = C:\Users\diemc\OneDrive\Documents\Code\C#\TourGuideProjectApp\TourGuideApp\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[D:/c\# project/csharp/TourGuideAPP/App.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/App.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.App.xaml
 build_metadata.AdditionalFiles.TargetPath = App.xaml
@@ -36,7 +36,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/AppShell.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/AppShell.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.AppShell.xaml
 build_metadata.AdditionalFiles.TargetPath = AppShell.xaml
@@ -46,7 +46,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/MainPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/MainPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.MainPage.xaml
 build_metadata.AdditionalFiles.TargetPath = MainPage.xaml
@@ -56,7 +56,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Resources/Styles/Colors.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Resources/Styles/Colors.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Resources.Styles.Colors.xaml
 build_metadata.AdditionalFiles.TargetPath = Resources\Styles\Colors.xaml
@@ -66,7 +66,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Resources/Styles/Styles.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Resources/Styles/Styles.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Resources.Styles.Styles.xaml
 build_metadata.AdditionalFiles.TargetPath = Resources\Styles\Styles.xaml
@@ -76,7 +76,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/AccountPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/AccountPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.AccountPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\AccountPage.xaml
@@ -86,7 +86,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/FavoritesPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/FavoritesPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.FavoritesPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\FavoritesPage.xaml
@@ -96,7 +96,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/LoginPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/LoginPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.LoginPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\LoginPage.xaml
@@ -106,7 +106,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/MapPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/MapPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.MapPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\MapPage.xaml
@@ -116,7 +116,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/NotesPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/NotesPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.NotesPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\NotesPage.xaml
@@ -126,7 +126,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/PlaceDetailPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/PlaceDetailPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.PlaceDetailPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\PlaceDetailPage.xaml
@@ -136,7 +136,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/QRScanPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/QRScanPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.QRScanPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\QRScanPage.xaml
@@ -146,7 +146,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/RegisterPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/RegisterPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.RegisterPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\RegisterPage.xaml
@@ -156,7 +156,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/TourDetailPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/TourDetailPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.TourDetailPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\TourDetailPage.xaml
@@ -166,7 +166,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/ToursPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/ToursPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.ToursPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\ToursPage.xaml
@@ -176,7 +176,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/TripHistoryPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/TripHistoryPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.TripHistoryPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\TripHistoryPage.xaml
@@ -186,7 +186,7 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[D:/c\# project/csharp/TourGuideAPP/Views/WishlistPage.xaml]
+[C:/Users/diemc/OneDrive/Documents/Code/C\#/TourGuideProjectApp/TourGuideApp/Views/WishlistPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = TourGuideAPP.Views.WishlistPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views\WishlistPage.xaml

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TourismApp.Web.Models;
 using TourismApp.Web.Filters;
 using TourismApp.Web.Services;
 
@@ -13,7 +14,7 @@ public class AdminPlacesController(ApiService api) : Controller
     {
         var result = await api.GetAdminPlacesAsync(pendingOnly);
         ViewBag.PendingOnly = pendingOnly;
-        return View(result?.Items ?? []);
+        return View(result ?? new List<PlaceViewModel>());  // ← List trực tiếp
     }
 
     // Duyệt quán

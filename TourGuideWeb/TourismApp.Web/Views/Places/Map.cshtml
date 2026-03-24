@@ -16,36 +16,42 @@
 @section Scripts {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const places = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+const places = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+const isAdmin = @Html.Raw(ViewBag.IsAdmin ? "true" : "false");
 
-  const map = L.map('map').setView([10.7769, 106.7009], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+const map = L.map('map').setView([10.7769, 106.7009], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-  places.forEach(p => {
-    if (!p.latitude || !p.longitude) return;
-    const marker = L.marker([p.latitude, p.longitude]).addTo(map);
-    marker.bindPopup(`
-      <div style="min-width:200px">
-        <strong>${p.name}</strong><br>
-        <small class="text-muted">${p.address}</small><br>
-        <span class="text-warning">★</span> ${p.averageRating?.toFixed(1) ?? '0.0'}
-        &nbsp;|&nbsp; 📍 ${p.totalVisits} lượt ghé<br>
-        <div class="mt-2">
-          <a href="/Places/Edit/${p.placeId}" class="btn btn-sm btn-primary">Sửa</a>
-          <a href="/Reviews?placeId=${p.placeId}" class="btn btn-sm btn-outline-secondary ms-1">Đánh giá</a>
-        </div>
+// Icon theo trạng thái OpenStatus
+const icons = {
+  'Open':   '🟢',
+  'Busy':   '🟡',
+  'Closed': '🔴'
+};
+
+places.forEach(p => {
+  if (!p.latitude || !p.longitude) return;
+
+  const statusIcon = icons[p.openStatus] || '⚫';
+  const marker = L.marker([p.latitude, p.longitude]).addTo(map);
+  marker.bindPopup(`
+    <div style="min-width:220px">
+      <strong>${statusIcon} ${p.name}</strong>
+      <span class="badge bg-${p.status==='Active'?'success':'warning'}">${p.status}</span><br>
+      <small>${p.address}</small><br>
+      ⭐ ${p.averageRating?.toFixed(1)} | 📍 ${p.totalVisits} lượt ghé<br>
+      ${p.specialty ? '🍽️ ' + p.specialty + '<br>' : ''}
+      <div class="mt-2">
+        <a href="/Places/Edit/${p.placeId}" class="btn btn-sm btn-primary">✏️ Sửa</a>
+        <a href="/Reviews/ByPlace/${p.placeId}" class="btn btn-sm btn-outline-secondary ms-1">⭐</a>
       </div>
-    `);
-  });
+    </div>
+  `);
+});
 
-  // Fit map to all markers
-  if (places.length > 0) {
-    const bounds = places
-      .filter(p => p.latitude && p.longitude)
-      .map(p => [p.latitude, p.longitude]);
-    if (bounds.length) map.fitBounds(bounds, { padding: [50, 50] });
-  }
+if (places.length > 0) {
+  const bounds = places.filter(p => p.latitude && p.longitude).map(p => [p.latitude, p.longitude]);
+  if (bounds.length) map.fitBounds(bounds, { padding: [50, 50] });
+}
 </script>
 }

@@ -1,209 +1,346 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>@ViewData["Title"] — Phố Ẩm Thực HCM</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary":                  "#954400",
+            "primary-container":        "#fc8127",
+            "primary-fixed-dim":        "#eb7518",
+            "primary-dim":              "#823b00",
+            "surface-tint":             "#954400",
+            "secondary":                "#535b71",
+            "secondary-container":      "#dae2fd",
+            "on-secondary-container":   "#4a5167",
+            "on-secondary":             "#f0f2ff",
+            "tertiary":                 "#765600",
+            "tertiary-container":       "#f9bd26",
+            "on-tertiary":              "#fff1dc",
+            "on-tertiary-container":    "#543c00",
+            "outline":                  "#747779",
+            "outline-variant":          "#abadaf",
+            "on-surface":               "#2c2f31",
+            "on-surface-variant":       "#595c5e",
+            "surface":                  "#f5f7f9",
+            "surface-bright":           "#f5f7f9",
+            "surface-dim":              "#d0d5d8",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low":    "#eef1f3",
+            "surface-container":        "#e5e9eb",
+            "surface-container-high":   "#dfe3e6",
+            "surface-container-highest":"#d9dde0",
+            "inverse-surface":          "#0b0f10",
+            "inverse-primary":          "#fc8127",
+            "background":               "#f5f7f9",
+            "on-background":            "#2c2f31",
+            "error":                    "#b02500",
+            "error-container":          "#f95630",
+          },
+          fontFamily: {
+            "headline": ["Plus Jakarta Sans"],
+            "body":     ["Inter"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg":      "0.5rem",
+            "xl":      "1.5rem",
+            "full":    "9999px",
+          },
+        },
+      },
+    }
+  </script>
+
   <style>
-    :root {
-      --sidebar-bg: #1e293b;
-      --sidebar-width: 250px;
-      --topbar-h: 60px;
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
     }
-    body { background:#f1f5f9; font-size:14px; }
-    .sidebar {
-      width: var(--sidebar-width); height:100vh;
-      background: var(--sidebar-bg); position:fixed; top:0; left:0;
-      display:flex; flex-direction:column; z-index:100;
-      box-shadow: 2px 0 8px rgba(0,0,0,.2);
+    body     { font-family: 'Inter', sans-serif; }
+    h1,h2,h3,h4,h5 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .sidebar-gradient { background: linear-gradient(180deg, #0f172a 0%, #020617 100%); }
+    .glass-nav { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+    @@keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0);   opacity: 1; }
     }
-    .sidebar-brand {
-      padding:20px 16px; color:#38bdf8; font-weight:800;
-      font-size:18px; border-bottom:1px solid #334155;
-      display:flex; align-items:center; gap:10px;
-    }
-    .sidebar-brand small { font-size:11px; color:#64748b; font-weight:400; display:block; }
-    .nav-section {
-      font-size:10px; font-weight:700; color:#475569;
-      text-transform:uppercase; letter-spacing:1px; padding:16px 16px 4px;
-    }
-    .sidebar .nav-link {
-      color:#94a3b8; padding:10px 16px; border-radius:0;
-      border-left:3px solid transparent; transition:.15s;
-      display:flex; align-items:center; gap:10px;
-    }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active {
-      color:#38bdf8; background:#0f172a; border-left-color:#38bdf8;
-    }
-    .sidebar-user {
-      padding:12px 16px; border-top:1px solid #334155; margin-top:auto;
-    }
-    .sidebar-user .name { color:#e2e8f0; font-size:13px; font-weight:600; }
-    .sidebar-user .role { color:#64748b; font-size:11px; }
-    .topbar {
-      position:fixed; top:0; left:var(--sidebar-width);
-      right:0; height:var(--topbar-h); background:white;
-      border-bottom:1px solid #e2e8f0; display:flex;
-      align-items:center; justify-content:space-between;
-      padding:0 24px; z-index:99; box-shadow:0 1px 4px rgba(0,0,0,.06);
-    }
-    .topbar-title { font-weight:700; color:#1e293b; font-size:16px; }
-    .main-content {
-      margin-left:var(--sidebar-width);
-      margin-top:var(--topbar-h);
-      padding:24px; min-height:calc(100vh - var(--topbar-h));
-    }
-    .stat-card { border:none; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
-    .stat-card .icon {
-      width:48px; height:48px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center; font-size:22px;
-    }
-    #toast-container { position:fixed; bottom:20px; right:20px; z-index:9999; }
-    .toast-item {
-      background:white; border-radius:10px; padding:12px 16px; margin-top:8px;
-      box-shadow:0 4px 16px rgba(0,0,0,.15); display:flex; align-items:center;
-      gap:12px; min-width:280px; animation:slideIn .3s ease;
-    }
-    @@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+    .toast-enter { animation: slideIn 0.3s ease; }
   </style>
 </head>
-<body>
+
 @{
-    var token    = Context.Session.GetString("JwtToken");
-    var userName = Context.Session.GetString("UserName");
-    var userRole = Context.Session.GetString("UserRole");
-    var ctrl     = ViewContext.RouteData.Values["controller"]?.ToString();
-    var action   = ViewContext.RouteData.Values["action"]?.ToString();
+  var token    = Context.Session.GetString("JwtToken");
+  var userName = Context.Session.GetString("UserName");
+  var userRole = Context.Session.GetString("UserRole");
+  var ctrl     = ViewContext.RouteData.Values["controller"]?.ToString();
+  var action   = ViewContext.RouteData.Values["action"]?.ToString();
 }
+
+<body class="bg-background text-on-surface min-h-screen">
 
 @if (token != null)
 {
-    <div class="sidebar">
-        <div class="sidebar-brand">
-            <span style="font-size:28px">🍜</span>
-            <div>
-                <div>Phố Ẩm Thực</div>
-                <small>TP. Hồ Chí Minh</small>
-            </div>
-        </div>
+  <!-- ══ SIDEBAR ═══════════════════════════════════════════════ -->
+  <aside class="fixed left-0 top-0 h-full z-40 hidden md:flex flex-col w-64 shadow-2xl sidebar-gradient">
 
-        <nav>
-            @if (userRole == "Admin") {
-                <a asp-controller="AdminDashboard" asp-action="Index" class="nav-link">Dashboard</a>
-                <a asp-controller="AdminUsers" asp-action="Index" class="nav-link">Tài khoản</a>
-                <a asp-controller="AdminPlaces" asp-action="Index" class="nav-link">Duyệt quán</a>
-                <a asp-controller="AdminReviews" asp-action="Index" class="nav-link">Kiểm duyệt</a>
-                <a asp-controller="AdminComplaints" asp-action="Index" class="nav-link">Khiếu nại</a>
-            } else {
-                <a asp-controller="Dashboard" asp-action="Index" class="nav-link">Dashboard</a>
-                <a asp-controller="Places" asp-action="Index" class="nav-link">Quán của tôi</a>
-                <a asp-controller="Reviews" asp-action="Index" class="nav-link">Đánh giá</a>
-                <a asp-controller="Promotions" asp-action="Index" class="nav-link">Khuyến mãi</a>
-                <a asp-controller="Places" asp-action="Map" class="nav-link">Bản đồ</a>
-            }
-        </nav>
-
-        <div class="sidebar-user">
-            <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
-                     style="width:32px;height:32px;font-size:13px">
-                    @userName?[0]
-                </div>
-                <div>
-                    <div class="name">@userName</div>
-                    <div class="role">@userRole</div>
-                </div>
-            </div>
-            <a asp-controller="Auth" asp-action="Logout" class="btn btn-sm btn-outline-danger w-100">
-                <i class="bi bi-box-arrow-right"></i> Đăng xuất
-            </a>
+    <!-- Brand -->
+    <div class="px-6 py-7 border-b border-white/5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-lg shrink-0"
+             style="background:linear-gradient(135deg,#954400,#fc8127)">🍜</div>
+        <div>
+          <h1 class="text-base font-extrabold text-white tracking-tighter leading-none">Phố Ẩm Thực</h1>
+          <p class="text-[10px] font-bold text-slate-500 tracking-widest mt-0.5 uppercase">
+            @(userRole == "Admin" ? "Admin Portal" : "Owner Portal")
+          </p>
         </div>
+      </div>
     </div>
 
-    <div class="topbar">
-        <span class="topbar-title">@ViewData["Title"]</span>
-        <div class="d-flex align-items-center gap-3">
-            @if (userRole == "Admin")
-            {
-                <a asp-controller="AdminPlaces" asp-action="Index"
-                   asp-route-pendingOnly="true" class="btn btn-warning btn-sm">
-                    ⏳ Chờ duyệt
-                </a>
-            }
-            else
-            {
-                <a asp-controller="Places" asp-action="Create" class="btn btn-primary btn-sm">
-                    + Thêm quán ăn
-                </a>
-            }
-        </div>
-    </div>
+    <!-- Nav -->
+    <nav class="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
+      @if (userRole == "Admin")
+      {
+        <p class="px-3 pb-1.5 pt-1 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Quản trị</p>
 
-    <div class="main-content">
-        @if (TempData["Success"] != null)
+        @foreach (var (c, a, icon, label) in new (string,string,string,string)[] {
+          ("AdminDashboard","Index",  "dashboard",         "Dashboard"),
+          ("AdminPlaces",   "Index",  "storefront",        "Duyệt quán"),
+          ("AdminUsers",    "Index",  "people",            "Tài khoản"),
+          ("AdminReviews",  "Index",  "shield_check",      "Kiểm duyệt"),
+          ("AdminComplaints","Index", "warning",           "Khiếu nại"),
+        })
         {
-            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm">
-                <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+          var isActive = ctrl == c;
+          <a asp-controller="@c" asp-action="@a"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all
+                    @(isActive ? "text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/5")"
+             style="@(isActive ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
+            <span class="material-symbols-outlined text-xl">@icon</span>
+            @label
+          </a>
         }
-        @if (TempData["Error"] != null)
+
+        <p class="px-3 pb-1.5 pt-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Khác</p>
+        <a asp-controller="AdminDashboard" asp-action="Map"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all
+                  @(action=="Map" ? "text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/5")"
+           style="@(action=="Map" ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
+          <span class="material-symbols-outlined text-xl">map</span> Bản đồ toàn hệ thống
+        </a>
+      }
+      else
+      {
+        <p class="px-3 pb-1.5 pt-1 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Quán của tôi</p>
+
+        @foreach (var (c, a, icon, label) in new (string,string,string,string)[] {
+          ("Dashboard",   "Index", "dashboard",    "Dashboard"),
+          ("Places",      "Index", "storefront",   "Quán của tôi"),
+          ("Reviews",     "Index", "rate_review",  "Đánh giá"),
+          ("Promotions",  "Index", "local_offer",  "Khuyến mãi"),
+          ("Complaints",  "Index", "feedback",     "Khiếu nại"),
+        })
         {
-            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
-                <i class="bi bi-exclamation-circle me-2"></i>@TempData["Error"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+          var isActive = ctrl == c && (c != "Places" || action != "Map");
+          <a asp-controller="@c" asp-action="@a"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all
+                    @(isActive ? "text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/5")"
+             style="@(isActive ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
+            <span class="material-symbols-outlined text-xl">@icon</span>
+            @label
+          </a>
         }
-        @RenderBody()
+
+        <p class="px-3 pb-1.5 pt-4 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Khác</p>
+        <a asp-controller="Places" asp-action="Map"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all
+                  @(ctrl=="Places" && action=="Map" ? "text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/5")"
+           style="@(ctrl=="Places" && action=="Map" ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
+          <span class="material-symbols-outlined text-xl">map</span> Bản đồ
+        </a>
+      }
+    </nav>
+
+    <!-- User footer -->
+    <div class="p-4 border-t border-white/5">
+      @if (userRole == "Owner")
+      {
+        <a asp-controller="Places" asp-action="Create"
+           class="w-full flex items-center justify-center gap-2 py-2.5 text-white rounded-xl font-bold text-sm mb-3 hover:scale-[1.02] transition-all"
+           style="background:linear-gradient(135deg,#954400,#fc8127)">
+          <span class="material-symbols-outlined text-sm">add_circle</span> Thêm quán mới
+        </a>
+      }
+      <div class="flex items-center gap-3 px-1">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
+             style="background:linear-gradient(135deg,#954400,#fc8127)">
+          @(userName?.Length > 0 ? userName[0].ToString().ToUpper() : "U")
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-white truncate">@userName</p>
+          <p class="text-[10px] text-slate-500 uppercase tracking-wider">@userRole</p>
+        </div>
+        <a asp-controller="Auth" asp-action="Logout"
+           class="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-400/10"
+           title="Đăng xuất">
+          <span class="material-symbols-outlined text-lg">logout</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ═══════════════════════════════════════════════════ -->
+  <main class="md:ml-64 min-h-screen flex flex-col">
+
+    <!-- Topbar -->
+    <header class="sticky top-0 z-30 flex justify-between items-center px-8 py-3.5 bg-white/80 backdrop-blur-xl border-b border-slate-100 glass-nav">
+      <div class="flex items-center gap-5">
+        <h2 class="text-base font-black text-slate-900 truncate max-w-[240px]">@ViewData["Title"]</h2>
+        <!-- Desktop search -->
+        <div class="hidden lg:flex items-center bg-surface-container-low rounded-full px-4 py-2 w-72 gap-2">
+          <span class="material-symbols-outlined text-outline text-sm">search</span>
+          <input class="bg-transparent border-none focus:ring-0 text-sm w-full" placeholder="Tìm kiếm nhanh..." />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- SignalR status -->
+        <div id="signalr-badge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low rounded-full text-xs font-bold text-on-surface-variant">
+          <span id="signalr-dot" class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+          <span id="signalr-text">Offline</span>
+        </div>
+
+        <button class="p-2 text-slate-500 hover:bg-surface-container-low rounded-full transition-all" title="Thông báo">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+
+        @if (userRole == "Admin")
+        {
+          <a asp-controller="AdminPlaces" asp-action="Index" asp-route-pendingOnly="true"
+             class="hidden md:flex items-center gap-1.5 px-4 py-2 bg-amber-50 text-amber-700 font-bold text-xs rounded-xl hover:bg-amber-100 transition-all">
+            <span class="material-symbols-outlined text-sm">schedule</span> Chờ duyệt
+          </a>
+        }
+        else
+        {
+          <a asp-controller="Places" asp-action="Create"
+             class="hidden md:flex items-center gap-1.5 px-4 py-2 text-white font-bold text-xs rounded-xl hover:scale-105 transition-all shadow-sm"
+             style="background:linear-gradient(135deg,#954400,#fc8127)">
+            <span class="material-symbols-outlined text-sm">add</span> Thêm quán
+          </a>
+        }
+      </div>
+    </header>
+
+    <!-- Alerts -->
+    <div class="px-8 pt-5 space-y-3">
+      @if (TempData["Success"] != null)
+      {
+        <div class="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700">
+          <span class="material-symbols-outlined">check_circle</span>
+          <span class="text-sm font-semibold flex-1">@TempData["Success"]</span>
+          <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600 transition-colors">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      }
+      @if (TempData["Error"] != null)
+      {
+        <div class="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl text-red-700">
+          <span class="material-symbols-outlined">error</span>
+          <span class="text-sm font-semibold flex-1">@TempData["Error"]</span>
+          <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 transition-colors">
+            <span class="material-symbols-outlined text-sm">close</span>
+          </button>
+        </div>
+      }
     </div>
 
-    <div id="toast-container"></div>
+    <!-- Page content -->
+    <div class="flex-1 px-8 pb-12">
+      @RenderBody()
+    </div>
+
+    <!-- Footer -->
+    <footer class="px-8 py-5 border-t border-slate-100 bg-white">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+        <p class="text-slate-400 text-xs">© 2025 Phố Ẩm Thực HCM</p>
+        <div class="flex gap-6 text-xs font-bold text-slate-400">
+          <a href="#" class="hover:text-primary transition-colors">Chính sách</a>
+          <a href="#" class="hover:text-primary transition-colors">Hỗ trợ</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+  <!-- Mobile FAB -->
+  @if (userRole == "Owner")
+  {
+    <a asp-controller="Places" asp-action="Create"
+       class="fixed bottom-6 right-6 md:hidden w-14 h-14 text-white rounded-full shadow-2xl flex items-center justify-center z-50"
+       style="background:linear-gradient(135deg,#954400,#fc8127)">
+      <span class="material-symbols-outlined">add</span>
+    </a>
+  }
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    function showToast(msg, type = 'success') {
+      const cfg = {
+        success: { bg: 'bg-emerald-50 border-emerald-100 text-emerald-700', icon: 'check_circle' },
+        error:   { bg: 'bg-red-50 border-red-100 text-red-700',             icon: 'error' },
+        info:    { bg: 'bg-blue-50 border-blue-100 text-blue-700',           icon: 'info' },
+      };
+      const c  = cfg[type] || cfg.success;
+      const el = document.createElement('div');
+      el.className = `flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg toast-enter min-w-[280px] ${c.bg}`;
+      el.innerHTML = `<span class="material-symbols-outlined text-base">${c.icon}</span><span class="flex-1">${msg}</span>`;
+      document.getElementById('toast-container').appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    // SignalR
+    const userId = '@Context.Session.GetInt32("UserId")';
+    if (userId) {
+      const conn = new signalR.HubConnectionBuilder()
+        .withUrl('http://localhost:5010/hubs/notifications')
+        .withAutomaticReconnect().build();
+
+      conn.on('NewCheckIn', d => showToast(`📍 ${d.message}`, 'info'));
+      conn.on('NewReview',  d => showToast(`⭐ ${d.message}`, 'success'));
+
+      conn.start().then(() => {
+        document.getElementById('signalr-dot').className  = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+        document.getElementById('signalr-text').textContent = 'Online';
+        conn.invoke('JoinOwnerGroup', userId);
+      }).catch(() => {});
+    }
+  </script>
 }
 else
 {
-    <div>@RenderBody()</div>
+  @RenderBody()
 }
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-function showToast(msg, type = 'success') {
-    const colors = { success: '#22c55e', error: '#ef4444', info: '#3b82f6' };
-    const icons  = { success: '✅', error: '❌', info: 'ℹ️' };
-    const el = document.createElement('div');
-    el.className = 'toast-item';
-    el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
-    el.style.borderLeft = `4px solid ${colors[type]}`;
-    document.getElementById('toast-container').appendChild(el);
-    setTimeout(() => el.remove(), 4000);
-}
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
-<script>
-const userId = '@Context.Session.GetInt32("UserId")';
-if (userId) {
-    const conn = new signalR.HubConnectionBuilder()
-        .withUrl("http://localhost:5010/hubs/notifications")
-        .withAutomaticReconnect()
-        .build();
-
-    conn.on("NewCheckIn", data => showToast(`📍 ${data.message}`, 'info'));
-    conn.on("NewReview",  data => showToast(`⭐ ${data.message}`, 'success'));
-
-    conn.start()
-        .then(() => {
-            document.getElementById('signalr-status').textContent = '● Online';
-            document.getElementById('signalr-status').className = 'badge bg-success';
-            conn.invoke("JoinOwnerGroup", userId);
-        })
-        .catch(() => {
-            document.getElementById('signalr-status').textContent = '● Offline';
-        });
-}
-</script>
-
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -12,5 +12,6 @@ public class Promotion
     public DateTime EndDate { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsExpired => DateTime.UtcNow > EndDate;
     public Place? Place { get; set; }
 }

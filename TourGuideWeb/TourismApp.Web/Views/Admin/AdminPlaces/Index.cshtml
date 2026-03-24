@@ -1,0 +1,138 @@
+@using TourismApp.Web.Models
+@model List<TourismApp.Web.Models.PlaceViewModel>
+@{ ViewData["Title"] = "Duyệt quán ăn"; }
+
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pt-2">
+  <div>
+    <h2 class="text-4xl font-extrabold tracking-tight text-on-surface">Kiểm duyệt Quán ăn</h2>
+    <p class="text-on-surface-variant text-sm font-medium mt-1">Duyệt hoặc tạm khóa các quán ăn trong hệ thống.</p>
+  </div>
+  <div class="flex gap-2">
+    <a asp-controller="AdminPlaces" asp-action="Index"
+       class="px-5 py-2.5 font-bold rounded-xl text-sm transition-all
+              @(ViewBag.PendingOnly != true ? "text-white" : "bg-surface-container-low text-on-surface hover:bg-surface-container-high")"
+       style="@(ViewBag.PendingOnly != true ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
+      Tất cả (@(Model?.Count ?? 0))
+    </a>
+    <a asp-controller="AdminPlaces" asp-action="Index" asp-route-pendingOnly="true"
+       class="px-5 py-2.5 font-bold rounded-xl text-sm transition-all flex items-center gap-2
+              @(ViewBag.PendingOnly == true ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-700 hover:bg-amber-100")">
+      <span class="material-symbols-outlined text-sm">schedule</span>
+      Chờ duyệt (@(Model?.Count(p => p.Status == "Pending") ?? 0))
+    </a>
+  </div>
+</div>
+
+<section class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-surface-container-low">
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Tên & Chủ quán</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Địa chỉ</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Loại</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Đánh giá</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Trạng thái</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container">
+        @if (!(Model?.Any() ?? false))
+        {
+          <tr>
+            <td colspan="6" class="px-6 py-16 text-center">
+              <span class="material-symbols-outlined text-5xl text-slate-300 block mb-3">storefront</span>
+              <p class="font-bold text-on-surface">Không có quán nào</p>
+            </td>
+          </tr>
+        }
+        @foreach (var p in Model ?? new List<PlaceViewModel>())
+        {
+          <tr class="hover:bg-surface-bright transition-colors">
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-surface-container-low">
+                  @if (!string.IsNullOrEmpty(p.MainImageUrl))
+                  {
+                    <img src="@p.MainImageUrl" alt="@p.Name" class="w-full h-full object-cover" />
+                  }
+                  else
+                  {
+                    <div class="w-full h-full flex items-center justify-center text-xl">🍜</div>
+                  }
+                </div>
+                <div>
+                  <div class="font-bold text-sm">@p.Name</div>
+                  @if (!string.IsNullOrEmpty(p.OwnerName))
+                  {
+                    <div class="text-xs text-on-surface-variant mt-0.5">👤 @p.OwnerName</div>
+                  }
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-5">
+              <p class="text-sm text-on-surface-variant max-w-[180px] truncate">@p.Address</p>
+            </td>
+            <td class="px-6 py-5">
+              <span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-[11px] font-bold uppercase">
+                @p.CategoryName
+              </span>
+            </td>
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-1 font-bold text-sm" style="color:#765600">
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">star</span>
+                @p.AverageRating.ToString("F1")
+              </div>
+              <div class="text-[10px] text-on-surface-variant mt-0.5">@p.TotalVisits lượt ghé</div>
+            </td>
+            <td class="px-6 py-5">
+              @{
+                var (dot, text, cls) = p.Status switch {
+                  "Active"    => ("bg-emerald-500", "Hoạt động", "text-emerald-700"),
+                  "Pending"   => ("bg-amber-500",   "Chờ duyệt", "text-amber-700"),
+                  "Suspended" => ("bg-red-500",      "Tạm khóa",  "text-red-700"),
+                  _           => ("bg-slate-400",    p.Status ?? "—", "text-slate-600"),
+                };
+              }
+              <span class="flex items-center gap-1.5 text-xs font-bold @cls">
+                <span class="w-2 h-2 rounded-full @dot"></span> @text
+              </span>
+            </td>
+            <td class="px-6 py-5">
+              <div class="flex items-center gap-2">
+                @if (p.Status == "Pending")
+                {
+                  <form method="post" asp-controller="AdminPlaces" asp-action="Approve" asp-route-id="@p.PlaceId">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold rounded-lg text-xs hover:bg-emerald-100 transition-colors flex items-center gap-1">
+                      <span class="material-symbols-outlined text-sm">check_circle</span> Duyệt
+                    </button>
+                  </form>
+                }
+                @if (p.Status == "Active")
+                {
+                  <form method="post" asp-controller="AdminPlaces" asp-action="Suspend" asp-route-id="@p.PlaceId"
+                        onsubmit="return confirm('Tạm khóa quán @p.Name?')">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="px-3 py-1.5 bg-red-50 text-red-700 font-bold rounded-lg text-xs hover:bg-red-100 transition-colors flex items-center gap-1">
+                      <span class="material-symbols-outlined text-sm">block</span> Khóa
+                    </button>
+                  </form>
+                }
+                @if (p.Status == "Suspended")
+                {
+                  <form method="post" asp-controller="AdminPlaces" asp-action="Approve" asp-route-id="@p.PlaceId">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg text-xs hover:bg-blue-100 transition-colors flex items-center gap-1">
+                      <span class="material-symbols-outlined text-sm">lock_open</span> Mở lại
+                    </button>
+                  </form>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

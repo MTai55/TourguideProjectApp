@@ -31,10 +31,6 @@ public static class MauiProgram
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<ToursPage>();
         builder.Services.AddTransient<AccountPage>();
-        builder.Services.AddTransient<FavoritesPage>();
-        builder.Services.AddTransient<TripHistoryPage>();
-        builder.Services.AddTransient<NotesPage>();
-        builder.Services.AddTransient<WishlistPage>();
         
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<GeofenceEngine>();

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TourGuideAPP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+1f5660fb4bf5e3685ea4483295cbe93ebf99b1fe")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+32c3dd2be02665c7fbcac8aaec2be1d65a0f33e9")]
 [assembly: System.Reflection.AssemblyProductAttribute("TourGuideAPP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TourGuideAPP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

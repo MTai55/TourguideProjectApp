@@ -33,7 +33,6 @@ public partial class PlaceDetailPage : ContentPage
         _profileService = profileService;
 
         LoadPlaceDetail();
-        UpdateActionButtons();
     }
 
     // Hiển thị thông tin địa điểm lên UI
@@ -76,19 +75,27 @@ public partial class PlaceDetailPage : ContentPage
         WebsiteLabel.Text = _place.Website ?? "Chưa cập nhật";
     }
 
-    // Mở Google Maps chỉ đường đến địa điểm
+    // Mở MapPage và chỉ đường đến địa điểm hiện tại
     private async void OnDirectionsClicked(object sender, EventArgs e)
     {
-        if (Shell.Current is AppShell appShell)
+        if (_place.Latitude == 0 && _place.Longitude == 0)
         {
-            appShell.ActivateMapTab();
-        }
-        else
-        {
-            await Shell.Current.GoToAsync("//MainTabs/MapPage");
+            await DisplayAlert("Lỗi", "Không có tọa độ địa điểm để chỉ đường.", "OK");
+            return;
         }
 
-        // Nếu cần thêm dữ liệu đích (destination), có thể dùng service trung gian ở đây.
+        var mapPage = new MapPage(
+            _locationService,
+            _poiService,
+            _geofenceEngine,
+            _narrationService,
+            _profileService,
+            _authService,
+            _place.Latitude,
+            _place.Longitude,
+            _place.Name);
+
+        await Navigation.PushAsync(mapPage);
     }
 
     // Đánh giá yêu cầu đăng nhập
@@ -103,119 +110,6 @@ public partial class PlaceDetailPage : ContentPage
         await DisplayAlertAsync("Đánh giá", "Tính năng đang phát triển!", "OK");
     }
 
-    private async void OnFavoriteClicked(object sender, EventArgs e)
-    {
-        if (!_authService.IsLoggedIn)
-        {
-            await DisplayAlert("Yêu cầu đăng nhập", "Vui lòng đăng nhập để dùng tính năng này", "OK");
-            await Shell.Current.GoToAsync("//LoginPage");
-            return;
-        }
-
-        var favorites = await _profileService.GetFavoritesAsync();
-        var existing = favorites.Any(x => x.PlaceId == _place.PlaceId);
-        if (existing)
-        {
-            await _profileService.RemoveFavoriteAsync(_place.PlaceId);
-            await DisplayAlert("Đã xoá", "Đã xoá khỏi danh sách yêu thích", "OK");
-        }
-        else
-        {
-            await _profileService.AddFavoriteAsync(_place);
-            await DisplayAlert("Thêm vào yêu thích", "Đã thêm vào danh sách yêu thích", "OK");
-        }
-
-        UpdateActionButtons();
-    }
-
-    private async void OnCheckInClicked(object sender, EventArgs e)
-    {
-        if (!_authService.IsLoggedIn)
-        {
-            await DisplayAlert("Yêu cầu đăng nhập", "Vui lòng đăng nhập để dùng tính năng này", "OK");
-            await Shell.Current.GoToAsync("//LoginPage");
-            return;
-        }
-
-        var current = _locationService.LastKnownLocation;
-        if (current is null)
-        {
-            await DisplayAlert("Lỗi GPS", "Chưa có vị trí GPS. Vui lòng bật GPS và thử lại.", "OK");
-            return;
-        }
-
-        var distance = GetDistanceMeters(current.Latitude, current.Longitude, _place.Latitude, _place.Longitude);
-        if (distance <= 150) // chạy check-in trong bán kính 150m
-        {
-            await _profileService.AddHistoryAsync(_place, "GPS");
-            await DisplayAlert("Check-in thành công", $"Bạn đã được ghi nhận tại {_place.Name} (GPS) - {distance:F0}m.", "OK");
-        }
-        else
-        {
-            await DisplayAlert("Chưa đến nơi", $"Khoảng cách đến {_place.Name} là {distance:F0}m. Vui lòng đến gần hơn để check-in.", "OK");
-        }
-    }
-
-    private async void OnBookingCompleteClicked(object sender, EventArgs e)
-    {
-        if (!_authService.IsLoggedIn)
-        {
-            await DisplayAlert("Yêu cầu đăng nhập", "Vui lòng đăng nhập để dùng tính năng này", "OK");
-            await Shell.Current.GoToAsync("//LoginPage");
-            return;
-        }
-
-        await _profileService.AddHistoryByBookingAsync(_place);
-        await DisplayAlert("Hoàn thành đặt bàn", "Đã ghi lịch sử: đã đến quán sau đặt bàn thành công.", "OK");
-    }
-
-    private static double GetDistanceMeters(double lat1, double lon1, double lat2, double lon2)
-    {
-        static double ToRad(double deg) => deg * Math.PI / 180;
-
-        var R = 6371000; // meters
-        var dLat = ToRad(lat2 - lat1);
-        var dLon = ToRad(lon2 - lon1);
-        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRad(lat1)) * Math.Cos(ToRad(lat2)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return R * c;
-    }
-
-    private async void OnWishlistClicked(object sender, EventArgs e)
-    {
-        if (!_authService.IsLoggedIn)
-        {
-            await DisplayAlert("Yêu cầu đăng nhập", "Vui lòng đăng nhập để dùng tính năng này", "OK");
-            await Shell.Current.GoToAsync("//LoginPage");
-            return;
-        }
-
-        var wishlist = await _profileService.GetWishlistAsync();
-        var existing = wishlist.Any(x => x.PlaceId == _place.PlaceId);
-        if (existing)
-        {
-            await _profileService.RemoveWishlistAsync(_place.PlaceId);
-            await DisplayAlert("Đã xoá", "Đã xoá khỏi wishlist", "OK");
-        }
-        else
-        {
-            await _profileService.AddWishlistAsync(_place);
-            await DisplayAlert("Thêm vào wishlist", "Đã thêm vào wishlist", "OK");
-        }
-
-        UpdateActionButtons();
-    }
-
-    private async void UpdateActionButtons()
-    {
-        var favorites = await _profileService.GetFavoritesAsync();
-        var isFav = favorites.Any(x => x.PlaceId == _place.PlaceId);
-        FavoriteButton.Text = isFav ? "💔 Bỏ yêu thích" : "❤ Thêm yêu thích";
-
-        var wishlist = await _profileService.GetWishlistAsync();
-        var onWishlist = wishlist.Any(x => x.PlaceId == _place.PlaceId);
-        WishlistButton.Text = onWishlist ? "🧾 Bỏ wishlist" : "💖 Thêm wishlist";
-    }
 }
+
+

@@ -14,17 +14,17 @@
                Padding="10"
                CornerRadius="10">
             <VerticalStackLayout>
+                  <Label x:Name="CurrentAddressLabel"
+                      Text="📍 Địa chỉ hiện tại: đang cập nhật..."
+                      FontSize="13"
+                      TextColor="{StaticResource OnSurface}"
+                      LineBreakMode="TailTruncation"
+                      MaxLines="2" />
                 <Label x:Name="NearestPOILabel"
                        Text="🏛️ Chưa xác định điểm gần nhất"
                        FontSize="14"
                        TextColor="{StaticResource Primary}"
                        HorizontalOptions="Center" />
-                <Button Text="✔️ Check-in chỗ gần nhất"
-                        Clicked="OnNearestCheckInClicked"
-                        BackgroundColor="#4CAF50"
-                        TextColor="White"
-                        CornerRadius="14"
-                        FontSize="12"/>
             </VerticalStackLayout>
         </Frame>
     </Grid>

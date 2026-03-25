@@ -49151,11 +49151,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\c# project\\csharp\\TourGuideAPP\\TourGuideAPP.csproj",
+      "projectUniqueName": "D:\\c# project\\TourGuideAPP\\TourGuideAPP.csproj",
       "projectName": "TourGuideAPP",
-      "projectPath": "D:\\c# project\\csharp\\TourGuideAPP\\TourGuideAPP.csproj",
+      "projectPath": "D:\\c# project\\TourGuideAPP\\TourGuideAPP.csproj",
       "packagesPath": "C:\\Users\\ADMIN\\.nuget\\packages\\",
-      "outputPath": "D:\\c# project\\csharp\\TourGuideAPP\\obj\\",
+      "outputPath": "D:\\c# project\\TourGuideAPP\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "fallbackFolders": [

@@ -42,7 +42,7 @@
                                    TextColor="#3D1C1C"/>
                             <!-- x:Name="SummaryLabel" — dùng bởi code-behind -->
                             <Label x:Name="SummaryLabel"
-                                   Text="Yêu thích: 0 | Lịch sử: 0 | Ghi chú: 0 | Wishlist: 0"
+                                   Text="Lịch sử: 0"
                                    FontSize="11"
                                    TextColor="#A36765"
                                    LineBreakMode="WordWrap"/>
@@ -87,74 +87,7 @@
                    TextColor="#FF5722" FontAttributes="Bold"
                    Margin="0,8,0,14"/>
 
-            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
-                  ColumnSpacing="12" RowSpacing="12" Margin="0,0,0,24">
 
-                <!-- Yêu thích -->
-                <Border Grid.Row="0" Grid.Column="0"
-                        BackgroundColor="White" StrokeShape="RoundRectangle 16"
-                        Stroke="#FFEBE6" StrokeThickness="1" Padding="18,20">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnFavoritesClicked"/>
-                    </Border.GestureRecognizers>
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="⭐" FontSize="28"/>
-                        <Label Text="Yêu thích" FontSize="15"
-                               FontAttributes="Bold" TextColor="#3D1C1C"/>
-                        <Label Text="Địa điểm đã lưu" FontSize="11"
-                               TextColor="#A36765"/>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- Lịch sử -->
-                <Border Grid.Row="0" Grid.Column="1"
-                        BackgroundColor="White" StrokeShape="RoundRectangle 16"
-                        Stroke="#FFEBE6" StrokeThickness="1" Padding="18,20">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnHistoryClicked"/>
-                    </Border.GestureRecognizers>
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="🗺️" FontSize="28"/>
-                        <Label Text="Lịch sử" FontSize="15"
-                               FontAttributes="Bold" TextColor="#3D1C1C"/>
-                        <Label Text="Tour đã đi qua" FontSize="11"
-                               TextColor="#A36765"/>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- Ghi chú -->
-                <Border Grid.Row="1" Grid.Column="0"
-                        BackgroundColor="White" StrokeShape="RoundRectangle 16"
-                        Stroke="#FFEBE6" StrokeThickness="1" Padding="18,20">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnNotesClicked"/>
-                    </Border.GestureRecognizers>
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="📝" FontSize="28"/>
-                        <Label Text="Ghi chú" FontSize="15"
-                               FontAttributes="Bold" TextColor="#3D1C1C"/>
-                        <Label Text="Ghi chép cá nhân" FontSize="11"
-                               TextColor="#A36765"/>
-                    </VerticalStackLayout>
-                </Border>
-
-                <!-- Wishlist -->
-                <Border Grid.Row="1" Grid.Column="1"
-                        BackgroundColor="White" StrokeShape="RoundRectangle 16"
-                        Stroke="#FFEBE6" StrokeThickness="1" Padding="18,20">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnWishlistClicked"/>
-                    </Border.GestureRecognizers>
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="💝" FontSize="28"/>
-                        <Label Text="Wishlist" FontSize="15"
-                               FontAttributes="Bold" TextColor="#3D1C1C"/>
-                        <Label Text="Muốn thử sau" FontSize="11"
-                               TextColor="#A36765"/>
-                    </VerticalStackLayout>
-                </Border>
-
-            </Grid>
 
             <!-- CÀI ĐẶT -->
             <Label Text="— CÀI ĐẶT" FontSize="10" CharacterSpacing="3"

@@ -3,55 +3,75 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TourGuideAPP.Views.ToursPage"
              Title="Tour"
-             BackgroundColor="#1A1008"
+             BackgroundColor="#0F0E0D"
              Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto,Auto,*" Padding="20,52,20,0">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="0">
 
-        <!-- ═══ HEADER + SEARCH ═══ -->
-        <VerticalStackLayout Grid.Row="0" Spacing="4" Margin="0,0,0,20">
+        <!-- ═══ HEADER ═══ -->
+        <VerticalStackLayout Grid.Row="0"
+                             BackgroundColor="#1A1410"
+                             Padding="20,52,20,18"
+                             Spacing="4">
 
-            <!-- Title -->
-            <Label Text="KHÁM PHÁ" FontSize="10" CharacterSpacing="4"
-                   TextColor="#C8853A" FontAttributes="Bold"/>
-            <Label Text="Gói Tour" FontSize="30" FontAttributes="Bold"
-                   TextColor="#F5ECD7"/>
+            <Label Text="KHÁM PHÁ"
+                   FontSize="10"
+                   CharacterSpacing="4"
+                   TextColor="#C8A96E"
+                   FontAttributes="Bold"/>
+
+            <Label Text="Gói Tour"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="#F0E6D3"/>
+
             <Label Text="Gợi ý theo sở thích, ngân sách, thời gian."
-                   FontSize="13" TextColor="#7A5C3A" Margin="0,0,0,16"/>
+                   FontSize="12"
+                   TextColor="#5A4A3A"
+                   Margin="0,0,0,14"/>
 
-            <!-- Search + Filter button -->
+            <!-- Search + Filter -->
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+
                 <Border Grid.Column="0"
-                        BackgroundColor="#2E1F0E"
+                        BackgroundColor="#26201A"
                         StrokeShape="RoundRectangle 12"
-                        Stroke="#3D2A15"
+                        Stroke="#3A2D22"
                         StrokeThickness="1"
-                        Padding="14,12">
+                        Padding="14,10">
                     <Grid ColumnDefinitions="Auto,*">
-                        <Label Grid.Column="0" Text="🔍" FontSize="15"
-                               VerticalOptions="Center"/>
+                        <Label Grid.Column="0"
+                               Text="🔍"
+                               FontSize="14"
+                               VerticalOptions="Center"
+                               TextColor="#5A4A3A"/>
                         <Entry x:Name="SearchEntry"
                                Grid.Column="1"
                                Placeholder="Tìm tour (ăn vặt, hải sản, cafe...)"
-                               PlaceholderColor="#7A5C3A"
-                               TextColor="#F5ECD7"
+                               PlaceholderColor="#5A4A3A"
+                               TextColor="#F0E6D3"
                                BackgroundColor="Transparent"
                                Margin="8,0,0,0"
-                               FontSize="13"/>
+                               FontSize="12"/>
                     </Grid>
                 </Border>
+
                 <Border Grid.Column="1"
-                        BackgroundColor="#C8853A"
+                        BackgroundColor="#C8A96E"
                         StrokeShape="RoundRectangle 12"
                         Stroke="Transparent"
-                        Padding="18,12">
+                        Padding="18,10">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnFilterClicked"/>
                     </Border.GestureRecognizers>
-                    <Label Text="Lọc" FontSize="14" FontAttributes="Bold"
-                           TextColor="#1A1008" HorizontalOptions="Center"
+                    <Label Text="Lọc"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           TextColor="#1A1410"
+                           HorizontalOptions="Center"
                            VerticalOptions="Center"/>
                 </Border>
+
             </Grid>
         </VerticalStackLayout>
 
@@ -59,178 +79,222 @@
         <Border Grid.Row="1"
                 x:Name="FilterPanel"
                 IsVisible="False"
-                BackgroundColor="#2E1F0E"
-                StrokeShape="RoundRectangle 16"
-                Stroke="#3D2A15"
-                StrokeThickness="1"
-                Padding="16"
-                Margin="0,0,0,16">
+                BackgroundColor="#1A1410"
+                StrokeShape="RoundRectangle 0"
+                Stroke="Transparent"
+                StrokeThickness="0"
+                Padding="20,14,20,16">
             <VerticalStackLayout Spacing="14">
 
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+
                     <!-- Thời gian -->
                     <VerticalStackLayout Grid.Column="0" Spacing="6">
-                        <Label Text="THỜI GIAN" FontSize="10" CharacterSpacing="2"
-                               TextColor="#C8853A" FontAttributes="Bold"/>
-                        <Border BackgroundColor="#3D2A15" StrokeShape="RoundRectangle 10"
-                                Stroke="Transparent" Padding="8,4">
+                        <Label Text="THỜI GIAN"
+                               FontSize="9"
+                               CharacterSpacing="2"
+                               TextColor="#C8A96E"
+                               FontAttributes="Bold"/>
+                        <Border BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="#3A2D22"
+                                StrokeThickness="1"
+                                Padding="10,6">
                             <Picker x:Name="DurationPicker"
                                     Title="Chọn thời gian"
-                                    TextColor="#F5ECD7"
-                                    TitleColor="#7A5C3A"
-                                    BackgroundColor="Transparent"/>
+                                    TextColor="#F0E6D3"
+                                    TitleColor="#5A4A3A"
+                                    BackgroundColor="Transparent"
+                                    FontSize="12"/>
                         </Border>
                     </VerticalStackLayout>
+
                     <!-- Ngân sách -->
                     <VerticalStackLayout Grid.Column="1" Spacing="6">
                         <Grid ColumnDefinitions="*,Auto">
-                            <Label Grid.Column="0" Text="NGÂN SÁCH" FontSize="10"
-                                   CharacterSpacing="2" TextColor="#C8853A"
+                            <Label Grid.Column="0"
+                                   Text="NGÂN SÁCH"
+                                   FontSize="9"
+                                   CharacterSpacing="2"
+                                   TextColor="#C8A96E"
                                    FontAttributes="Bold"/>
                             <Label x:Name="BudgetValueLabel"
                                    Grid.Column="1"
                                    Text="200k"
-                                   FontSize="12"
+                                   FontSize="11"
                                    FontAttributes="Bold"
-                                   TextColor="#C8853A"/>
+                                   TextColor="#C8A96E"/>
                         </Grid>
                         <Slider x:Name="BudgetSlider"
                                 Minimum="50"
                                 Maximum="500"
                                 Value="200"
                                 ValueChanged="OnBudgetChanged"
-                                MinimumTrackColor="#C8853A"
-                                MaximumTrackColor="#3D2A15"
-                                ThumbColor="#C8853A"/>
+                                MinimumTrackColor="#C8A96E"
+                                MaximumTrackColor="#3A2D22"
+                                ThumbColor="#C8A96E"/>
                     </VerticalStackLayout>
+
                 </Grid>
 
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+
                     <!-- Ưu tiên đi bộ ít -->
                     <VerticalStackLayout Grid.Column="0" Spacing="6">
-                        <Label Text="ƯU TIÊN" FontSize="10" CharacterSpacing="2"
-                               TextColor="#C8853A" FontAttributes="Bold"/>
+                        <Label Text="ƯU TIÊN"
+                               FontSize="9"
+                               CharacterSpacing="2"
+                               TextColor="#C8A96E"
+                               FontAttributes="Bold"/>
                         <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                            <Label Text="Đi bộ ít" FontSize="13"
-                                   TextColor="#F5ECD7" VerticalOptions="Center"/>
+                            <Label Text="Đi bộ ít"
+                                   FontSize="12"
+                                   TextColor="#F0E6D3"
+                                   VerticalOptions="Center"/>
                             <Switch x:Name="LowWalkingSwitch"
-                                    OnColor="#C8853A"
-                                    ThumbColor="#F5ECD7"/>
+                                    OnColor="#C8A96E"
+                                    ThumbColor="#F0E6D3"/>
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
+
                     <!-- Áp dụng -->
                     <Border Grid.Column="1"
-                            BackgroundColor="#C8853A"
+                            BackgroundColor="#C8A96E"
                             StrokeShape="RoundRectangle 12"
                             Stroke="Transparent"
-                            Padding="18,12"
+                            Padding="18,10"
                             VerticalOptions="End">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnApplyFiltersClicked"/>
                         </Border.GestureRecognizers>
-                        <Label Text="Áp dụng" FontSize="13" FontAttributes="Bold"
-                               TextColor="#1A1008" HorizontalOptions="Center"/>
+                        <Label Text="Áp dụng"
+                               FontSize="12"
+                               FontAttributes="Bold"
+                               TextColor="#1A1410"
+                               HorizontalOptions="Center"/>
                     </Border>
+
                 </Grid>
 
             </VerticalStackLayout>
         </Border>
 
+
+
         <!-- ═══ TOUR LIST ═══ -->
-        <ScrollView Grid.Row="2">
-            <VerticalStackLayout Spacing="0" Padding="0,0,0,100">
+        <ScrollView Grid.Row="2"
+                    BackgroundColor="#0F0E0D">
+            <VerticalStackLayout Spacing="0" Padding="20,16,20,100">
 
                 <!-- Section label -->
-                <Label Text="— CÁC GÓI TOUR BIÊN TẬP" FontSize="10"
-                       CharacterSpacing="2" TextColor="#C8853A"
-                       FontAttributes="Bold" Margin="0,0,0,16"/>
+                <Label Text="— CÁC GÓI TOUR BIÊN TẬP"
+                       FontSize="9"
+                       CharacterSpacing="3"
+                       TextColor="#C8A96E"
+                       FontAttributes="Bold"
+                       Margin="0,0,0,14"/>
 
                 <CollectionView x:Name="ToursCollection"
                                 ItemsSource="{Binding Tours}"
                                 SelectionMode="None">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Border BackgroundColor="#2E1F0E"
+
+                            <!-- Tour Card -->
+                            <Border BackgroundColor="#1A1410"
                                     StrokeShape="RoundRectangle 16"
-                                    Stroke="Transparent"
-                                    Margin="0,0,0,14">
+                                    Stroke="#2A2018"
+                                    StrokeThickness="1"
+                                    Margin="0,0,0,12">
 
                                 <Grid RowDefinitions="Auto,Auto,Auto"
                                       ColumnDefinitions="*,Auto"
                                       RowSpacing="0"
-                                      Padding="16,16,16,16">
+                                      Padding="16">
 
-                                    <!-- Row 0: Title + Tag badge -->
-                                    <VerticalStackLayout Grid.Row="0" Grid.Column="0"
-                                                         Spacing="3" Margin="0,0,0,8">
-                                        <Label Text="{Binding Title}"
-                                               FontSize="18"
-                                               FontAttributes="Bold"
-                                               TextColor="#F5ECD7"/>
-                                    </VerticalStackLayout>
+                                    <!-- Row 0: Title + Badge -->
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                           Text="{Binding Title}"
+                                           FontSize="17"
+                                           FontAttributes="Bold"
+                                           TextColor="#F0E6D3"
+                                           Margin="0,0,0,6"/>
 
                                     <Border Grid.Row="0" Grid.Column="1"
-                                            BackgroundColor="#C8853A"
+                                            BackgroundColor="#2A2018"
                                             StrokeThickness="0"
                                             StrokeShape="RoundRectangle 20"
-                                            Padding="12,5"
+                                            Padding="10,5"
                                             VerticalOptions="Start">
                                         <Label Text="{Binding Tag}"
-                                               FontSize="11"
+                                               FontSize="10"
                                                FontAttributes="Bold"
-                                               TextColor="#1A1008"/>
+                                               TextColor="#C8A96E"/>
                                     </Border>
 
                                     <!-- Row 1: Description -->
                                     <Label Grid.Row="1" Grid.ColumnSpan="2"
                                            Text="{Binding Description}"
-                                           FontSize="13"
-                                           TextColor="#A07850"
+                                           FontSize="12"
+                                           TextColor="#5A4A3A"
                                            LineBreakMode="TailTruncation"
                                            MaxLines="2"
                                            Margin="0,0,0,12"/>
 
                                     <!-- Row 2: Meta chips + Chọn button -->
                                     <HorizontalStackLayout Grid.Row="2" Grid.Column="0"
-                                                           Spacing="8"
+                                                           Spacing="6"
                                                            VerticalOptions="Center">
-                                        <Border BackgroundColor="#3D2A15"
+
+                                        <Border BackgroundColor="#26201A"
                                                 StrokeShape="RoundRectangle 8"
-                                                Stroke="Transparent" Padding="10,5">
+                                                Stroke="Transparent"
+                                                Padding="9,5">
                                             <Label Text="{Binding DurationText, StringFormat='⏱ {0}'}"
-                                                   FontSize="11" TextColor="#C8853A"/>
+                                                   FontSize="10"
+                                                   TextColor="#C8A96E"/>
                                         </Border>
-                                        <Border BackgroundColor="#3D2A15"
+
+                                        <Border BackgroundColor="#26201A"
                                                 StrokeShape="RoundRectangle 8"
-                                                Stroke="Transparent" Padding="10,5">
+                                                Stroke="Transparent"
+                                                Padding="9,5">
                                             <Label Text="{Binding BudgetText, StringFormat='💰 {0}'}"
-                                                   FontSize="11" TextColor="#C8853A"/>
+                                                   FontSize="10"
+                                                   TextColor="#C8A96E"/>
                                         </Border>
-                                        <Border BackgroundColor="#3D2A15"
+
+                                        <Border BackgroundColor="#26201A"
                                                 StrokeShape="RoundRectangle 8"
-                                                Stroke="Transparent" Padding="10,5">
+                                                Stroke="Transparent"
+                                                Padding="9,5">
                                             <Label Text="{Binding StopsText}"
-                                                   FontSize="11" TextColor="#C8853A"/>
+                                                   FontSize="10"
+                                                   TextColor="#C8A96E"/>
                                         </Border>
+
                                     </HorizontalStackLayout>
 
                                     <Border Grid.Row="2" Grid.Column="1"
-                                            BackgroundColor="#C8853A"
-                                            StrokeShape="RoundRectangle 12"
+                                            BackgroundColor="#C8A96E"
+                                            StrokeShape="RoundRectangle 10"
                                             Stroke="Transparent"
-                                            Padding="20,10"
+                                            Padding="18,9"
                                             VerticalOptions="Center">
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer Tapped="OnSelectTourClicked"
                                                                   CommandParameter="{Binding Id}"/>
                                         </Border.GestureRecognizers>
-                                        <Label Text="Chọn" FontSize="14"
-                                               FontAttributes="Bold" TextColor="#1A1008"
+                                        <Label Text="Chọn"
+                                               FontSize="13"
+                                               FontAttributes="Bold"
+                                               TextColor="#1A1410"
                                                HorizontalOptions="Center"/>
                                     </Border>
 
                                 </Grid>
                             </Border>
+
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>

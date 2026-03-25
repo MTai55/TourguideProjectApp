@@ -10,7 +10,7 @@
       <dSYMInfoPlistRelativePath>TourGuideAPP.app.dSYM\Contents\Info.plist</dSYMInfoPlistRelativePath>
       <SymbolFile></SymbolFile>
       <DSymName>TourGuideAPP.app.dSYM</DSymName>
-      <SourceProjectPath>D:\c# project\csharp\TourGuideAPP</SourceProjectPath>
+      <SourceProjectPath>D:\c# project\TourGuideAPP</SourceProjectPath>
       <IsXPCService></IsXPCService>
     </_PostProcessingItem>
   </ItemGroup>

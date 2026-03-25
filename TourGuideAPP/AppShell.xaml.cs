@@ -17,10 +17,6 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("RegisterPage", typeof(RegisterPage));
         Routing.RegisterRoute("QRScanPage", typeof(QRScanPage));
         Routing.RegisterRoute("PlaceDetailPage", typeof(PlaceDetailPage));
-        Routing.RegisterRoute("FavoritesPage", typeof(FavoritesPage));
-        Routing.RegisterRoute("TripHistoryPage", typeof(TripHistoryPage));
-        Routing.RegisterRoute("NotesPage", typeof(NotesPage));
-        Routing.RegisterRoute("WishlistPage", typeof(WishlistPage));
     }
 
     public void ActivateMapTab()

@@ -2,6 +2,7 @@ using Mapsui;
 using Mapsui.Projections;
 using Mapsui.Tiling;
 using Mapsui.Layers;
+using Mapsui.UI.Maui;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Mapsui.Nts;
@@ -20,7 +21,7 @@ public partial class MapPage : ContentPage
     private readonly UserProfileService _profileService;
     private readonly AuthService _authService;
     private string? _lastSpokenPOIId;
-    private POI? _nearestPoi;
+    private bool _mapInfoHooked;
     private (double lat, double lon, string? name)? _destination;
     private readonly HttpClient _http = new();
 
@@ -63,10 +64,21 @@ public partial class MapPage : ContentPage
 
     private void SetupMap()
     {
-        MyMap.Map.Layers.Add(OpenStreetMap.CreateTileLayer());
+        if (!MyMap.Map.Layers.Any(l => l.Name == "BaseMap"))
+        {
+            var baseLayer = OpenStreetMap.CreateTileLayer();
+            baseLayer.Name = "BaseMap";
+            MyMap.Map.Layers.Add(baseLayer);
+        }
 
         var (x, y) = SphericalMercator.FromLonLat(106.6820, 10.7600);
         MyMap.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), MyMap.Map.Navigator.Resolutions[14]);
+
+        if (!_mapInfoHooked)
+        {
+            MyMap.Info += OnMapInfo;
+            _mapInfoHooked = true;
+        }
     }
 
     private async Task LoadPOIsAsync()
@@ -78,9 +90,15 @@ public partial class MapPage : ContentPage
         {
             var (x, y) = SphericalMercator.FromLonLat(poi.Longitude, poi.Latitude);
             var feature = new PointFeature(new MPoint(x, y));
+            feature["id"] = poi.Id;
             feature["name"] = poi.Name;
+            feature["tts"] = poi.TtsScript;
             features.Add(feature);
         }
+
+        var oldLayer = MyMap.Map.Layers.FirstOrDefault(l => l.Name == "POIs");
+        if (oldLayer is not null)
+            MyMap.Map.Layers.Remove(oldLayer);
 
         var layer = new MemoryLayer
         {
@@ -96,6 +114,38 @@ public partial class MapPage : ContentPage
         MyMap.Map.Layers.Add(layer);
     }
 
+    private async void OnMapInfo(object? sender, MapInfoEventArgs e)
+    {
+        var hitLayers = MyMap.Map.Layers.Where(l => l.Name == "POIs");
+        var mapInfo = e.GetMapInfo?.Invoke(hitLayers);
+        var hit = mapInfo?.Feature;
+        if (hit is null)
+            return;
+
+        var id = hit["id"]?.ToString();
+        var name = hit["name"]?.ToString();
+        var tts = hit["tts"]?.ToString();
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        var action = await DisplayActionSheetAsync(
+            $"📍 {name}",
+            "Đóng",
+            null,
+            "🎙️ Thuyết minh");
+
+        if (action == "🎙️ Thuyết minh")
+        {
+            var script = string.IsNullOrWhiteSpace(tts)
+                ? $"Đây là địa điểm {name}."
+                : tts!;
+            await _narrationService.SpeakAsync(script);
+
+            if (!string.IsNullOrWhiteSpace(id))
+                _lastSpokenPOIId = id;
+        }
+    }
+
     private void StartGPS()
     {
         _locationService.LocationChanged += (location) =>
@@ -105,13 +155,15 @@ public partial class MapPage : ContentPage
                 var (x, y) = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
                 MyMap.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), MyMap.Map.Navigator.Resolutions[16]);
 
+                var address = await _locationService.GetAddressAsync(location);
+                CurrentAddressLabel.Text = $"📍 Địa chỉ hiện tại: {address}";
+
                 var pois = _poiService.GetCachedPOIs();
                 var nearest = _geofenceEngine.FindNearestPOI(
                     location.Latitude, location.Longitude, pois);
 
                 if (nearest != null)
                 {
-                    _nearestPoi = nearest;
                     NearestPOILabel.Text = $"🏛️ Gần: {nearest.Name} ({GetDistanceMeters(location.Latitude, location.Longitude, nearest.Latitude, nearest.Longitude):F0}m)";
                     if (_lastSpokenPOIId != nearest.Id)
                     {
@@ -122,45 +174,11 @@ public partial class MapPage : ContentPage
                 }
                 else
                 {
-                    _nearestPoi = null;
                     NearestPOILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
                     _lastSpokenPOIId = null;
                 }
             });
         };
-    }
-
-    private async void OnNearestCheckInClicked(object sender, EventArgs e)
-    {
-        if (!_authService.IsLoggedIn)
-        {
-            await Shell.Current.GoToAsync("//LoginPage");
-            return;
-        }
-
-        if (_nearestPoi is null)
-        {
-            await DisplayAlert("Không có điểm", "Không xác định được địa điểm gần nhất để check-in.", "OK");
-            return;
-        }
-
-        var current = _locationService.LastKnownLocation;
-        if (current is null)
-        {
-            await DisplayAlert("Lỗi GPS", "Chưa có vị trí GPS. Vui lòng bật GPS.", "OK");
-            return;
-        }
-
-        var distance = GetDistanceMeters(current.Latitude, current.Longitude, _nearestPoi.Latitude, _nearestPoi.Longitude);
-        if (distance <= 100)
-        {
-            await _profileService.AddHistoryByGpsAsync(_nearestPoi);
-            await DisplayAlert("Check-in thành công", $"Đã ghi lịch sử đến {_nearestPoi.Name} (GPS).", "OK");
-        }
-        else
-        {
-            await DisplayAlert("Chưa đến gần", $"Khoảng cách còn {distance:F0}m. Hãy đến gần hơn để check-in.", "OK");
-        }
     }
 
     private static double GetDistanceMeters(double lat1, double lon1, double lat2, double lon2)

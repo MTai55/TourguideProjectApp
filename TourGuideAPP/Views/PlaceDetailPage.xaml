@@ -120,38 +120,7 @@
                                 HeightRequest="44"
                                 Padding="16,0"/>
                     </HorizontalStackLayout>
-                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
-                        <Button x:Name="FavoriteButton" Text="❤ Thêm yêu thích"
-                                Clicked="OnFavoriteClicked"
-                                BackgroundColor="#FFB74D"
-                                TextColor="White"
-                                CornerRadius="20"
-                                HeightRequest="44"
-                                Padding="16,0"/>
-                        <Button x:Name="WishlistButton" Text="💖 Thêm wishlist"
-                                Clicked="OnWishlistClicked"
-                                BackgroundColor="#4FC3F7"
-                                TextColor="White"
-                                CornerRadius="20"
-                                HeightRequest="44"
-                                Padding="16,0"/>
-                    </HorizontalStackLayout>
-                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
-                        <Button Text="📍 Check-in GPS"
-                                Clicked="OnCheckInClicked"
-                                BackgroundColor="#4CAF50"
-                                TextColor="White"
-                                CornerRadius="20"
-                                HeightRequest="44"
-                                Padding="16,0"/>
-                        <Button Text="🧾 Đã đặt bàn" 
-                                Clicked="OnBookingCompleteClicked"
-                                BackgroundColor="#9C27B0"
-                                TextColor="White"
-                                CornerRadius="20"
-                                HeightRequest="44"
-                                Padding="16,0"/>
-                    </HorizontalStackLayout>
+
                 </VerticalStackLayout>
             </Frame>
 

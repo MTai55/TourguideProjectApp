@@ -16,6 +16,8 @@ public partial class MainPage : ContentPage
     private readonly PlaceService _placeService;
     private readonly UserProfileService _profileService;
     private string? _lastSpokenPOIId;
+    private DateTime _lastReverseGeocodeAt = DateTime.MinValue;
+    private string? _lastResolvedLocationText;
 
     public MainPage(Supabase.Client supabase, LocationService locationService,
                     GeofenceEngine geofenceEngine, POIService poiService,
@@ -98,8 +100,10 @@ public partial class MainPage : ContentPage
                 GpsLabel.Text = $"📍 {location.Latitude:F6}, {location.Longitude:F6}";
                 var pois = _poiService.GetCachedPOIs();
                 var nearest = _geofenceEngine.FindNearestPOI(location.Latitude, location.Longitude, pois);
+
                 if (nearest != null)
                 {
+                    UserLocationLabel.Text = nearest.Name;
                     POILabel.Text = $"🏛️ Gần: {nearest.Name}";
                     if (_lastSpokenPOIId != nearest.Id)
                     {
@@ -110,12 +114,57 @@ public partial class MainPage : ContentPage
                 }
                 else
                 {
+                    UserLocationLabel.Text = await ResolveLocationNameAsync(location);
                     POILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
                     _lastSpokenPOIId = null;
                 }
             });
         };
         await _locationService.StartAsync();
+    }
+
+    private async Task<string> ResolveLocationNameAsync(Location location)
+    {
+        // Avoid calling reverse-geocoding too often while GPS updates continuously.
+        if (_lastResolvedLocationText is not null &&
+            DateTime.UtcNow - _lastReverseGeocodeAt < TimeSpan.FromSeconds(20))
+        {
+            return _lastResolvedLocationText;
+        }
+
+        try
+        {
+            var placemarks = await Geocoding.Default.GetPlacemarksAsync(location.Latitude, location.Longitude);
+            var place = placemarks?.FirstOrDefault();
+
+            if (place is not null)
+            {
+                var segments = new List<string>();
+                if (!string.IsNullOrWhiteSpace(place.Thoroughfare))
+                    segments.Add(place.Thoroughfare!);
+                if (!string.IsNullOrWhiteSpace(place.SubAdminArea))
+                    segments.Add(place.SubAdminArea!);
+                if (!string.IsNullOrWhiteSpace(place.AdminArea))
+                    segments.Add(place.AdminArea!);
+
+                var text = segments.Count > 0
+                    ? string.Join(", ", segments)
+                    : $"{location.Latitude:F5}, {location.Longitude:F5}";
+
+                _lastResolvedLocationText = text;
+                _lastReverseGeocodeAt = DateTime.UtcNow;
+                return text;
+            }
+        }
+        catch
+        {
+            // Fallback below when geocoding service is unavailable.
+        }
+
+        var fallback = $"{location.Latitude:F5}, {location.Longitude:F5}";
+        _lastResolvedLocationText = fallback;
+        _lastReverseGeocodeAt = DateTime.UtcNow;
+        return fallback;
     }
 
             private async void OnMapClicked(object sender, EventArgs e)

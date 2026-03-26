@@ -1,0 +1,104 @@
+@using TourismApp.Web.Models
+@model List<TourismApp.Web.Models.ComplaintViewModel>
+@{ ViewData["Title"] = "Khiếu nại"; }
+
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pt-2">
+  <div>
+    <h2 class="text-4xl font-extrabold tracking-tight text-on-surface">Khiếu nại của tôi</h2>
+    <p class="text-on-surface-variant text-sm font-medium mt-1">Theo dõi các khiếu nại bạn đã gửi lên Admin.</p>
+  </div>
+  <button onclick="document.getElementById('createModal').classList.remove('hidden')"
+          class="inline-flex items-center gap-2 px-7 py-3.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+          style="background:linear-gradient(135deg,#954400,#fc8127)">
+    <span class="material-symbols-outlined">add</span> Gửi khiếu nại
+  </button>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+  <div class="flex flex-col items-center py-20 text-center bg-surface-container-lowest rounded-xl">
+    <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">check_circle</span>
+    <h3 class="font-bold text-lg mb-2">Chưa có khiếu nại nào</h3>
+    <p class="text-sm text-on-surface-variant">Nếu gặp vấn đề, hãy gửi khiếu nại để Admin hỗ trợ.</p>
+  </div>
+}
+
+<div class="space-y-4">
+  @foreach (var c in Model ?? new List<ComplaintViewModel>())
+  {
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <h3 class="font-bold text-base">@c.Title</h3>
+          <span class="text-xs text-on-surface-variant">@c.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+        </div>
+        @{
+          var (bg, text) = c.Status switch {
+            "Pending"    => ("bg-amber-50 text-amber-700",    "⏳ Chờ xử lý"),
+            "Processing" => ("bg-blue-50 text-blue-700",      "🔄 Đang xử lý"),
+            "Resolved"   => ("bg-emerald-50 text-emerald-700","✅ Đã giải quyết"),
+            "Rejected"   => ("bg-red-50 text-red-700",        "❌ Từ chối"),
+            _            => ("bg-slate-100 text-slate-600",   c.Status),
+          };
+        }
+        <span class="px-3 py-1.5 rounded-xl text-xs font-bold @bg shrink-0">@text</span>
+      </div>
+
+      <p class="text-sm text-on-surface leading-relaxed mb-4">@c.Content</p>
+
+      @if (!string.IsNullOrEmpty(c.AdminNote))
+      {
+        <div class="bg-primary/5 rounded-xl p-4 border-l-4 border-primary">
+          <p class="text-xs font-bold text-primary mb-1">Phản hồi từ Admin</p>
+          <p class="text-sm text-on-surface">@c.AdminNote</p>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+    <div class="p-6 border-b border-surface-container flex justify-between items-center">
+      <h3 class="font-bold text-lg">Gửi khiếu nại mới</h3>
+      <button onclick="document.getElementById('createModal').classList.add('hidden')"
+              class="text-on-surface-variant hover:text-on-surface transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form asp-action="Create" method="post" class="p-6 space-y-4">
+      @Html.AntiForgeryToken()
+      <div>
+        <label class="block text-sm font-semibold mb-2">Loại khiếu nại *</label>
+        <select name="Type" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20">
+          <option value="fake_review">🚩 Review không trung thực</option>
+          <option value="policy">📋 Vi phạm chính sách</option>
+          <option value="other">💬 Vấn đề khác</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2">Tiêu đề *</label>
+        <input name="Title" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+               placeholder="Tóm tắt vấn đề..." required />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2">Nội dung chi tiết *</label>
+        <textarea name="Content" rows="4" required
+                  class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                  placeholder="Mô tả chi tiết vấn đề bạn gặp phải..."></textarea>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')"
+                class="flex-1 py-3 bg-surface-container-low font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+          Hủy
+        </button>
+        <button type="submit"
+                class="flex-1 py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+                style="background:linear-gradient(135deg,#954400,#fc8127)">
+          Gửi khiếu nại
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,32 +1,32 @@
 using Microsoft.AspNetCore.Mvc;
 using TourismApp.Web.Models;
 using TourismApp.Web.Services;
+using TourismApp.Web.Filters;
 
 namespace TourismApp.Web.Controllers;
 
+[OwnerOnly]
 public class PlacesController(ApiService api) : Controller
 {
     private bool IsLoggedIn => HttpContext.Session.GetString("JwtToken") != null;
 
-    public async Task<IActionResult> Index(
-        string? search, int page = 1,
-        string? categoryId = null,
-        string? isApproved = null,
-        string? sortBy = null,
-        string? district = null,
-        string? maxPrice = null)
+    public async Task<IActionResult> Index(string? search, int page = 1)
     {
-        if (!IsLoggedIn) return RedirectToAction("Login", "Auth");
-        var result = await api.GetPlacesAsync(page, search, categoryId, isApproved, sortBy, district, maxPrice);
+        // Gọi /api/places/mine — chỉ quán của owner này
+        var result = await api.GetMyPlacesAsync(page, search);
         ViewBag.Search = search;
         ViewBag.Page = page;
         ViewBag.Total = result?.Total ?? 0;
-        ViewBag.CategoryId = categoryId;
-        ViewBag.IsApproved = isApproved;
-        ViewBag.SortBy = sortBy;
-        ViewBag.District = district;
-        ViewBag.MaxPrice = maxPrice;
         return View(result?.Items ?? []);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateOpenStatus(int id, string openStatus)
+    {
+        await api.UpdateOpenStatusAsync(id, openStatus);
+        TempData["Success"] = "Đã cập nhật trạng thái!";
+        return RedirectToAction("Index");
     }
 
     public IActionResult Create()
@@ -97,8 +97,23 @@ public class PlacesController(ApiService api) : Controller
 
     public async Task<IActionResult> Map()
     {
-        if (!IsLoggedIn) return RedirectToAction("Login", "Auth");
-        var result = await api.GetPlacesAsync(page: 1);
-        return View(result?.Items ?? []);
+        var role = HttpContext.Session.GetString("UserRole");
+        List<PlaceViewModel> places;
+
+        if (role == "Admin")
+        {
+            // Admin: tất cả quán
+            var result = await api.GetPlacesAsync(page: 1, pageSize: 200);
+            places = result?.Items ?? [];
+        }
+        else
+        {
+            // Owner: chỉ quán của mình
+            var result = await api.GetMyPlacesAsync(page: 1);
+            places = result?.Items ?? [];
+        }
+
+        ViewBag.IsAdmin = role == "Admin";
+        return View(places);
     }
 }

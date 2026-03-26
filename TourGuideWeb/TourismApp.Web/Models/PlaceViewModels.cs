@@ -24,6 +24,9 @@ public class PlaceViewModel
     public string? District { get; set; }
     public bool HasParking { get; set; }
     public bool HasAircon { get; set; }
+    public string Status { get; set; } = "Pending";
+    public string OpenStatus { get; set; } = "Closed";
+    public string? OwnerName { get; set; }
 }
 
 public class CreatePlaceViewModel
@@ -50,6 +53,9 @@ public class CreatePlaceViewModel
     public int? CategoryId { get; set; }
     public decimal? PriceMin { get; set; }
     public decimal? PriceMax { get; set; }
+    public string? Specialty { get; set; }
+    public int? PricePerPerson { get; set; }
+    public string? District { get; set; }
 }
 
 public class ReviewViewModel
@@ -66,6 +72,8 @@ public class ReviewViewModel
     public byte? TasteRating { get; set; }
     public byte? PriceRating { get; set; }
     public byte? SpaceRating { get; set; }
+    public bool IsHidden { get; set; }
+    public string? HiddenNote { get; set; }
 }
 
 public class PromotionViewModel
@@ -99,4 +107,11 @@ public class CreatePromotionViewModel
 
     [Required]
     public DateTime EndDate { get; set; } = DateTime.Today.AddDays(7);
+}
+
+public class PlaceImageViewModel
+{
+    public int ImageId { get; set; }
+    public string ImageUrl { get; set; } = string.Empty;
+    public bool IsMain { get; set; }
 }

@@ -1,0 +1,165 @@
+@using TourismApp.Web.Models
+@model List<TourismApp.Web.Models.PromotionViewModel>
+@{ ViewData["Title"] = "Khuyến mãi"; }
+
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pt-2">
+  <div>
+    <h2 class="text-4xl font-extrabold tracking-tight text-on-surface">Khuyến mãi</h2>
+    <p class="text-on-surface-variant text-sm font-medium mt-1">Quản lý các chương trình ưu đãi cho quán của bạn.</p>
+  </div>
+  <button onclick="document.getElementById('createModal').classList.remove('hidden')"
+          class="inline-flex items-center gap-2 px-7 py-3.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+          style="background:linear-gradient(135deg,#954400,#fc8127)">
+    <span class="material-symbols-outlined">add</span> Tạo khuyến mãi
+  </button>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+  <div class="flex flex-col items-center py-20 text-center bg-surface-container-lowest rounded-xl">
+    <span class="text-6xl mb-4">🎁</span>
+    <h3 class="font-bold text-lg mb-2">Chưa có khuyến mãi nào</h3>
+    <p class="text-sm text-on-surface-variant mb-4">Tạo khuyến mãi để thu hút thêm khách hàng!</p>
+    <button onclick="document.getElementById('createModal').classList.remove('hidden')"
+            class="px-6 py-3 text-white font-bold rounded-xl text-sm"
+            style="background:linear-gradient(135deg,#954400,#fc8127)">
+      + Tạo khuyến mãi đầu tiên
+    </button>
+  </div>
+}
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  @foreach (var p in Model ?? new List<PromotionViewModel>())
+  {
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all @(p.IsExpired ? "opacity-60" : "")">
+      <!-- Color bar -->
+      <div class="h-1.5 @(p.IsExpired ? "bg-slate-300" : "")"
+           style="@(p.IsExpired ? "" : "background:linear-gradient(90deg,#954400,#fc8127)")"></div>
+      <div class="p-5">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="font-bold text-base leading-tight max-w-[200px]">@p.Title</h3>
+          @if (p.IsExpired)
+          {
+            <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-[11px] font-bold shrink-0">Hết hạn</span>
+          }
+          else
+          {
+            <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold shrink-0">Đang chạy</span>
+          }
+        </div>
+
+        @if (!string.IsNullOrEmpty(p.Description))
+        {
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-3">@p.Description</p>
+        }
+
+        <div class="flex items-center gap-3 flex-wrap mb-4">
+          @if (p.Discount.HasValue)
+          {
+            <span class="px-3 py-1.5 text-white font-black text-lg rounded-xl"
+                  style="background:linear-gradient(135deg,#954400,#fc8127)">
+              -@p.Discount%
+            </span>
+          }
+          @if (!string.IsNullOrEmpty(p.VoucherCode))
+          {
+            <code class="px-3 py-1.5 bg-surface-container-low font-bold text-sm rounded-xl text-on-surface tracking-wider">
+              @p.VoucherCode
+            </code>
+          }
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant mb-4">
+          <span class="material-symbols-outlined text-sm">calendar_today</span>
+          @p.StartDate.ToString("dd/MM") → @p.EndDate.ToString("dd/MM/yyyy")
+        </div>
+
+        @if (!p.IsExpired)
+        {
+          <form method="post" asp-action="Delete" asp-route-id="@p.PromoId"
+                onsubmit="return confirm('Xóa khuyến mãi «@p.Title»?')">
+            @Html.AntiForgeryToken()
+            <button type="submit"
+                    class="w-full py-2.5 bg-red-50 text-red-600 font-bold rounded-xl text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">delete</span> Xóa khuyến mãi
+            </button>
+          </form>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Create Modal -->
+<div id="createModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6 border-b border-surface-container">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-lg">🎁 Tạo khuyến mãi mới</h3>
+        <button onclick="document.getElementById('createModal').classList.add('hidden')"
+                class="text-on-surface-variant hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+    <form asp-action="Create" method="post" class="p-6 space-y-4">
+      @Html.AntiForgeryToken()
+      <div>
+        <label class="block text-sm font-semibold mb-2">Quán áp dụng *</label>
+        <select name="PlaceId" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" required>
+          <option value="">Chọn quán...</option>
+          @foreach (var pl in (ViewBag.Places as List<TourismApp.Web.Models.PlaceViewModel>) ?? new List<TourismApp.Web.Models.PlaceViewModel>())
+          {
+            <option value="@pl.PlaceId">@pl.Name</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2">Tiêu đề *</label>
+        <input name="Title" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+               placeholder="VD: Giảm 20% cuối tuần" required />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2">Mô tả</label>
+        <textarea name="Description" rows="2"
+                  class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                  placeholder="Chi tiết chương trình khuyến mãi..."></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-semibold mb-2">% Giảm giá</label>
+          <input name="Discount" type="number" min="1" max="100"
+                 class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                 placeholder="VD: 20" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Mã voucher</label>
+          <input name="VoucherCode"
+                 class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                 placeholder="VD: SALE20" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Bắt đầu *</label>
+          <input name="StartDate" type="datetime-local"
+                 class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" required />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Kết thúc *</label>
+          <input name="EndDate" type="datetime-local"
+                 class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" required />
+        </div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')"
+                class="flex-1 py-3 bg-surface-container-low font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+          Hủy
+        </button>
+        <button type="submit"
+                class="flex-1 py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+                style="background:linear-gradient(135deg,#954400,#fc8127)">
+          Tạo khuyến mãi
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

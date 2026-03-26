@@ -2,64 +2,171 @@
 @model List<TourismApp.Web.Models.ReviewViewModel>
 @{ ViewData["Title"] = "Đánh giá"; }
 
-<div class="d-flex align-items-center gap-2 mb-4">
-  <a asp-controller="Places" asp-action="Index" class="btn btn-outline-secondary btn-sm">← Quay lại</a>
-  <h4 class="fw-bold mb-0">⭐ Đánh giá của khách</h4>
+<div class="flex items-center gap-3 mb-6 pt-2">
+  <a asp-controller="Places" asp-action="Index" class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-sm font-semibold">
+    <span class="material-symbols-outlined text-lg">arrow_back</span> Quay lại
+  </a>
+  <span class="text-slate-300">/</span>
+  <h2 class="text-2xl font-bold tracking-tight">Đánh giá của khách</h2>
 </div>
 
-@if (!Model.Any()) {
-  <div class="text-center text-muted py-5">Chưa có đánh giá nào.</div>
+@if (!(Model?.Any() ?? false))
+{
+  <div class="flex flex-col items-center py-20 text-center">
+    <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">rate_review</span>
+    <h3 class="font-bold text-lg text-on-surface mb-2">Chưa có đánh giá nào</h3>
+    <p class="text-sm text-on-surface-variant">Khách hàng chưa để lại đánh giá cho quán này.</p>
+  </div>
 }
 
-@foreach (var r in Model) {
-  <div class="card shadow-sm mb-3">
-    <div class="card-body">
-      <div class="d-flex justify-content-between">
-        <div>
-          <strong>@r.UserName</strong>
-          <span class="text-warning ms-2">
-            @for (int i = 1; i <= 5; i++) { @(i <= r.Rating ? "⭐" : "☆") }
-          </span>
+<div class="space-y-4">
+  @foreach (var r in Model ?? new List<ReviewViewModel>())
+  {
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+               style="background:linear-gradient(135deg,#954400,#fc8127)">
+            @r.UserName?[0]
+          </div>
+          <div>
+            <p class="font-bold text-sm">@r.UserName</p>
+            <p class="text-[10px] text-on-surface-variant">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+          </div>
         </div>
-        <small class="text-muted">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+        <!-- Rating stars -->
+        <div class="flex items-center gap-1">
+          @for (int i = 1; i <= 5; i++)
+          {
+            <span class="material-symbols-outlined text-sm @(i <= r.Rating ? "text-amber-500" : "text-slate-200")"
+                  style="@(i <= r.Rating ? "font-variation-settings:'FILL' 1" : "")">star</span>
+          }
+          <span class="font-bold text-sm ml-1">@r.Rating</span>
+        </div>
       </div>
-      <p class="mt-2 mb-2">@r.Comment</p>
 
-      @if (r.OwnerReply != null) {
-        <div class="bg-light rounded p-3 border-start border-primary border-3">
-          <small class="text-primary fw-bold">Phản hồi của bạn:</small>
-          <p class="mb-0">@r.OwnerReply</p>
-        </div>
-      } else {
-        <form method="post" action="/Reviews/Reply" class="mt-2">
-          @Html.AntiForgeryToken()
-          <input type="hidden" name="reviewId" value="@r.ReviewId">
-          <input type="hidden" name="placeId" value="@ViewBag.PlaceId">
-          <div class="input-group">
-            <input name="reply" class="form-control" placeholder="Nhập phản hồi..." required>
-            <button class="btn btn-primary">Gửi phản hồi</button>
-          </div>
-        </form>
+      <!-- Comment -->
+      @if (!string.IsNullOrEmpty(r.Comment))
+      {
+        <p class="text-sm text-on-surface leading-relaxed mb-4">@r.Comment</p>
       }
-      @if (r.TasteRating.HasValue || r.PriceRating.HasValue || r.SpaceRating.HasValue) {
-          <div class="d-flex gap-3 mt-2 mb-2">
-            @if (r.TasteRating.HasValue) {
-              <small><span class="text-muted">🍽️ Vị ngon:</span>
-                <span class="text-warning">@(new string('★', r.TasteRating.Value))@(new string('☆', 5 - r.TasteRating.Value))</span>
-              </small>
-            }
-            @if (r.PriceRating.HasValue) {
-              <small><span class="text-muted">💰 Giá cả:</span>
-                <span class="text-warning">@(new string('★', r.PriceRating.Value))@(new string('☆', 5 - r.PriceRating.Value))</span>
-              </small>
-            }
-            @if (r.SpaceRating.HasValue) {
-              <small><span class="text-muted">🪑 Không gian:</span>
-                <span class="text-warning">@(new string('★', r.SpaceRating.Value))@(new string('☆', 5 - r.SpaceRating.Value))</span>
-              </small>
-            }
-          </div>
-        }
+
+      <!-- 3 tiêu chí -->
+      @if (r.TasteRating.HasValue || r.PriceRating.HasValue || r.SpaceRating.HasValue)
+      {
+        <div class="flex flex-wrap gap-4 mb-4 py-3 border-t border-b border-surface-container">
+          @if (r.TasteRating.HasValue)
+          {
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-on-surface-variant">🍽️ Vị ngon</span>
+              <div class="flex">
+                @for (int i = 1; i <= 5; i++) {
+                  <span class="material-symbols-outlined text-xs @(i <= r.TasteRating.Value ? "text-amber-500" : "text-slate-200")"
+                        style="@(i <= r.TasteRating.Value ? "font-variation-settings:'FILL' 1" : "")">star</span>
+                }
+              </div>
+            </div>
+          }
+          @if (r.PriceRating.HasValue)
+          {
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-on-surface-variant">💰 Giá cả</span>
+              <div class="flex">
+                @for (int i = 1; i <= 5; i++) {
+                  <span class="material-symbols-outlined text-xs @(i <= r.PriceRating.Value ? "text-amber-500" : "text-slate-200")"
+                        style="@(i <= r.PriceRating.Value ? "font-variation-settings:'FILL' 1" : "")">star</span>
+                }
+              </div>
+            </div>
+          }
+          @if (r.SpaceRating.HasValue)
+          {
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-on-surface-variant">🪑 Không gian</span>
+              <div class="flex">
+                @for (int i = 1; i <= 5; i++) {
+                  <span class="material-symbols-outlined text-xs @(i <= r.SpaceRating.Value ? "text-amber-500" : "text-slate-200")"
+                        style="@(i <= r.SpaceRating.Value ? "font-variation-settings:'FILL' 1" : "")">star</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Owner reply -->
+      @if (!string.IsNullOrEmpty(r.OwnerReply))
+      {
+        <div class="bg-primary/5 rounded-xl p-4 border-l-4 border-primary">
+          <p class="text-xs font-bold text-primary mb-1">Phản hồi của bạn</p>
+          <p class="text-sm text-on-surface">@r.OwnerReply</p>
+        </div>
+      }
+      else
+      {
+        <div class="flex flex-col sm:flex-row gap-3 mt-2">
+          <!-- Reply form -->
+          <form method="post" asp-controller="Reviews" asp-action="Reply" class="flex-1 flex gap-2">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="reviewId" value="@r.ReviewId" />
+            <input type="hidden" name="placeId" value="@ViewBag.PlaceId" />
+            <input name="reply" class="flex-1 px-4 py-2.5 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                   placeholder="Nhập phản hồi cho khách..." required />
+            <button type="submit"
+                    class="px-4 py-2.5 text-white font-bold rounded-xl text-sm transition-all hover:scale-[1.02]"
+                    style="background:linear-gradient(135deg,#954400,#fc8127)">
+              Gửi
+            </button>
+          </form>
+
+          <!-- Complaint button -->
+          <button data-review-id="@r.ReviewId" data-place-id="@r.PlaceId"
+                  onclick="openComplainModal(this)"
+                  class="px-4 py-2.5 bg-red-50 text-red-600 font-bold rounded-xl text-sm hover:bg-red-100 transition-colors flex items-center gap-1.5 shrink-0">
+            <span class="material-symbols-outlined text-sm">flag</span> Khiếu nại
+          </button>
+        </div>
+      }
     </div>
+  }
+</div>
+
+<!-- Complaint Modal -->
+<div id="complainModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+    <h3 class="font-bold text-lg mb-4">🚩 Khiếu nại review</h3>
+    <form method="post" asp-controller="Reviews" asp-action="ComplainReview">
+      @Html.AntiForgeryToken()
+      <input type="hidden" id="complaint-review-id" name="reviewId" />
+      <input type="hidden" id="complaint-place-id" name="placeId" />
+      <div class="mb-4">
+        <label class="block text-sm font-semibold mb-2">Lý do khiếu nại</label>
+        <textarea name="reason" rows="4" required
+                  class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                  placeholder="Mô tả lý do bạn cho rằng review này không trung thực..."></textarea>
+      </div>
+      <div class="flex gap-3">
+        <button type="button" onclick="closeComplainModal()"
+                class="flex-1 py-3 bg-surface-container-low font-bold rounded-xl text-sm">Hủy</button>
+        <button type="submit"
+                class="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl text-sm hover:bg-red-700 transition-colors">
+          Gửi khiếu nại
+        </button>
+      </div>
+    </form>
   </div>
-} 
+</div>
+
+@section Scripts {
+<script>
+  function openComplainModal(btn) {
+    document.getElementById('complaint-review-id').value = btn.dataset.reviewId;
+    document.getElementById('complaint-place-id').value = btn.dataset.placeId;
+    document.getElementById('complainModal').classList.remove('hidden');
+  }
+  function closeComplainModal() {
+    document.getElementById('complainModal').classList.add('hidden');
+  }
+</script>
+}

@@ -1,71 +1,47 @@
+@using TourismApp.Web.Models
 @model TourismApp.Web.Models.AdminStatsViewModel
 @{ ViewData["Title"] = "Admin Dashboard"; }
 
-<h4 class="fw-bold mb-4">🔴 Admin Dashboard</h4>
+<h4 class="fw-bold mb-4">🔴 Quản trị hệ thống</h4>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-2">
-    <div class="card text-center p-3 border-0 shadow-sm">
-      <div class="fs-1">👥</div>
-      <div class="fs-2 fw-bold text-primary">@Model?.TotalUsers</div>
-      <small class="text-muted">Tổng Users</small>
+  @foreach (var stat in new[] {
+    ("👥", Model?.TotalUsers.ToString(), "Tổng users", "primary"),
+    ("🍜", Model?.TotalPlaces.ToString(), "Tổng quán", "success"),
+    ("⏳", Model?.PendingPlaces.ToString(), "Chờ duyệt", "warning"),
+    ("⭐", Model?.TotalReviews.ToString(), "Tổng review", "info"),
+    ("🙈", Model?.HiddenReviews.ToString(), "Review ẩn", "secondary"),
+    ("⚠️", Model?.PendingComplaints.ToString(), "Khiếu nại mới", "danger")
+  }) {
+    <div class="col-md-2">
+      <div class="card p-3 text-center border-0 shadow-sm">
+        <div class="fs-1">@stat.Item1</div>
+        <div class="fs-2 fw-bold text-@stat.Item4">@stat.Item2</div>
+        <small class="text-muted">@stat.Item3</small>
+      </div>
     </div>
-  </div>
-  <div class="col-md-2">
-    <div class="card text-center p-3 border-0 shadow-sm">
-      <div class="fs-1">🍜</div>
-      <div class="fs-2 fw-bold text-success">@Model?.TotalPlaces</div>
-      <small class="text-muted">Tổng quán</small>
-    </div>
-  </div>
-  <div class="col-md-2">
-    <div class="card text-center p-3 border-0 shadow-sm">
-      <div class="fs-1">⏳</div>
-      <div class="fs-2 fw-bold text-warning">@Model?.PendingPlaces</div>
-      <small class="text-muted">Chờ duyệt</small>
-    </div>
-  </div>
-  <div class="col-md-2">
-    <div class="card text-center p-3 border-0 shadow-sm">
-      <div class="fs-1">⭐</div>
-      <div class="fs-2 fw-bold text-danger">@Model?.TotalReviews</div>
-      <small class="text-muted">Tổng reviews</small>
-    </div>
-  </div>
-  <div class="col-md-2">
-    <div class="card text-center p-3 border-0 shadow-sm">
-      <div class="fs-1">⚠️</div>
-      <div class="fs-2 fw-bold text-orange" style="color:#f97316">@Model?.PendingComplaints</div>
-      <small class="text-muted">Khiếu nại</small>
-    </div>
-  </div>
+  }
 </div>
 
-<!-- Quick actions -->
+<!-- Quick Actions -->
 <div class="row g-3">
   <div class="col-md-4">
     <div class="card shadow-sm p-3">
-      <h6 class="fw-bold">⏳ Quán chờ duyệt</h6>
+      <h6 class="fw-bold">⏳ Quán chờ duyệt (@Model?.PendingPlaces)</h6>
       <a asp-controller="AdminPlaces" asp-action="Index"
-         asp-route-pendingOnly="true" class="btn btn-warning btn-sm">
-        Xem @Model?.PendingPlaces quán chờ →
-      </a>
+         asp-route-pendingOnly="true" class="btn btn-warning btn-sm">Duyệt ngay →</a>
     </div>
   </div>
   <div class="col-md-4">
     <div class="card shadow-sm p-3">
-      <h6 class="fw-bold">⚠️ Khiếu nại mới</h6>
-      <a asp-controller="AdminComplaints" asp-action="Index" class="btn btn-danger btn-sm">
-        Xử lý @Model?.PendingComplaints khiếu nại →
-      </a>
+      <h6 class="fw-bold">⚠️ Khiếu nại (@Model?.PendingComplaints)</h6>
+      <a asp-controller="AdminComplaints" asp-action="Index" class="btn btn-danger btn-sm">Xử lý →</a>
     </div>
   </div>
   <div class="col-md-4">
     <div class="card shadow-sm p-3">
-      <h6 class="fw-bold">👥 Quản lý tài khoản</h6>
-      <a asp-controller="AdminUsers" asp-action="Index" class="btn btn-primary btn-sm">
-        Xem @Model?.TotalUsers tài khoản →
-      </a>
+      <h6 class="fw-bold">👥 Tài khoản (@Model?.TotalUsers)</h6>
+      <a asp-controller="AdminUsers" asp-action="Index" class="btn btn-primary btn-sm">Quản lý →</a>
     </div>
   </div>
 </div>

@@ -13,11 +13,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<VisitHistory> VisitHistory { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
-
-    // Thêm DbSet mới
-    public DbSet<Promotion> Promotions { get; set; }
-    public DbSet<Staff> Staff { get; set; }
+    public DbSet<Message> Messages { get; set; }
     public DbSet<Complaint> Complaints { get; set; }
+    public DbSet<Promotion> Promotions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -139,5 +137,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Category { CategoryId = 4, Name = "Trà sữa & Đồ uống", Icon = "🧋", ColorHex = "#ec4899" },
             new Category { CategoryId = 5, Name = "Bánh & Tráng miệng", Icon = "🍰", ColorHex = "#eab308" }
         );
+
+        mb.Entity<Message>().ToTable("Messages").HasKey(m => m.MessageId);
+        mb.Entity<Complaint>().ToTable("Complaints").HasKey(c => c.ComplaintId);
+        mb.Entity<Promotion>().ToTable("Promotions").HasKey(p => p.PromoId);
     }
 }

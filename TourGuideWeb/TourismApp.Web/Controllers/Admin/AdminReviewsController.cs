@@ -5,19 +5,16 @@ using TourismApp.Web.Models;
 
 namespace TourismApp.Web.Controllers.Admin;
 
-
 [AdminOnly]
 public class AdminReviewsController(ApiService api) : Controller
 {
-    // GET /Admin/AdminReviews
-    public async Task<IActionResult> Index([FromQuery] bool hiddenOnly = false)
+    public async Task<IActionResult> Index(bool hiddenOnly = false)
     {
         var reviews = await api.GetAllReviewsAsync(hiddenOnly);
         ViewBag.HiddenOnly = hiddenOnly;
         return View(reviews ?? []);
     }
 
-    // POST /Admin/AdminReviews/Hide
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Hide(int reviewId, string note)
@@ -27,13 +24,12 @@ public class AdminReviewsController(ApiService api) : Controller
         return RedirectToAction("Index");
     }
 
-    // POST /Admin/AdminReviews/Show
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Show(int reviewId)
     {
         await api.ShowReviewAsync(reviewId);
-        TempData["Success"] = "Đã hiện review!";
+        TempData["Success"] = "Đã hiện lại review!";
         return RedirectToAction("Index");
     }
 }

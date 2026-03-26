@@ -1,0 +1,54 @@
+@using TourismApp.Web.Models
+@model List<TourismApp.Web.Models.PlaceViewModel>
+@{ ViewData["Title"] = "Duyệt quán"; }
+
+<h4 class="fw-bold mb-4">✅ Kiểm duyệt quán ăn</h4>
+
+<div class="mb-3">
+  <a asp-controller="AdminPlaces" asp-action="Index"
+     class="btn btn-outline-secondary btn-sm @(ViewBag.PendingOnly != true ? "active" : "")">Tất cả</a>
+  <a asp-controller="AdminPlaces" asp-action="Index" asp-route-pendingOnly="true"
+     class="btn btn-warning btn-sm ms-1 @(ViewBag.PendingOnly == true ? "active" : "")">⏳ Chờ duyệt</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr>
+        <th>Tên quán</th><th>Chủ quán</th><th>Địa chỉ</th><th>Loại</th><th>Trạng thái</th><th>Thao tác</th>
+      </tr></thead>
+      <tbody>
+        @foreach (var p in Model) {
+          <tr>
+            <td><strong>@p.Name</strong></td>
+            <td><small>@p.OwnerName</small></td>
+            <td><small class="text-muted">@p.Address</small></td>
+            <td>@p.CategoryName</td>
+            <td>
+              @switch(p.Status) {
+                case "Active":    <span class="badge bg-success">Hoạt động</span>; break;
+                case "Pending":   <span class="badge bg-warning text-dark">Chờ duyệt</span>; break;
+                case "Suspended": <span class="badge bg-danger">Tạm khóa</span>; break;
+              }
+            </td>
+            <td>
+              @if (p.Status == "Pending") {
+                <form method="post" asp-action="Approve" asp-route-id="@p.PlaceId" class="d-inline">
+                  @Html.AntiForgeryToken()
+                  <button class="btn btn-sm btn-success">✅ Duyệt</button>
+                </form>
+              }
+              @if (p.Status == "Active") {
+                <form method="post" asp-action="Suspend" asp-route-id="@p.PlaceId" class="d-inline"
+                      onsubmit="return confirm('Tạm khóa quán này?')">
+                  @Html.AntiForgeryToken()
+                  <button class="btn btn-sm btn-danger">🔒 Tạm khóa</button>
+                </form>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

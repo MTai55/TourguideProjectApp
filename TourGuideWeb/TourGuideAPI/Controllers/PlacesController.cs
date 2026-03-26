@@ -33,7 +33,7 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo) : Contro
         var query = db.Places
             .Include(p => p.Category)
             .Include(p => p.Images.Where(i => i.IsMain))
-            .Where(p => p.IsActive);
+            .Where(p => p.Status == "Active" && p.IsActive);
 
         if (!string.IsNullOrEmpty(search))
         {
@@ -102,30 +102,6 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo) : Contro
         return place == null ? NotFound() : Ok(place);
     }
 
-    // POST /api/places  [Owner only]
-    [HttpPost]
-    [Authorize(Policy = "OwnerOnly")]
-    public async Task<IActionResult> Create([FromBody] CreatePlaceDto dto)
-    {
-        var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var place = new Place
-        {
-            Name = dto.Name,
-            Description = dto.Description,
-            Address = dto.Address,
-            Latitude = dto.Latitude,
-            Longitude = dto.Longitude,
-            Phone = dto.Phone,
-            CategoryId = dto.CategoryId,
-            PriceMin = dto.PriceMin,
-            PriceMax = dto.PriceMax,
-            OwnerId = ownerId
-        };
-        db.Places.Add(place);
-        await db.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetById), new { id = place.PlaceId }, place);
-    }
-
     // PUT /api/places/{id}  [Owner only]
     [HttpPut("{id}")]
     [Authorize(Policy = "OwnerOnly")]
@@ -143,15 +119,101 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo) : Contro
         return Ok(place);
     }
 
-    // DELETE /api/places/{id}  [Owner only]
+    // GET /api/places/mine Owner lấy quán của mình
+    [HttpGet("mine")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> GetMyPlaces(
+    [FromQuery] string? search,
+    [FromQuery] int page = 1)
+    {
+        var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var query = db.Places
+            .Include(p => p.Category)
+            .Include(p => p.Images.Where(i => i.IsMain))
+            .Include(p => p.Promotions.Where(pr => pr.IsActive && pr.EndDate > DateTime.UtcNow))
+            .Where(p => p.OwnerId == ownerId);
+
+        if (!string.IsNullOrEmpty(search))
+            query = query.Where(p => p.Name.ToLower().Contains(search.ToLower()));
+
+        var total = await query.CountAsync();
+        var items = await query
+            .Skip((page - 1) * 20).Take(20)
+            .ToListAsync();
+
+        return Ok(new { total, page, items });
+    }
+
+    // PUT /api/places/{id}/status — Owner đổi OpenStatus
+    [HttpPut("{id}/status")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] string openStatus)
+    {
+        var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var place = await db.Places
+            .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == ownerId);
+        if (place == null) return NotFound();
+
+        if (openStatus is not ("Open" or "Closed" or "Busy"))
+            return BadRequest(new { message = "Trạng thái không hợp lệ" });
+
+        place.OpenStatus = openStatus;
+        await db.SaveChangesAsync();
+        return Ok(new { openStatus });
+    }
+    // PUT /api/places/{id} — Owner chỉ sửa quán của mình
+    [HttpPut("{id}")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdatePlaceDto dto)
+    {
+        var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var place = await db.Places
+            .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == ownerId);
+        if (place == null) return Forbid();
+
+        place.Name = dto.Name;
+        place.Description = dto.Description;
+        place.Address = dto.Address;
+        place.Phone = dto.Phone;
+        place.OpenTime = string.IsNullOrEmpty(dto.OpenTime) ? null : TimeOnly.Parse(dto.OpenTime);
+        place.CloseTime = string.IsNullOrEmpty(dto.CloseTime) ? null : TimeOnly.Parse(dto.CloseTime);
+        place.Specialty = dto.Specialty;
+        place.PricePerPerson = dto.PricePerPerson;
+        place.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return Ok(place);
+    }
+
+    // POST /api/places/{id}/images — Upload ảnh
+    [HttpPost("{id}/images")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> AddImage(int id, [FromBody] AddImageDto dto)
+    {
+        var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var place = await db.Places.FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == ownerId);
+        if (place == null) return Forbid();
+
+        if (dto.IsMain) // Reset ảnh chính cũ
+            await db.PlaceImages
+                .Where(i => i.PlaceId == id && i.IsMain)
+                .ExecuteUpdateAsync(s => s.SetProperty(i => i.IsMain, false));
+
+        var image = new PlaceImage { PlaceId = id, ImageUrl = dto.ImageUrl, IsMain = dto.IsMain };
+        db.PlaceImages.Add(image);
+        await db.SaveChangesAsync();
+        return Ok(image);
+    }
+
+    // DELETE /api/places/{id} — Soft delete, chỉ quán của mình
     [HttpDelete("{id}")]
     [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Delete(int id)
     {
         var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var place = await db.Places.FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == ownerId);
-        if (place == null) return NotFound();
-        place.IsActive = false; // soft delete
+        if (place == null) return Forbid();
+        place.IsActive = false;
+        place.Status = "Closed";
         await db.SaveChangesAsync();
         return NoContent();
     }

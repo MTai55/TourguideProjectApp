@@ -2,169 +2,202 @@
 @model TourismApp.Web.Models.DashboardViewModel
 @{ ViewData["Title"] = "Dashboard"; }
 
-<!-- Stat Cards (Tổng quan hệ thống) -->
-<div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="card stat-card p-4">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-muted small mb-1">Tổng quán ăn</div>
-          <div class="fs-2 fw-bold">@Model?.TotalPlaces</div>
-        </div>
-        <div class="icon bg-primary bg-opacity-10 text-primary">🏪</div>
-      </div>
-    </div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pt-2">
+  <div>
+    <span class="text-primary font-bold text-sm tracking-widest uppercase mb-1 block">
+      Xin chào, @Context.Session.GetString("UserName")
+    </span>
+    <h1 class="text-4xl font-extrabold tracking-tight text-on-surface leading-tight">
+      Thống kê<br/>Hoạt động của tôi
+    </h1>
   </div>
-  <div class="col-md-3">
-    <div class="card stat-card p-4">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-muted small mb-1">Quán đang hoạt động</div>
-          <div class="fs-2 fw-bold text-success">@Model?.ApprovedPlaces</div>
-        </div>
-        <div class="icon bg-success bg-opacity-10 text-success">✅</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card stat-card p-4">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-muted small mb-1">Lượt ghé (30 ngày)</div>
-          <div class="fs-2 fw-bold text-warning">@Model?.TotalVisitsThisMonth</div>
-        </div>
-        <div class="icon bg-warning bg-opacity-10 text-warning">📍</div>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card stat-card p-4">
-      <div class="d-flex align-items-center justify-content-between">
-        <div>
-          <div class="text-muted small mb-1">Đánh giá TB</div>
-          <div class="fs-2 fw-bold text-danger">⭐ @Model?.AvgRating.ToString("F1")</div>
-        </div>
-        <div class="icon bg-danger bg-opacity-10 text-danger">⭐</div>
-      </div>
-    </div>
+  <div class="flex gap-3">
+    <span class="px-5 py-2.5 bg-white font-bold rounded-xl shadow-sm border border-outline-variant/20 text-sm text-on-surface-variant">
+      📅 @DateTime.Now.ToString("dd/MM/yyyy")
+    </span>
   </div>
 </div>
 
-<!-- Dashboard chủ quán -->
-<h4 class="fw-bold mb-4">🍜 Quán của tôi</h4>
-
-<div class="row g-3 mb-4">
-  <div class="col-md-3">
-    <div class="card p-4 border-0 shadow-sm">
-      <div class="text-muted small">Số quán của tôi</div>
-      <div class="fs-2 fw-bold text-primary">@Model?.TotalPlaces</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card p-4 border-0 shadow-sm">
-      <div class="text-muted small">Quán đang hoạt động</div>
-      <div class="fs-2 fw-bold text-success">@Model?.ApprovedPlaces</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card p-4 border-0 shadow-sm">
-      <div class="text-muted small">Lượt ghé (30 ngày)</div>
-      <div class="fs-2 fw-bold text-warning">@Model?.TotalVisitsThisMonth</div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card p-4 border-0 shadow-sm">
-      <div class="text-muted small">Đánh giá TB</div>
-      <div class="fs-2 fw-bold text-danger">⭐ @Model?.AvgRating.ToString("F1")</div>
-    </div>
-  </div>
-</div>
-
-<!-- Quán chờ duyệt -->
-@if (Model?.Places?.Any(p => !p.IsApproved) == true) {
-  <div class="alert alert-warning">
-    <i class="bi bi-clock me-2"></i>
-    Bạn có @Model.Places.Count(p => !p.IsApproved) quán đang chờ Admin duyệt.
+@if ((Model?.PendingPlaces ?? 0) > 0)
+{
+  <div class="flex items-center gap-3 p-4 bg-amber-50 border border-amber-100 rounded-xl mb-6">
+    <span class="material-symbols-outlined text-amber-600">schedule</span>
+    <p class="text-sm font-semibold text-amber-700">
+      Bạn có <strong>@Model!.PendingPlaces quán</strong> đang chờ Admin duyệt.
+    </p>
   </div>
 }
 
-<!-- Charts -->
-<div class="row g-3 mb-4">
-  <div class="col-md-8">
-    <div class="card shadow-sm p-4">
-      <h6 class="fw-bold mb-3">📈 Lượt ghé thăm 7 ngày gần nhất</h6>
-      <canvas id="visitsChart" height="100"></canvas>
+<!-- Stat Cards -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+  @{
+    var stats = new (string icon, string val, string label, string color)[] {
+      ("storefront",  (Model?.TotalPlaces ?? 0).ToString(),           "Tổng quán",           "text-primary"),
+      ("check_circle",(Model?.ApprovedPlaces ?? 0).ToString(),        "Đang hoạt động",      "text-emerald-600"),
+      ("trending_up", (Model?.TotalVisitsThisMonth ?? 0).ToString(),  "Lượt ghé (30 ngày)",  "text-blue-600"),
+      ("star",        (Model?.AvgRating ?? 0).ToString("F1"),         "Điểm TB",             "text-amber-600"),
+      ("rate_review", (Model?.PendingReviews ?? 0).ToString(),        "Review chờ phản hồi", "text-violet-600"),
+      ("local_offer", (Model?.ActivePromotions ?? 0).ToString(),      "KM đang chạy",        "text-rose-600"),
+    };
+  }
+  @foreach (var (icon, val, label, color) in stats)
+  {
+    <div class="bg-surface-container-lowest p-5 rounded-xl hover:shadow-xl transition-all group cursor-default">
+      <div class="mb-3">
+        <span class="material-symbols-outlined text-2xl @color">@icon</span>
+      </div>
+      <h3 class="text-3xl font-black">@val</h3>
+      <p class="text-xs text-slate-500 font-medium mt-1">@label</p>
     </div>
-  </div>
-  <div class="col-md-4">
-    <div class="card shadow-sm p-4">
-      <h6 class="fw-bold mb-3">🏷️ Phân loại quán ăn</h6>
-      <canvas id="categoryChart" height="180"></canvas>
-    </div>
-  </div>
+  }
 </div>
 
-<!-- Bảng địa điểm -->
-<div class="card shadow-sm">
-  <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-    <h6 class="mb-0 fw-bold">🍜 Quán ăn của bạn</h6>
-    <a href="/Places" class="btn btn-outline-primary btn-sm">Xem tất cả →</a>
+<!-- Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+  <!-- Quán của tôi -->
+  <div class="lg:col-span-8 space-y-5">
+    <div class="flex justify-between items-center">
+      <h2 class="text-2xl font-bold tracking-tight">Quán Của Tôi</h2>
+      <a asp-controller="Places" asp-action="Index"
+         class="text-primary font-bold text-sm hover:underline underline-offset-4 flex items-center gap-1">
+        Xem tất cả <span class="material-symbols-outlined text-sm">arrow_forward</span>
+      </a>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      @foreach (var p in Model?.Places?.Take(4) ?? new List<PlaceViewModel>())
+      {
+        <div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all group">
+          @if (!string.IsNullOrEmpty(p.MainImageUrl))
+          {
+            <div class="h-40 relative overflow-hidden">
+              <img src="@p.MainImageUrl" alt="@p.Name" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              <div class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-bold backdrop-blur-sm bg-white/90
+                          @(p.OpenStatus=="Open" ? "text-emerald-700" : p.OpenStatus=="Busy" ? "text-amber-600" : "text-slate-600")">
+                @(p.OpenStatus == "Open" ? "🟢 Đang mở" : p.OpenStatus == "Busy" ? "🟡 Đông khách" : "🔴 Đóng cửa")
+              </div>
+            </div>
+          }
+          else
+          {
+            <div class="h-40 bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center text-5xl">🍜</div>
+          }
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-bold text-base">@p.Name</h3>
+              <div class="flex items-center gap-1 bg-secondary-container px-2 py-0.5 rounded-lg shrink-0">
+                <span class="material-symbols-outlined text-xs" style="color:#765600;font-variation-settings:'FILL' 1">star</span>
+                <span class="text-xs font-bold text-on-secondary-container">@p.AverageRating.ToString("F1")</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 truncate mb-3">@p.Address</p>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-50">
+              <div class="flex gap-3">
+                @{
+                  var statusColor = p.Status switch {
+                    "Active" => "text-emerald-600",
+                    "Pending" => "text-amber-600",
+                    "Suspended" => "text-red-600",
+                    _ => "text-slate-400"
+                  };
+                }
+                <span class="text-xs font-bold @statusColor">
+                  @(p.Status == "Active" ? "✅ Hoạt động" : p.Status == "Pending" ? "⏳ Chờ duyệt" : "🔒 Tạm khóa")
+                </span>
+              </div>
+              <a asp-controller="Places" asp-action="Edit" asp-route-id="@p.PlaceId"
+                 class="text-primary font-bold text-xs flex items-center gap-0.5 hover:gap-1.5 transition-all">
+                Quản lý <span class="material-symbols-outlined text-xs">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      }
+      @if (!(Model?.Places?.Any() ?? false))
+      {
+        <div class="col-span-2 flex flex-col items-center py-16 text-center">
+          <div class="text-6xl mb-4">🍜</div>
+          <h3 class="font-bold text-lg mb-2">Chưa có quán nào</h3>
+          <a asp-controller="Places" asp-action="Create"
+             class="mt-2 px-6 py-3 text-white font-bold rounded-xl text-sm"
+             style="background:linear-gradient(135deg,#954400,#fc8127)">
+            + Thêm quán mới
+          </a>
+        </div>
+      }
+    </div>
   </div>
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light">
-        <tr><th>Tên</th><th>Địa chỉ</th><th>⭐</th><th>Ghé</th><th>Trạng thái</th><th></th></tr>
-      </thead>
-      <tbody>
-        @foreach (var p in Model?.Places ?? []) {
-          <tr>
-            <td><strong>@p.Name</strong></td>
-            <td><small class="text-muted">@p.Address</small></td>
-            <td><span class="text-warning">★</span> @p.AverageRating.ToString("F1")</td>
-            <td>@p.TotalVisits</td>
-            <td>
-              @if (p.IsApproved) { <span class="badge bg-success-subtle text-success">Quán đang hoạt động</span> }
-              else { <span class="badge bg-warning-subtle text-warning">Chờ duyệt</span> }
-            </td>
-            <td>
-              <a href="/Places/Edit/@p.PlaceId" class="btn btn-sm btn-outline-primary">Sửa</a>
-            </td>
-          </tr>
+
+  <!-- Quick Actions -->
+  <div class="lg:col-span-4 space-y-5">
+    <h2 class="text-2xl font-bold tracking-tight">Truy cập nhanh</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <a asp-controller="Reviews" asp-action="Index"
+         class="bg-surface-container-lowest p-5 rounded-xl shadow-sm hover:shadow-md transition-all text-center group">
+        <span class="material-symbols-outlined text-3xl text-violet-500 mb-2 block group-hover:scale-110 transition-transform">rate_review</span>
+        <p class="text-sm font-bold">Đánh giá</p>
+        @if ((Model?.PendingReviews ?? 0) > 0)
+        {
+          <span class="text-[11px] text-violet-600 font-bold">@Model!.PendingReviews chờ phản hồi</span>
         }
-      </tbody>
-    </table>
+      </a>
+      <a asp-controller="Promotions" asp-action="Index"
+         class="bg-surface-container-lowest p-5 rounded-xl shadow-sm hover:shadow-md transition-all text-center group">
+        <span class="material-symbols-outlined text-3xl text-rose-500 mb-2 block group-hover:scale-110 transition-transform">local_offer</span>
+        <p class="text-sm font-bold">Khuyến mãi</p>
+        @if ((Model?.ActivePromotions ?? 0) > 0)
+        {
+          <span class="text-[11px] text-rose-600 font-bold">@Model!.ActivePromotions đang chạy</span>
+        }
+      </a>
+      <a asp-controller="Places" asp-action="Map"
+         class="bg-surface-container-lowest p-5 rounded-xl shadow-sm hover:shadow-md transition-all text-center group">
+        <span class="material-symbols-outlined text-3xl text-blue-500 mb-2 block group-hover:scale-110 transition-transform">map</span>
+        <p class="text-sm font-bold">Bản đồ</p>
+      </a>
+      <a asp-controller="Complaints" asp-action="Index"
+         class="bg-surface-container-lowest p-5 rounded-xl shadow-sm hover:shadow-md transition-all text-center group">
+        <span class="material-symbols-outlined text-3xl text-amber-500 mb-2 block group-hover:scale-110 transition-transform">feedback</span>
+        <p class="text-sm font-bold">Khiếu nại</p>
+      </a>
+    </div>
+
+    <!-- Danh sách quán và trạng thái -->
+    <div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm">
+      <h3 class="font-bold text-sm mb-4 text-on-surface-variant uppercase tracking-widest">Trạng thái mở cửa</h3>
+      @foreach (var p in Model?.Places?.Take(5) ?? new List<PlaceViewModel>())
+      {
+        <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+          <span class="text-sm font-semibold truncate max-w-[140px]">@p.Name</span>
+          <form method="post" asp-controller="Places" asp-action="UpdateOpenStatus" asp-route-id="@p.PlaceId">
+            @Html.AntiForgeryToken()
+            <select name="openStatus" class="text-xs border-none bg-surface-container-low rounded-lg px-2 py-1 font-bold" onchange="this.form.submit()">
+              <option value="Open"   @Html.Raw(p.OpenStatus=="Open"  ?"selected":"")>🟢 Mở</option>
+              <option value="Busy"   @Html.Raw(p.OpenStatus=="Busy"  ?"selected":"")>🟡 Bận</option>
+              <option value="Closed" @Html.Raw(p.OpenStatus=="Closed"?"selected":"")>🔴 Đóng</option>
+            </select>
+          </form>
+        </div>
+      }
+    </div>
   </div>
 </div>
 
-@section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-// Biểu đồ lượt ghé thăm 7 ngày
-new Chart(document.getElementById('visitsChart'), {
-  type: 'line',
-  data: {
-    labels: ['T2','T3','T4','T5','T6','T7','CN'],
-    datasets: [{
-      label: 'Lượt ghé',
-      data: [12,19,8,25,22,30,18],
-      borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.1)',
-      tension: 0.4, fill: true
-    }]
-  },
-  options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-});
-
-// Biểu đồ danh mục
-new Chart(document.getElementById('categoryChart'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Nhà hàng','Ăn vặt','Cà phê','Trà sữa','Bánh & TM'],
-    datasets: [{
-      data: [10,15,8,12,5], // dữ liệu mẫu
-      backgroundColor: ['#ef4444','#f97316','#8b5cf6','#ec4899','#eab308']
-    }]
-  },
-  options: { plugins: { legend: { position: 'bottom' } } }
-});
-</script>
-}
+<!-- Promotion Banner -->
+<section class="rounded-[2rem] p-8 md:p-10 relative overflow-hidden flex flex-col md:flex-row items-center gap-8"
+         style="background-color:#0b0f10">
+  <div class="relative z-10 md:w-1/2 space-y-4">
+    <span class="px-4 py-1 text-white text-[10px] font-bold rounded-full uppercase tracking-widest inline-block"
+          style="background-color:#954400">Tính năng</span>
+    <h2 class="text-3xl md:text-4xl font-black text-white leading-tight">
+      Chạy khuyến mãi<br/>Thu hút khách hàng!
+    </h2>
+    <p class="text-slate-400 text-sm leading-relaxed max-w-sm">
+      Tạo các chương trình ưu đãi để tăng lượt ghé thăm. Khách hàng sẽ thấy khuyến mãi trên ứng dụng di động.
+    </p>
+    <a asp-controller="Promotions" asp-action="Index"
+       class="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-on-surface font-black rounded-xl hover:scale-105 transition-all shadow-xl text-sm">
+      Tạo khuyến mãi <span class="material-symbols-outlined text-sm">arrow_forward</span>
+    </a>
+  </div>
+  <div class="md:w-1/2 flex justify-center text-9xl">🎁</div>
+</section>

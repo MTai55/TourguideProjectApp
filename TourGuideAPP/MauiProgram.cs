@@ -4,7 +4,7 @@ using TourGuideAPP.Services;
 using ZXing.Net.Maui.Controls;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using TourGuideAPP.Views;
-
+ 
 namespace TourGuideAPP;
 public static class MauiProgram
 {
@@ -20,35 +20,39 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
-
-        // Khởi tạo Supabase client
+ 
+        // Supabase client
         var supabase = new Client(
             Constants.SupabaseUrl,
             Constants.SupabaseKey
         );
         builder.Services.AddSingleton(supabase);
-        // Đổi từ Singleton sang Transient để OnAppearing luôn được gọi
+ 
+        // Pages
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<ToursPage>();
         builder.Services.AddTransient<AccountPage>();
-        
+        builder.Services.AddTransient<MapPage>();
+        builder.Services.AddTransient<QRScanPage>();
+ 
+        // Services
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<GeofenceEngine>();
         builder.Services.AddSingleton<POIService>();
         builder.Services.AddSingleton<NarrationService>();
-        builder.Services.AddTransient<MapPage>();
-        builder.Services.AddTransient<QRScanPage>();
         builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<UserProfileService>();
-        builder.Services.AddTransient<LoginPage>();
-        builder.Services.AddTransient<RegisterPage>();
         builder.Services.AddSingleton<PlaceService>();
         builder.Services.AddSingleton<FavoriteService>();
         builder.Services.AddSingleton<WishlistService>();
+ 
+        // App
+        builder.Services.AddSingleton<App>();
+ 
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
-
+ 
         return builder.Build();
     }
 }

@@ -79,38 +79,6 @@
 
                     </Grid>
 
-                    <!-- Login / Logout buttons -->
-                    <HorizontalStackLayout Spacing="8" Margin="0,0,0,16">
-                        <Border x:Name="LoginButton"
-                                BackgroundColor="#C8A96E"
-                                StrokeShape="RoundRectangle 20"
-                                Stroke="Transparent"
-                                Padding="20,8">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnLoginClicked"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="Đăng nhập"
-                                   FontSize="12"
-                                   FontAttributes="Bold"
-                                   TextColor="#1A1410"/>
-                        </Border>
-                        <Border x:Name="LogoutButton"
-                                BackgroundColor="#3A2018"
-                                StrokeShape="RoundRectangle 20"
-                                Stroke="#C8A96E"
-                                StrokeThickness="1"
-                                Padding="20,8"
-                                IsVisible="False">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnLogoutClicked"/>
-                            </Border.GestureRecognizers>
-                            <Label Text="Đăng xuất"
-                                   FontSize="12"
-                                   FontAttributes="Bold"
-                                   TextColor="#C8A96E"/>
-                        </Border>
-                    </HorizontalStackLayout>
-
                     <!-- Search bar -->
                     <Border BackgroundColor="#26201A"
                             StrokeShape="RoundRectangle 14"

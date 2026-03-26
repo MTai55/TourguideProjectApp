@@ -6,25 +6,26 @@
     xmlns:local="clr-namespace:TourGuideAPP"
     xmlns:views="clr-namespace:TourGuideAPP.Views"
     Title="TourGuideAPP"
-    Shell.TabBarBackgroundColor="White"
-    Shell.TabBarForegroundColor="#FF5722"
-    Shell.TabBarUnselectedColor="#A36765"
-    Shell.TabBarTitleColor="#FF5722"
-    BackgroundColor="#FFEBE6">
+    Shell.TabBarBackgroundColor="#1A1410"
+    Shell.TabBarForegroundColor="#C8A96E"
+    Shell.TabBarUnselectedColor="#3A2D22"
+    Shell.TabBarTitleColor="#C8A96E"
+    BackgroundColor="#0F0E0D">
 
     <Shell.Resources>
         <ResourceDictionary>
             <Style TargetType="Shell" ApplyToDerivedTypes="True">
-                <Setter Property="Shell.TabBarBackgroundColor" Value="White"/>
-                <Setter Property="Shell.TabBarForegroundColor" Value="#FF5722"/>
-                <Setter Property="Shell.TabBarUnselectedColor" Value="#A36765"/>
-                <Setter Property="Shell.TabBarTitleColor" Value="#FF5722"/>
-                <Setter Property="Shell.BackgroundColor" Value="#FFEBE6"/>
+                <Setter Property="Shell.TabBarBackgroundColor" Value="#1A1410"/>
+                <Setter Property="Shell.TabBarForegroundColor" Value="#C8A96E"/>
+                <Setter Property="Shell.TabBarUnselectedColor" Value="#3A2D22"/>
+                <Setter Property="Shell.TabBarTitleColor" Value="#C8A96E"/>
+                <Setter Property="Shell.BackgroundColor" Value="#0F0E0D"/>
             </Style>
         </ResourceDictionary>
     </Shell.Resources>
 
     <TabBar Route="MainTabs">
+
         <ShellContent
             Title="Tour"
             Route="ToursPage"
@@ -44,16 +45,11 @@
             ContentTemplate="{DataTemplate views:MapPage}" />
 
         <ShellContent
-            Title="Cá nhân"
+            Title="Cài đặt"
             Route="AccountPage"
             Icon="icon_account.svg"
             ContentTemplate="{DataTemplate views:AccountPage}" />
-    </TabBar>
 
-    <ShellContent
-        Title="Login"
-        ContentTemplate="{DataTemplate views:LoginPage}"
-        Route="LoginPage"
-        Shell.NavBarIsVisible="False" />
+    </TabBar>
 
 </Shell>

@@ -64,6 +64,8 @@ public partial class MapPage : ContentPage
 
     private void SetupMap()
     {
+        MyMap.Map ??= new Mapsui.Map();
+
         if (!MyMap.Map.Layers.Any(l => l.Name == "BaseMap"))
         {
             var baseLayer = OpenStreetMap.CreateTileLayer();

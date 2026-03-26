@@ -46,8 +46,6 @@ public partial class MainPage : ContentPage
 
    private void UpdateAuthUI()
 {
-    LoginButton.IsVisible = !_authService.IsLoggedIn;
-    LogoutButton.IsVisible = _authService.IsLoggedIn;
     GpsCard.IsVisible = _authService.IsLoggedIn;
     UserLabel.Text = _authService.IsLoggedIn ? "👤 Đã đăng nhập" : "👤 Khách";
 }
@@ -88,7 +86,7 @@ public partial class MainPage : ContentPage
     {
         if (!_authService.IsLoggedIn)
         {
-             await Shell.Current.GoToAsync("//LoginPage");
+             await DisplayAlert("Thông báo", "Vui lòng đăng nhập để sử dụng GPS.", "OK");
             return;
         }
 
@@ -183,43 +181,37 @@ public partial class MainPage : ContentPage
 // BindingContext của Frame chính là Place object trong danh sách
             private async void OnPlaceTapped(object sender, EventArgs e)
             {
-                if (sender is Frame frame && frame.BindingContext is Place place)
-                    await Navigation.PushAsync(new PlaceDetailPage(
-                        place,
-                        _authService,
-                        _locationService,
-                        _poiService,
-                        _geofenceEngine,
-                        _narrationService,
-                        _profileService));
+                if (sender is not BindableObject bindable || bindable.BindingContext is not Place place)
+                    return;
+
+                await Navigation.PushAsync(new PlaceDetailPage(
+                    place,
+                    _authService,
+                    _locationService,
+                    _poiService,
+                    _geofenceEngine,
+                    _narrationService,
+                    _profileService));
             }
 
     private async void OnQRScanClicked(object sender, EventArgs e)
     {
         if (!_authService.IsLoggedIn)
         {
-           await Shell.Current.GoToAsync("//LoginPage");
+           await DisplayAlert("Thông báo", "Vui lòng đăng nhập để quét QR.", "OK");
             return;
         }
         await Navigation.PushAsync(new QRScanPage(_narrationService, _profileService, _placeService));
     }
 
-    private async void OnLogoutClicked(object sender, EventArgs e)
-    {
-        await _authService.LogoutAsync();
-        UpdateAuthUI();
-        StatusLabel.Text = "❌ Đã đăng xuất. Vui lòng đăng nhập để dùng thêm chức năng";
-    }
-    private async void OnLoginClicked(object sender, EventArgs e)
-{
-    await Navigation.PushAsync(new LoginPage(_authService));
-}
+   
+ 
 
 private async void OnNarrationClicked(object sender, EventArgs e)
 {
     if (!_authService.IsLoggedIn)
     {
-        await Navigation.PushAsync(new LoginPage(_authService));
+        await DisplayAlert("Thông báo", "Vui lòng đăng nhập để nghe thuyết minh.", "OK");
         return;
     }
     await _narrationService.SpeakAsync("Chào mừng bạn đến với khu vực Khánh Hội!");

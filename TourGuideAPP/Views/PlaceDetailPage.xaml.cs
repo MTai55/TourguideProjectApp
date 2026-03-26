@@ -103,7 +103,7 @@ public partial class PlaceDetailPage : ContentPage
     {
         if (!_authService.IsLoggedIn)
         {
-            await Shell.Current.GoToAsync("//LoginPage");
+            await DisplayAlert("Thông báo", "Vui lòng đăng nhập để đánh giá.", "OK");
             return;
         }
         // Sau này làm ReviewPage

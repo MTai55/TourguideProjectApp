@@ -25,6 +25,9 @@ public partial class MapPage : ContentPage
     private (double lat, double lon, string? name)? _destination;
     private readonly HttpClient _http = new();
 
+    // Dùng để truyền điểm đến từ PlaceDetailPage trước khi chuyển tab
+    public static (double Lat, double Lon, string? Name)? PendingRoute { get; set; }
+
     public MapPage(LocationService locationService, POIService poiService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
                    UserProfileService profileService, AuthService authService)
@@ -54,11 +57,20 @@ public partial class MapPage : ContentPage
         await LoadPOIsAsync();
         StartGPS();
 
+        // Nhận điểm đến từ PlaceDetailPage nếu có
+        if (PendingRoute is { } pending)
+        {
+            PendingRoute = null;
+            _destination = (pending.Lat, pending.Lon, pending.Name);
+        }
+
         if (_destination is not null)
         {
+            var dest = _destination.Value;
+            _destination = null;
             if (_locationService.LastKnownLocation is null)
                 await _locationService.StartAsync();
-            await ShowRouteToDestinationAsync(_destination.Value);
+            await ShowRouteToDestinationAsync(dest);
         }
     }
 

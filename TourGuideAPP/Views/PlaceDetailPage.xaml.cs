@@ -84,18 +84,8 @@ public partial class PlaceDetailPage : ContentPage
             return;
         }
 
-        var mapPage = new MapPage(
-            _locationService,
-            _poiService,
-            _geofenceEngine,
-            _narrationService,
-            _profileService,
-            _authService,
-            _place.Latitude,
-            _place.Longitude,
-            _place.Name);
-
-        await Navigation.PushAsync(mapPage);
+        MapPage.PendingRoute = (_place.Latitude, _place.Longitude, _place.Name);
+        await Shell.Current.GoToAsync("//MainTabs/MapPage");
     }
 
     // Đánh giá yêu cầu đăng nhập

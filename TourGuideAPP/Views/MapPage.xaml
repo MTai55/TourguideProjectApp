@@ -69,6 +69,33 @@
             <!-- Mapsui MapControl — giữ nguyên -->
             <mapsui:MapControl x:Name="MyMap"/>
 
+            <!-- Nút tắt chỉ đường (chỉ hiện khi đang có route) -->
+            <Border x:Name="CancelRoutePanel"
+                    IsVisible="False"
+                    BackgroundColor="#E94560"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="Transparent"
+                    Padding="14,10"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Start"
+                    Margin="12,12,0,0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCancelRouteClicked"/>
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="6">
+                    <Label Text="✕"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           VerticalOptions="Center"/>
+                    <Label Text="Tắt chỉ đường"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
+
             <!-- Zoom controls -->
             <VerticalStackLayout HorizontalOptions="End"
                                  VerticalOptions="Start"

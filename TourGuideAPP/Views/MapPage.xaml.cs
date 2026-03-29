@@ -292,6 +292,20 @@ public partial class MapPage : ContentPage
             MyMap.Map.Navigator.ZoomToBox(extent, MBoxFit.Fit);
 
         NearestPOILabel.Text = $"🧭 Đang chỉ đường tới: {destination.name ?? "điểm đến"}";
+        CancelRoutePanel.IsVisible = true;
+    }
+
+    private void OnCancelRouteClicked(object sender, TappedEventArgs e)
+    {
+        var routeLayer = MyMap.Map.Layers.FirstOrDefault(l => l.Name == "Route");
+        if (routeLayer is not null) MyMap.Map.Layers.Remove(routeLayer);
+
+        var destLayer = MyMap.Map.Layers.FirstOrDefault(l => l.Name == "Destination");
+        if (destLayer is not null) MyMap.Map.Layers.Remove(destLayer);
+
+        CancelRoutePanel.IsVisible = false;
+        NearestPOILabel.Text = "Chưa xác định điểm gần nhất";
+        MyMap.Map.RefreshData();
     }
 
     private sealed class OsrmRouteResponse

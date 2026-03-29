@@ -176,6 +176,10 @@ public partial class MapPage : ContentPage
                 var nearest = _geofenceEngine.FindNearestPOI(
                     location.Latitude, location.Longitude, places);
 
+                // Khi đang chỉ đường, không cho GPS callback ghi đè label
+                if (CancelRoutePanel.IsVisible)
+                    return;
+
                 if (nearest != null)
                 {
                     NearestPOILabel.Text = $"🏛️ Gần: {nearest.Name} ({GetDistanceMeters(location.Latitude, location.Longitude, nearest.Latitude, nearest.Longitude):F0}m)";

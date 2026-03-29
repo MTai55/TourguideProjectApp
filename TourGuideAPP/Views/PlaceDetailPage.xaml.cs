@@ -8,7 +8,6 @@ public partial class PlaceDetailPage : ContentPage
     private readonly Place _place;
     private readonly AuthService _authService;
     private readonly LocationService _locationService;
-    private readonly POIService _poiService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
     private readonly UserProfileService _profileService;
@@ -18,7 +17,6 @@ public partial class PlaceDetailPage : ContentPage
         Place place,
         AuthService authService,
         LocationService locationService,
-        POIService poiService,
         GeofenceEngine geofenceEngine,
         NarrationService narrationService,
         UserProfileService profileService)
@@ -27,7 +25,6 @@ public partial class PlaceDetailPage : ContentPage
         _place = place;
         _authService = authService;
         _locationService = locationService;
-        _poiService = poiService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
         _profileService = profileService;

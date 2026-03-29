@@ -60,7 +60,6 @@ public class Place : BaseModel
     [Column("OwnerId")]
     public int? OwnerId { get; set; }
 
-    // Cột mới bạn của bạn thêm vào
     [Column("Specialty")]
     public string? Specialty { get; set; }
 
@@ -76,9 +75,28 @@ public class Place : BaseModel
     [Column("HasAircon")]
     public bool? HasAircon { get; set; }
 
-    // Dùng để hiển thị UI — không map với DB
+    // ── Cột mới thêm vào DB ── đều nullable vì data cũ chưa có giá trị
+    [Column("tts_script")]
+    public string? TtsScript { get; set; }
+
+    [Column("audio_file_url")]
+    public string? AudioFileUrl { get; set; }
+
+    [Column("radius")]
+    public double? Radius { get; set; }
+
+    [Column("cooldown_minutes")]
+    public int? CooldownMinutes { get; set; }
+
+    [Column("priority")]
+    public int? Priority { get; set; }
+
+    // Không map DB — chỉ dùng trong runtime
+    public DateTime? LastPlayedAt { get; set; }
+
+    // ── UI helpers — không map DB ──
     public string ImageUrl { get; set; } = "https://via.placeholder.com/400x200";
     public string OpenTimeDisplay => OpenTime != null ? $"{OpenTime} - {CloseTime}" : "Chưa cập nhật";
-    public string RatingDisplay => AverageRating.HasValue ? $"⭐ {AverageRating:F1}" : "Chưa có đánh giá";
-    public string PriceDisplay => PriceMin.HasValue ? $"{PriceMin:N0}đ - {PriceMax:N0}đ" : "Liên hệ";
+    public string RatingDisplay   => AverageRating.HasValue ? $"⭐ {AverageRating:F1}" : "Chưa có đánh giá";
+    public string PriceDisplay    => PriceMin.HasValue ? $"{PriceMin:N0}đ - {PriceMax:N0}đ" : "Liên hệ";
 }

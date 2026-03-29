@@ -1,5 +1,6 @@
 using TourGuideAPP.Data.Models;
 
+
 namespace TourGuideAPP.Services;
 
 public class GeofenceEngine
@@ -16,23 +17,23 @@ public class GeofenceEngine
         return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }
 
-    // Tìm POI gần nhất trong bán kính
-    public POI? FindNearestPOI(double userLat, double userLon, List<POI> pois)
+    // Tìm địa điểm gần nhất trong bán kính có TtsScript
+    public Place? FindNearestPOI(double userLat, double userLon, List<Place> places)
     {
-        POI? nearest = null;
+        Place? nearest = null;
         double minDistance = double.MaxValue;
 
-        foreach (var poi in pois)
+        foreach (var place in places)
         {
-            var distance = GetDistance(userLat, userLon, poi.Latitude, poi.Longitude);
-            if (distance <= poi.Radius && distance < minDistance)
+            if (string.IsNullOrWhiteSpace(place.TtsScript)) continue;
+            var distance = GetDistance(userLat, userLon, place.Latitude, place.Longitude);
+            if (distance <= place.Radius && distance < minDistance)
             {
-                // Kiểm tra cooldown
-                if (poi.LastPlayedAt == null ||
-                    (DateTime.Now - poi.LastPlayedAt.Value).TotalMinutes >= poi.CooldownMinutes)
+                if (place.LastPlayedAt == null ||
+                    (DateTime.Now - place.LastPlayedAt.Value).TotalMinutes >= place.CooldownMinutes)
                 {
                     minDistance = distance;
-                    nearest = poi;
+                    nearest = place;
                 }
             }
         }

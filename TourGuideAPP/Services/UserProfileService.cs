@@ -98,23 +98,9 @@ public class UserProfileService
         SaveList(HistoryKey, list);
     }
 
-    public async Task AddHistoryByGpsAsync(POI poi)
+    public async Task AddHistoryByGpsAsync(Place place)
     {
-        int placeId = 0;
-        if (!int.TryParse(poi.Id, out placeId))
-        {
-            placeId = 0;
-        }
-
-        await AddHistoryAsync(new Place
-        {
-            PlaceId = placeId,
-            Name = poi.Name,
-            Address = "",
-            Latitude = poi.Latitude,
-            Longitude = poi.Longitude,
-            ImageUrl = poi.ImageUrl
-        }, "GPS");
+        await AddHistoryAsync(place, "GPS");
     }
 
     public async Task AddHistoryByQRAsync(Place place)

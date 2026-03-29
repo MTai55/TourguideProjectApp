@@ -91,13 +91,15 @@
                                    FontSize="15"
                                    VerticalOptions="Center"
                                    TextColor="#5A4A3A"/>
-                            <Entry Grid.Column="1"
+                            <Entry x:Name="SearchEntry"
+                                   Grid.Column="1"
                                    Placeholder="Tìm quán ăn, cà phê..."
                                    PlaceholderColor="#5A4A3A"
                                    TextColor="#F0E6D3"
                                    BackgroundColor="Transparent"
                                    Margin="8,0,0,0"
-                                   FontSize="13"/>
+                                   FontSize="13"
+                                   TextChanged="OnSearchTextChanged"/>
                         </Grid>
                     </Border>
 
@@ -180,48 +182,83 @@
                 <ScrollView Orientation="Horizontal"
                             HorizontalScrollBarVisibility="Never">
                     <HorizontalStackLayout Spacing="8">
-                        <Border BackgroundColor="#1A1410"
+
+                        <Border x:Name="ChipAll"
+                                BackgroundColor="#1A1410"
                                 StrokeShape="RoundRectangle 20"
                                 Stroke="#C8A96E"
                                 StrokeThickness="1"
                                 Padding="14,6">
-                            <Label Text="Tất cả"
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCategoryAllTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="ChipAllLabel"
+                                   Text="Tất cả"
                                    TextColor="#C8A96E"
                                    FontSize="11"
                                    FontAttributes="Bold"/>
                         </Border>
-                        <Border BackgroundColor="#26201A"
+
+                        <Border x:Name="ChipCafe"
+                                BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 20"
                                 Stroke="Transparent"
+                                StrokeThickness="0"
                                 Padding="14,6">
-                            <Label Text="☕ Cà phê"
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCategoryCafeTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="ChipCafeLabel"
+                                   Text="☕ Cà phê"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
-                        <Border BackgroundColor="#26201A"
+
+                        <Border x:Name="ChipRice"
+                                BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 20"
                                 Stroke="Transparent"
+                                StrokeThickness="0"
                                 Padding="14,6">
-                            <Label Text="🍲 Cơm"
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCategoryRiceTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="ChipRiceLabel"
+                                   Text="🍲 Cơm"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
-                        <Border BackgroundColor="#26201A"
+
+                        <Border x:Name="ChipBeer"
+                                BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 20"
                                 Stroke="Transparent"
+                                StrokeThickness="0"
                                 Padding="14,6">
-                            <Label Text="🍺 Quán nhậu"
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCategoryBeerTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="ChipBeerLabel"
+                                   Text="🍺 Quán nhậu"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
-                        <Border BackgroundColor="#26201A"
+
+                        <Border x:Name="ChipBubbleTea"
+                                BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 20"
                                 Stroke="Transparent"
+                                StrokeThickness="0"
                                 Padding="14,6">
-                            <Label Text="🧋 Trà sữa"
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCategoryBubbleTeaTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="ChipBubbleTeaLabel"
+                                   Text="🧋 Trà sữa"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
+
                     </HorizontalStackLayout>
                 </ScrollView>
 
@@ -325,12 +362,6 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Label x:Name="POICountLabel"
-                   Text=""
-                   FontSize="11"
-                   TextColor="#5A4A3A"
-                   HorizontalOptions="Center"
-                   Margin="0,0,0,100"/>
 
         </VerticalStackLayout>
     </ScrollView>

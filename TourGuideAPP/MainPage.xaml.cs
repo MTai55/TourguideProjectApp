@@ -10,25 +10,33 @@ public partial class MainPage : ContentPage
     private readonly Supabase.Client _supabase;
     private readonly LocationService _locationService;
     private readonly GeofenceEngine _geofenceEngine;
-    private readonly POIService _poiService;
     private readonly NarrationService _narrationService;
     private readonly AuthService _authService;
     private readonly PlaceService _placeService;
     private readonly UserProfileService _profileService;
-    private string? _lastSpokenPOIId;
+    private string? _lastSpokenPlaceId;
     private DateTime _lastReverseGeocodeAt = DateTime.MinValue;
     private string? _lastResolvedLocationText;
+    private List<Place> _allPlaces = new();
+    private string _selectedCategory = "all";
+
+    private static readonly Dictionary<string, string[]> CategoryKeywords = new()
+    {
+        ["cafe"]      = new[] { "cà phê", "cafe", "coffee", "caphe" },
+        ["rice"]      = new[] { "cơm", "nhà hàng", "quán ăn", "com ", "bữa ăn" },
+        ["beer"]      = new[] { "nhậu", "bia", "quán nhậu", "beer" },
+        ["bubbletea"] = new[] { "trà sữa", "bubble", "trà" }
+    };
 
     public MainPage(Supabase.Client supabase, LocationService locationService,
-                    GeofenceEngine geofenceEngine, POIService poiService,
-                    NarrationService narrationService, AuthService authService, PlaceService placeService,
+                    GeofenceEngine geofenceEngine, NarrationService narrationService,
+                    AuthService authService, PlaceService placeService,
                     UserProfileService profileService)
     {
         InitializeComponent();
         _supabase = supabase;
         _locationService = locationService;
         _geofenceEngine = geofenceEngine;
-        _poiService = poiService;
         _narrationService = narrationService;
         _authService = authService;
         _placeService = placeService;
@@ -39,7 +47,6 @@ public partial class MainPage : ContentPage
     {
         base.OnAppearing();
         await TestConnection();
-        await LoadPOIs();
         await LoadPlaces();
         UpdateAuthUI();
     }
@@ -64,24 +71,73 @@ public partial class MainPage : ContentPage
             StatusLabel.IsVisible = true;
         }
     }
-       private async Task LoadPlaces()
-{
-    var places = await _placeService.GetAllPlacesAsync();
-    
-    // Đảm bảo cập nhật UI trên main thread
-    MainThread.BeginInvokeOnMainThread(() =>
+    private async Task LoadPlaces()
     {
-        PlacesCollection.ItemsSource = null; // Reset trước
-        PlacesCollection.ItemsSource = places;
-        Console.WriteLine($"✅ Set ItemsSource: {places.Count} items");
-    });
-}
-    private async Task LoadPOIs()
-    {
-        var pois = await _poiService.GetAllPOIsAsync();
-        POICountLabel.Text = $"Đã tải {pois.Count} POI từ Supabase";
+        var places = await _placeService.GetAllPlacesAsync();
+        _allPlaces = places;
+        ApplyFilters();
     }
 
+    private void ApplyFilters()
+    {
+        var searchText = SearchEntry.Text?.Trim().ToLower() ?? string.Empty;
+        var filtered = _allPlaces.AsEnumerable();
+
+        // Lọc theo category
+        if (_selectedCategory != "all" && CategoryKeywords.TryGetValue(_selectedCategory, out var keywords))
+        {
+            filtered = filtered.Where(p =>
+                keywords.Any(kw =>
+                    (p.Name?.ToLower().Contains(kw) ?? false) ||
+                    (p.Description?.ToLower().Contains(kw) ?? false) ||
+                    (p.Specialty?.ToLower().Contains(kw) ?? false)));
+        }
+
+        // Lọc theo từ khóa tìm kiếm
+        if (!string.IsNullOrEmpty(searchText))
+        {
+            filtered = filtered.Where(p =>
+                (p.Name?.ToLower().Contains(searchText) ?? false) ||
+                (p.Address?.ToLower().Contains(searchText) ?? false) ||
+                (p.Description?.ToLower().Contains(searchText) ?? false) ||
+                (p.Specialty?.ToLower().Contains(searchText) ?? false));
+        }
+
+        var result = filtered.ToList();
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            PlacesCollection.ItemsSource = null;
+            PlacesCollection.ItemsSource = result;
+        });
+    }
+
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e) => ApplyFilters();
+
+    private void OnCategoryAllTapped(object sender, TappedEventArgs e)      => SelectCategory("all");
+    private void OnCategoryCafeTapped(object sender, TappedEventArgs e)     => SelectCategory("cafe");
+    private void OnCategoryRiceTapped(object sender, TappedEventArgs e)     => SelectCategory("rice");
+    private void OnCategoryBeerTapped(object sender, TappedEventArgs e)     => SelectCategory("beer");
+    private void OnCategoryBubbleTeaTapped(object sender, TappedEventArgs e)=> SelectCategory("bubbletea");
+
+    private void SelectCategory(string category)
+    {
+        _selectedCategory = category;
+        SetChipState(ChipAll,       ChipAllLabel,       category == "all");
+        SetChipState(ChipCafe,      ChipCafeLabel,      category == "cafe");
+        SetChipState(ChipRice,      ChipRiceLabel,      category == "rice");
+        SetChipState(ChipBeer,      ChipBeerLabel,      category == "beer");
+        SetChipState(ChipBubbleTea, ChipBubbleTeaLabel, category == "bubbletea");
+        ApplyFilters();
+    }
+
+    private static void SetChipState(Border chip, Label label, bool selected)
+    {
+        chip.BackgroundColor = Color.FromArgb(selected ? "#1A1410" : "#26201A");
+        chip.Stroke          = new SolidColorBrush(selected ? Color.FromArgb("#C8A96E") : Colors.Transparent);
+        chip.StrokeThickness = selected ? 1 : 0;
+        label.TextColor      = Color.FromArgb(selected ? "#C8A96E" : "#8A7560");
+        label.FontAttributes = selected ? FontAttributes.Bold : FontAttributes.None;
+    }
     private async void OnStartGpsClicked(object sender, EventArgs e)
     {
         GpsLabel.Text = "📍 Đang khởi động GPS...";
@@ -90,25 +146,26 @@ public partial class MainPage : ContentPage
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 GpsLabel.Text = $"📍 {location.Latitude:F6}, {location.Longitude:F6}";
-                var pois = _poiService.GetCachedPOIs();
-                var nearest = _geofenceEngine.FindNearestPOI(location.Latitude, location.Longitude, pois);
+                var places = _placeService.GetCachedPlaces();
+                var nearest = _geofenceEngine.FindNearestPOI(location.Latitude, location.Longitude, places);
 
                 if (nearest != null)
                 {
                     UserLocationLabel.Text = nearest.Name;
                     POILabel.Text = $"🏛️ Gần: {nearest.Name}";
-                    if (_lastSpokenPOIId != nearest.Id)
+                    var nearestId = nearest.PlaceId.ToString();
+                    if (_lastSpokenPlaceId != nearestId)
                     {
-                        _lastSpokenPOIId = nearest.Id;
+                        _lastSpokenPlaceId = nearestId;
                         nearest.LastPlayedAt = DateTime.Now;
-                        await _narrationService.SpeakAsync(nearest.TtsScript);
+                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name);
                     }
                 }
                 else
                 {
                     UserLocationLabel.Text = await ResolveLocationNameAsync(location);
                     POILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
-                    _lastSpokenPOIId = null;
+                    _lastSpokenPlaceId = null;
                 }
             });
         };
@@ -182,7 +239,6 @@ public partial class MainPage : ContentPage
                     place,
                     _authService,
                     _locationService,
-                    _poiService,
                     _geofenceEngine,
                     _narrationService,
                     _profileService));

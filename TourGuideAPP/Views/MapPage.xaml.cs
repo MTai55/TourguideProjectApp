@@ -15,12 +15,12 @@ namespace TourGuideAPP.Views;
 public partial class MapPage : ContentPage
 {
     private readonly LocationService _locationService;
-    private readonly POIService _poiService;
+    private readonly PlaceService _placeService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
     private readonly UserProfileService _profileService;
     private readonly AuthService _authService;
-    private string? _lastSpokenPOIId;
+    private string? _lastSpokenPlaceId;
     private bool _mapInfoHooked;
     private (double lat, double lon, string? name)? _destination;
     private readonly HttpClient _http = new();
@@ -28,24 +28,24 @@ public partial class MapPage : ContentPage
     // Dùng để truyền điểm đến từ PlaceDetailPage trước khi chuyển tab
     public static (double Lat, double Lon, string? Name)? PendingRoute { get; set; }
 
-    public MapPage(LocationService locationService, POIService poiService,
+    public MapPage(LocationService locationService, PlaceService placeService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
                    UserProfileService profileService, AuthService authService)
     {
         InitializeComponent();
         _locationService = locationService;
-        _poiService = poiService;
+        _placeService = placeService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
         _profileService = profileService;
         _authService = authService;
     }
 
-    public MapPage(LocationService locationService, POIService poiService,
+    public MapPage(LocationService locationService, PlaceService placeService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
                    UserProfileService profileService, AuthService authService,
                    double destinationLat, double destinationLon, string? destinationName = null)
-        : this(locationService, poiService, geofenceEngine, narrationService, profileService, authService)
+        : this(locationService, placeService, geofenceEngine, narrationService, profileService, authService)
     {
         _destination = (destinationLat, destinationLon, destinationName);
     }
@@ -97,16 +97,16 @@ public partial class MapPage : ContentPage
 
     private async Task LoadPOIsAsync()
     {
-        var pois = await _poiService.GetAllPOIsAsync();
+        var places = await _placeService.GetAllPlacesAsync();
 
         var features = new List<IFeature>();
-        foreach (var poi in pois)
+        foreach (var place in places)
         {
-            var (x, y) = SphericalMercator.FromLonLat(poi.Longitude, poi.Latitude);
+            var (x, y) = SphericalMercator.FromLonLat(place.Longitude, place.Latitude);
             var feature = new PointFeature(new MPoint(x, y));
-            feature["id"] = poi.Id;
-            feature["name"] = poi.Name;
-            feature["tts"] = poi.TtsScript;
+            feature["id"] = place.PlaceId.ToString();
+            feature["name"] = place.Name;
+            feature["tts"] = place.TtsScript;
             features.Add(feature);
         }
 
@@ -156,7 +156,7 @@ public partial class MapPage : ContentPage
             await _narrationService.SpeakAsync(script);
 
             if (!string.IsNullOrWhiteSpace(id))
-                _lastSpokenPOIId = id;
+                _lastSpokenPlaceId = id;
         }
     }
 
@@ -172,24 +172,25 @@ public partial class MapPage : ContentPage
                 var address = await _locationService.GetAddressAsync(location);
                 CurrentAddressLabel.Text = $"📍 Địa chỉ hiện tại: {address}";
 
-                var pois = _poiService.GetCachedPOIs();
+                var places = _placeService.GetCachedPlaces();
                 var nearest = _geofenceEngine.FindNearestPOI(
-                    location.Latitude, location.Longitude, pois);
+                    location.Latitude, location.Longitude, places);
 
                 if (nearest != null)
                 {
                     NearestPOILabel.Text = $"🏛️ Gần: {nearest.Name} ({GetDistanceMeters(location.Latitude, location.Longitude, nearest.Latitude, nearest.Longitude):F0}m)";
-                    if (_lastSpokenPOIId != nearest.Id)
+                    var nearestId = nearest.PlaceId.ToString();
+                    if (_lastSpokenPlaceId != nearestId)
                     {
-                        _lastSpokenPOIId = nearest.Id;
+                        _lastSpokenPlaceId = nearestId;
                         nearest.LastPlayedAt = DateTime.Now;
-                        await _narrationService.SpeakAsync(nearest.TtsScript);
+                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name);
                     }
                 }
                 else
                 {
                     NearestPOILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
-                    _lastSpokenPOIId = null;
+                    _lastSpokenPlaceId = null;
                 }
             });
         };

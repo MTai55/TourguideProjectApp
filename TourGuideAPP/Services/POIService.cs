@@ -1,35 +1,18 @@
-using Supabase;
 using TourGuideAPP.Data.Models;
 
 namespace TourGuideAPP.Services;
 
+// Wrapper quanh PlaceService — bảng pois đã gộp vào Places
 public class POIService
 {
-    private readonly Client _supabase;
-    private List<POI> _cachedPOIs = new();
+    private readonly PlaceService _placeService;
 
-    public POIService(Client supabase)
+    public POIService(PlaceService placeService)
     {
-        _supabase = supabase;
+        _placeService = placeService;
     }
 
-    // Lấy danh sách POI từ Supabase
-    public async Task<List<POI>> GetAllPOIsAsync()
-    {
-        try
-        {
-            var result = await _supabase
-                .From<POI>()
-                .Get();
-            _cachedPOIs = result.Models;
-            return _cachedPOIs;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Lỗi lấy POI: {ex.Message}");
-            return _cachedPOIs; // Trả về cache nếu lỗi
-        }
-    }
+    public async Task<List<Place>> GetAllPOIsAsync() => await _placeService.GetAllPlacesAsync();
 
-    public List<POI> GetCachedPOIs() => _cachedPOIs;
+    public List<Place> GetCachedPOIs() => _placeService.GetCachedPlaces();
 }

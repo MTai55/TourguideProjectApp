@@ -200,6 +200,192 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- ═══ POI PLACE CARD (Google Maps style) ═══ -->
+            <Border x:Name="PlaceCard"
+                    IsVisible="False"
+                    BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 20,20,0,0"
+                    Stroke="#2A2018"
+                    StrokeThickness="1"
+                    Padding="20,16,20,32"
+                    VerticalOptions="End">
+                <VerticalStackLayout Spacing="14">
+
+                    <!-- Drag handle -->
+                    <BoxView WidthRequest="36"
+                             HeightRequest="4"
+                             CornerRadius="2"
+                             BackgroundColor="#3A2D22"
+                             HorizontalOptions="Center"
+                             Margin="0,0,0,2"/>
+
+                    <!-- Name row + dismiss button -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="6">
+                            <Label x:Name="CardName"
+                                   Text="Tên địa điểm"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#F0E6D3"
+                                   LineBreakMode="TailTruncation"
+                                   MaxLines="2"/>
+                            <HorizontalStackLayout Spacing="6">
+                                <!-- Status badge -->
+                                <Border x:Name="CardStatusBadge"
+                                        BackgroundColor="#1B3A28"
+                                        StrokeShape="RoundRectangle 6"
+                                        Stroke="Transparent"
+                                        Padding="8,4">
+                                    <Label x:Name="CardStatusLabel"
+                                           Text="Đang mở"
+                                           FontSize="11"
+                                           FontAttributes="Bold"
+                                           TextColor="#4CAF50"/>
+                                </Border>
+                                <!-- Stars -->
+                                <Label x:Name="CardStars"
+                                       Text="★★★★★"
+                                       FontSize="12"
+                                       TextColor="#C8A96E"
+                                       VerticalOptions="Center"/>
+                                <Label x:Name="CardRating"
+                                       Text="4.5"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="#C8A96E"
+                                       VerticalOptions="Center"/>
+                                <Label x:Name="CardReviews"
+                                       Text="(123)"
+                                       FontSize="11"
+                                       TextColor="#5A4A3A"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+
+                        <!-- Dismiss X -->
+                        <Border Grid.Column="1"
+                                BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 20"
+                                Stroke="Transparent"
+                                WidthRequest="32"
+                                HeightRequest="32"
+                                VerticalOptions="Start">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnPlaceCardDismiss"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="✕"
+                                   FontSize="13"
+                                   TextColor="#8A7560"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Tag chips from Specialty -->
+                    <ScrollView Orientation="Horizontal"
+                                HorizontalScrollBarVisibility="Never">
+                        <HorizontalStackLayout x:Name="CardTags" Spacing="6"/>
+                    </ScrollView>
+
+                    <!-- Address -->
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="📍"
+                               FontSize="13"
+                               VerticalOptions="Center"/>
+                        <Label x:Name="CardAddress"
+                               Text="—"
+                               FontSize="12"
+                               TextColor="#A09080"
+                               VerticalOptions="Center"
+                               LineBreakMode="TailTruncation"
+                               MaxLines="1"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Hours -->
+                    <HorizontalStackLayout Spacing="8">
+                        <Label Text="🕐"
+                               FontSize="13"
+                               VerticalOptions="Center"/>
+                        <Label x:Name="CardHours"
+                               Text="—"
+                               FontSize="12"
+                               TextColor="#A09080"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Action buttons -->
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" Margin="0,4,0,0">
+
+                        <!-- Chỉ đường -->
+                        <Border Grid.Column="0"
+                                BackgroundColor="#C8A96E"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="Transparent"
+                                Padding="0,12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCardDirections"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                <Label Text="🧭"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="Chỉ đường"
+                                       FontSize="11"
+                                       FontAttributes="Bold"
+                                       TextColor="#1A1410"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Gọi ngay -->
+                        <Border Grid.Column="1"
+                                BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="#3A2D22"
+                                StrokeThickness="1"
+                                Padding="0,12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCardCall"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                <Label Text="📞"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="Gọi ngay"
+                                       FontSize="11"
+                                       FontAttributes="Bold"
+                                       TextColor="#C8A96E"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Chi tiết -->
+                        <Border Grid.Column="2"
+                                BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="#3A2D22"
+                                StrokeThickness="1"
+                                Padding="0,12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCardDetail"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                <Label Text="ℹ️"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="Chi tiết"
+                                       FontSize="11"
+                                       FontAttributes="Bold"
+                                       TextColor="#C8A96E"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                    </Grid>
+
+                </VerticalStackLayout>
+            </Border>
+
         </Grid>
 
     </Grid>

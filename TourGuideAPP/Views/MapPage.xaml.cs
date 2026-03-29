@@ -9,6 +9,7 @@ using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 using TourGuideAPP.Data.Models;
 using TourGuideAPP.Services;
+using Microsoft.Maui.ApplicationModel.Communication;
 
 namespace TourGuideAPP.Views;
 
@@ -24,6 +25,9 @@ public partial class MapPage : ContentPage
     private bool _mapInfoHooked;
     private (double lat, double lon, string? name)? _destination;
     private readonly HttpClient _http = new();
+    private bool _followUserLocation = true;   // tự follow GPS
+    private bool _programmaticNav = false;     // đang nav bằng code (không phải user kéo)
+    private Place? _selectedPlace;
 
     // Dùng để truyền điểm đến từ PlaceDetailPage trước khi chuyển tab
     public static (double Lat, double Lon, string? Name)? PendingRoute { get; set; }
@@ -91,6 +95,12 @@ public partial class MapPage : ContentPage
         if (!_mapInfoHooked)
         {
             MyMap.Info += OnMapInfo;
+            MyMap.Map.Navigator.ViewportChanged += (s, e) =>
+            {
+                // Nếu viewport thay đổi không phải do code → user đang kéo map
+                if (!_programmaticNav)
+                    _followUserLocation = false;
+            };
             _mapInfoHooked = true;
         }
     }
@@ -110,25 +120,40 @@ public partial class MapPage : ContentPage
             features.Add(feature);
         }
 
-        var oldLayer = MyMap.Map.Layers.FirstOrDefault(l => l.Name == "POIs");
-        if (oldLayer is not null)
-            MyMap.Map.Layers.Remove(oldLayer);
+        foreach (var name in new[] { "POIsGlow", "POIs" })
+        {
+            var old = MyMap.Map.Layers.FirstOrDefault(l => l.Name == name);
+            if (old is not null) MyMap.Map.Layers.Remove(old);
+        }
 
-        var layer = new MemoryLayer
+        // Lớp ngoài — vòng glow mờ đỏ
+        MyMap.Map.Layers.Add(new MemoryLayer
+        {
+            Name = "POIsGlow",
+            Features = features,
+            Style = new Mapsui.Styles.SymbolStyle
+            {
+                SymbolScale = 1.6,
+                Fill = new Mapsui.Styles.Brush(Mapsui.Styles.Color.FromArgb(45, 233, 69, 96)),
+                Outline = new Mapsui.Styles.Pen(Mapsui.Styles.Color.FromArgb(90, 233, 69, 96), 1.5)
+            }
+        });
+
+        // Lớp trong — chấm đặc đỏ với viền trắng
+        MyMap.Map.Layers.Add(new MemoryLayer
         {
             Name = "POIs",
             Features = features,
             Style = new Mapsui.Styles.SymbolStyle
             {
-                SymbolScale = 0.8,
-                Fill = new Mapsui.Styles.Brush(Mapsui.Styles.Color.FromArgb(255, 88, 64, 212))
+                SymbolScale = 0.5,
+                Fill = new Mapsui.Styles.Brush(Mapsui.Styles.Color.FromArgb(255, 233, 69, 96)),
+                Outline = new Mapsui.Styles.Pen(Mapsui.Styles.Color.White, 3)
             }
-        };
-
-        MyMap.Map.Layers.Add(layer);
+        });
     }
 
-    private async void OnMapInfo(object? sender, MapInfoEventArgs e)
+    private void OnMapInfo(object? sender, MapInfoEventArgs e)
     {
         var hitLayers = MyMap.Map.Layers.Where(l => l.Name == "POIs");
         var mapInfo = e.GetMapInfo?.Invoke(hitLayers);
@@ -137,27 +162,170 @@ public partial class MapPage : ContentPage
             return;
 
         var id = hit["id"]?.ToString();
-        var name = hit["name"]?.ToString();
-        var tts = hit["tts"]?.ToString();
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(id))
             return;
 
-        var action = await DisplayActionSheetAsync(
-            $"📍 {name}",
-            "Đóng",
-            null,
-            "🎙️ Thuyết minh");
+        var place = _placeService.GetCachedPlaces()
+            .FirstOrDefault(p => p.PlaceId.ToString() == id);
+        if (place is null)
+            return;
 
-        if (action == "🎙️ Thuyết minh")
+        MainThread.BeginInvokeOnMainThread(() => ShowPlaceCard(place));
+    }
+
+    private void ShowPlaceCard(Place place)
+    {
+        _selectedPlace = place;
+
+        CardName.Text = place.Name;
+
+        // Status badge
+        bool isOpen = IsPlaceOpen(place);
+        CardStatusLabel.Text = isOpen ? "Đang mở" : "Đóng cửa";
+        CardStatusLabel.TextColor = isOpen
+            ? Color.FromArgb("#4CAF50")
+            : Color.FromArgb("#E94560");
+        CardStatusBadge.BackgroundColor = isOpen
+            ? Color.FromArgb("#1B3A28")
+            : Color.FromArgb("#3A1B20");
+
+        // Stars + rating
+        if (place.AverageRating.HasValue)
         {
-            var script = string.IsNullOrWhiteSpace(tts)
-                ? $"Đây là địa điểm {name}."
-                : tts!;
-            await _narrationService.SpeakAsync(script);
-
-            if (!string.IsNullOrWhiteSpace(id))
-                _lastSpokenPlaceId = id;
+            int full = (int)Math.Round(place.AverageRating.Value);
+            CardStars.Text = new string('★', full) + new string('☆', 5 - full);
+            CardRating.Text = place.AverageRating.Value.ToString("F1");
+            CardReviews.Text = place.TotalReviews.HasValue ? $"({place.TotalReviews})" : "";
         }
+        else
+        {
+            CardStars.Text = "☆☆☆☆☆";
+            CardRating.Text = "";
+            CardReviews.Text = "Chưa có đánh giá";
+        }
+
+        // Tag chips from Specialty
+        CardTags.Children.Clear();
+        if (!string.IsNullOrWhiteSpace(place.Specialty))
+        {
+            foreach (var tag in place.Specialty.Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var chip = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#26201A"),
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(6) },
+                    Stroke = Colors.Transparent,
+                    Padding = new Thickness(10, 4)
+                };
+                chip.Content = new Label
+                {
+                    Text = tag.Trim(),
+                    FontSize = 11,
+                    TextColor = Color.FromArgb("#C8A96E")
+                };
+                CardTags.Children.Add(chip);
+            }
+        }
+
+        // Address
+        CardAddress.Text = string.IsNullOrWhiteSpace(place.Address) ? "—" : place.Address;
+
+        // Hours
+        CardHours.Text = place.OpenTimeDisplay;
+
+        PlaceCard.IsVisible = true;
+    }
+
+    private static bool IsPlaceOpen(Place place)
+    {
+        if (place.OpenTime is null || place.CloseTime is null)
+            return false;
+        if (!TimeSpan.TryParse(place.OpenTime, out var open) ||
+            !TimeSpan.TryParse(place.CloseTime, out var close))
+            return false;
+        var now = DateTime.Now.TimeOfDay;
+        return now >= open && now <= close;
+    }
+
+    private void OnPlaceCardDismiss(object sender, TappedEventArgs e)
+    {
+        PlaceCard.IsVisible = false;
+        _selectedPlace = null;
+    }
+
+    private async void OnCardDirections(object sender, TappedEventArgs e)
+    {
+        if (_selectedPlace is null) return;
+        PlaceCard.IsVisible = false;
+        var dest = (_selectedPlace.Latitude, _selectedPlace.Longitude, (string?)_selectedPlace.Name);
+        _selectedPlace = null;
+        if (_locationService.LastKnownLocation is null)
+            await _locationService.StartAsync();
+        await ShowRouteToDestinationAsync(dest);
+    }
+
+    private void OnCardCall(object sender, TappedEventArgs e)
+    {
+        if (_selectedPlace is null) return;
+        if (string.IsNullOrWhiteSpace(_selectedPlace.Phone))
+        {
+            DisplayAlert("Thông báo", "Địa điểm này chưa có số điện thoại.", "OK");
+            return;
+        }
+        try { PhoneDialer.Open(_selectedPlace.Phone); }
+        catch { DisplayAlert("Lỗi", "Không thể mở ứng dụng gọi điện.", "OK"); }
+    }
+
+    private async void OnCardDetail(object sender, TappedEventArgs e)
+    {
+        if (_selectedPlace is null) return;
+        var place = _selectedPlace;
+        PlaceCard.IsVisible = false;
+        _selectedPlace = null;
+        var detailPage = new PlaceDetailPage(place, _authService, _locationService,
+                                             _geofenceEngine, _narrationService, _profileService);
+        await Navigation.PushAsync(detailPage);
+    }
+
+    private void UpdateUserMarker(double lat, double lon)
+    {
+        // Xóa layer cũ
+        foreach (var name in new[] { "UserLocationGlow", "UserLocationDot" })
+        {
+            var old = MyMap.Map.Layers.FirstOrDefault(l => l.Name == name);
+            if (old is not null) MyMap.Map.Layers.Remove(old);
+        }
+
+        var (x, y) = SphericalMercator.FromLonLat(lon, lat);
+        var point = new MPoint(x, y);
+
+        // Lớp ngoài — vòng glow mờ xanh
+        MyMap.Map.Layers.Add(new MemoryLayer
+        {
+            Name = "UserLocationGlow",
+            Features = new[] { new PointFeature(point) },
+            Style = new Mapsui.Styles.SymbolStyle
+            {
+                SymbolScale = 1.6,
+                Fill = new Mapsui.Styles.Brush(Mapsui.Styles.Color.FromArgb(45, 0, 140, 255)),
+                Outline = new Mapsui.Styles.Pen(Mapsui.Styles.Color.FromArgb(90, 0, 140, 255), 1.5)
+            }
+        });
+
+        // Lớp trong — chấm đặc xanh với viền trắng
+        MyMap.Map.Layers.Add(new MemoryLayer
+        {
+            Name = "UserLocationDot",
+            Features = new[] { new PointFeature(point) },
+            Style = new Mapsui.Styles.SymbolStyle
+            {
+                SymbolScale = 0.5,
+                Fill = new Mapsui.Styles.Brush(Mapsui.Styles.Color.FromArgb(255, 30, 144, 255)),
+                Outline = new Mapsui.Styles.Pen(Mapsui.Styles.Color.White, 3)
+            }
+        });
+
+        MyMap.Map.RefreshData();
     }
 
     private void StartGPS()
@@ -167,7 +335,16 @@ public partial class MapPage : ContentPage
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 var (x, y) = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
-                MyMap.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), MyMap.Map.Navigator.Resolutions[16]);
+
+                // Chỉ tự center khi đang ở chế độ follow
+                if (_followUserLocation)
+                {
+                    _programmaticNav = true;
+                    MyMap.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), MyMap.Map.Navigator.Resolutions[16]);
+                    _programmaticNav = false;
+                }
+
+                UpdateUserMarker(location.Latitude, location.Longitude);
 
                 var address = await _locationService.GetAddressAsync(location);
                 CurrentAddressLabel.Text = $"📍 Địa chỉ hiện tại: {address}";
@@ -319,7 +496,10 @@ public partial class MapPage : ContentPage
         var loc = _locationService.LastKnownLocation;
         if (loc is null) return;
         var (x, y) = SphericalMercator.FromLonLat(loc.Longitude, loc.Latitude);
-        MyMap.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), MyMap.Map.Navigator.Resolutions[16], duration: 400);
+        _followUserLocation = true;
+        _programmaticNav = true;
+        MyMap.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), MyMap.Map.Navigator.Resolutions[16]);
+        _programmaticNav = false;
         MyMap.Map.RefreshData();
     }
 

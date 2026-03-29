@@ -46,8 +46,8 @@ public partial class MainPage : ContentPage
 
    private void UpdateAuthUI()
 {
-    GpsCard.IsVisible = _authService.IsLoggedIn;
-    UserLabel.Text = _authService.IsLoggedIn ? "👤 Đã đăng nhập" : "👤 Khách";
+    GpsCard.IsVisible = true;
+    UserLabel.Text = "👤 Khách";
 }
 
     private async Task TestConnection()
@@ -84,12 +84,6 @@ public partial class MainPage : ContentPage
 
     private async void OnStartGpsClicked(object sender, EventArgs e)
     {
-        if (!_authService.IsLoggedIn)
-        {
-             await DisplayAlert("Thông báo", "Vui lòng đăng nhập để sử dụng GPS.", "OK");
-            return;
-        }
-
         GpsLabel.Text = "📍 Đang khởi động GPS...";
         _locationService.LocationChanged += (location) =>
         {
@@ -196,11 +190,6 @@ public partial class MainPage : ContentPage
 
     private async void OnQRScanClicked(object sender, EventArgs e)
     {
-        if (!_authService.IsLoggedIn)
-        {
-           await DisplayAlert("Thông báo", "Vui lòng đăng nhập để quét QR.", "OK");
-            return;
-        }
         await Navigation.PushAsync(new QRScanPage(_narrationService, _profileService, _placeService));
     }
 
@@ -209,11 +198,6 @@ public partial class MainPage : ContentPage
 
 private async void OnNarrationClicked(object sender, EventArgs e)
 {
-    if (!_authService.IsLoggedIn)
-    {
-        await DisplayAlert("Thông báo", "Vui lòng đăng nhập để nghe thuyết minh.", "OK");
-        return;
-    }
     await _narrationService.SpeakAsync("Chào mừng bạn đến với khu vực Khánh Hội!");
 }
 

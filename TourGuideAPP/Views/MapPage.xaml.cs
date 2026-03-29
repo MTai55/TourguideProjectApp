@@ -300,6 +300,29 @@ public partial class MapPage : ContentPage
         CancelRoutePanel.IsVisible = true;
     }
 
+    private void OnZoomInClicked(object sender, TappedEventArgs e)
+    {
+        var nav = MyMap.Map.Navigator;
+        nav.ZoomIn(duration: 200);
+        MyMap.Map.RefreshData();
+    }
+
+    private void OnZoomOutClicked(object sender, TappedEventArgs e)
+    {
+        var nav = MyMap.Map.Navigator;
+        nav.ZoomOut(duration: 200);
+        MyMap.Map.RefreshData();
+    }
+
+    private void OnTrackLocationClicked(object sender, TappedEventArgs e)
+    {
+        var loc = _locationService.LastKnownLocation;
+        if (loc is null) return;
+        var (x, y) = SphericalMercator.FromLonLat(loc.Longitude, loc.Latitude);
+        MyMap.Map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), MyMap.Map.Navigator.Resolutions[16], duration: 400);
+        MyMap.Map.RefreshData();
+    }
+
     private void OnCancelRouteClicked(object sender, TappedEventArgs e)
     {
         var routeLayer = MyMap.Map.Layers.FirstOrDefault(l => l.Name == "Route");

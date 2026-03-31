@@ -314,7 +314,7 @@
                     </HorizontalStackLayout>
 
                     <!-- Action buttons -->
-                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" Margin="0,4,0,0">
+                    <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8" Margin="0,4,0,0">
 
                         <!-- Chỉ đường -->
                         <Border Grid.Column="0"
@@ -330,15 +330,37 @@
                                        FontSize="16"
                                        HorizontalOptions="Center"/>
                                 <Label Text="Chỉ đường"
-                                       FontSize="11"
+                                       FontSize="10"
                                        FontAttributes="Bold"
                                        TextColor="#1A1410"
                                        HorizontalOptions="Center"/>
                             </VerticalStackLayout>
                         </Border>
 
-                        <!-- Gọi ngay -->
+                        <!-- Thuyết minh -->
                         <Border Grid.Column="1"
+                                BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 12"
+                                Stroke="#3A2D22"
+                                StrokeThickness="1"
+                                Padding="0,12">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCardNarrate"/>
+                            </Border.GestureRecognizers>
+                            <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                <Label Text="🎙️"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="Thuyết minh"
+                                       FontSize="10"
+                                       FontAttributes="Bold"
+                                       TextColor="#C8A96E"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Gọi ngay -->
+                        <Border Grid.Column="2"
                                 BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="#3A2D22"
@@ -352,7 +374,7 @@
                                        FontSize="16"
                                        HorizontalOptions="Center"/>
                                 <Label Text="Gọi ngay"
-                                       FontSize="11"
+                                       FontSize="10"
                                        FontAttributes="Bold"
                                        TextColor="#C8A96E"
                                        HorizontalOptions="Center"/>
@@ -360,7 +382,7 @@
                         </Border>
 
                         <!-- Chi tiết -->
-                        <Border Grid.Column="2"
+                        <Border Grid.Column="3"
                                 BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="#3A2D22"
@@ -374,7 +396,7 @@
                                        FontSize="16"
                                        HorizontalOptions="Center"/>
                                 <Label Text="Chi tiết"
-                                       FontSize="11"
+                                       FontSize="10"
                                        FontAttributes="Bold"
                                        TextColor="#C8A96E"
                                        HorizontalOptions="Center"/>

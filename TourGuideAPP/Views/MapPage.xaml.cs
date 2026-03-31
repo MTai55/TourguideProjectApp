@@ -264,6 +264,16 @@ public partial class MapPage : ContentPage
         await ShowRouteToDestinationAsync(dest);
     }
 
+    private async void OnCardNarrate(object sender, TappedEventArgs e)
+    {
+        if (_selectedPlace is null) return;
+        var script = string.IsNullOrWhiteSpace(_selectedPlace.TtsScript)
+            ? $"Đây là địa điểm {_selectedPlace.Name}."
+            : _selectedPlace.TtsScript;
+        _lastSpokenPlaceId = _selectedPlace.PlaceId.ToString();
+        await _narrationService.SpeakAsync(script);
+    }
+
     private void OnCardCall(object sender, TappedEventArgs e)
     {
         if (_selectedPlace is null) return;

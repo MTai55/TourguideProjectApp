@@ -247,6 +247,33 @@ public partial class MapPage : ContentPage
         return now >= open && now <= close;
     }
 
+    // Màu bình thường của từng nút
+    private static readonly Color _primaryNormal  = Color.FromArgb("#C8A96E");
+    private static readonly Color _primaryHover   = Color.FromArgb("#E8C98E");
+    private static readonly Color _secondaryNormal = Color.FromArgb("#26201A");
+    private static readonly Color _secondaryHover  = Color.FromArgb("#3E3028");
+
+    private void OnCardBtnHoverEnter(object sender, PointerEventArgs e)
+    {
+        if (sender is not Border btn) return;
+        btn.BackgroundColor = ReferenceEquals(btn, BtnDirections) ? _primaryHover : _secondaryHover;
+    }
+
+    private void OnCardBtnHoverExit(object sender, PointerEventArgs e)
+    {
+        if (sender is not Border btn) return;
+        btn.BackgroundColor = ReferenceEquals(btn, BtnDirections) ? _primaryNormal : _secondaryNormal;
+    }
+
+    private static async Task FlashButton(Border btn, bool isPrimary)
+    {
+        var bright = isPrimary ? Color.FromArgb("#FFDF9F") : Color.FromArgb("#4E3E30");
+        var normal = isPrimary ? Color.FromArgb("#C8A96E") : Color.FromArgb("#26201A");
+        btn.BackgroundColor = bright;
+        await Task.Delay(120);
+        btn.BackgroundColor = normal;
+    }
+
     private void OnPlaceCardDismiss(object sender, TappedEventArgs e)
     {
         PlaceCard.IsVisible = false;
@@ -256,6 +283,7 @@ public partial class MapPage : ContentPage
     private async void OnCardDirections(object sender, TappedEventArgs e)
     {
         if (_selectedPlace is null) return;
+        await FlashButton(BtnDirections, isPrimary: true);
         PlaceCard.IsVisible = false;
         var dest = (_selectedPlace.Latitude, _selectedPlace.Longitude, (string?)_selectedPlace.Name);
         _selectedPlace = null;
@@ -267,6 +295,7 @@ public partial class MapPage : ContentPage
     private async void OnCardNarrate(object sender, TappedEventArgs e)
     {
         if (_selectedPlace is null) return;
+        await FlashButton(BtnNarrate, isPrimary: false);
         var script = string.IsNullOrWhiteSpace(_selectedPlace.TtsScript)
             ? $"Đây là địa điểm {_selectedPlace.Name}."
             : _selectedPlace.TtsScript;
@@ -274,9 +303,10 @@ public partial class MapPage : ContentPage
         await _narrationService.SpeakAsync(script);
     }
 
-    private void OnCardCall(object sender, TappedEventArgs e)
+    private async void OnCardCall(object sender, TappedEventArgs e)
     {
         if (_selectedPlace is null) return;
+        await FlashButton(BtnCall, isPrimary: false);
         if (string.IsNullOrWhiteSpace(_selectedPlace.Phone))
         {
             DisplayAlert("Thông báo", "Địa điểm này chưa có số điện thoại.", "OK");
@@ -289,6 +319,7 @@ public partial class MapPage : ContentPage
     private async void OnCardDetail(object sender, TappedEventArgs e)
     {
         if (_selectedPlace is null) return;
+        await FlashButton(BtnDetail, isPrimary: false);
         var place = _selectedPlace;
         PlaceCard.IsVisible = false;
         _selectedPlace = null;

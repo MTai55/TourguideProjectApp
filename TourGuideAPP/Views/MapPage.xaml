@@ -317,13 +317,16 @@
                     <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8" Margin="0,4,0,0">
 
                         <!-- Chỉ đường -->
-                        <Border Grid.Column="0"
+                        <Border x:Name="BtnDirections"
+                                Grid.Column="0"
                                 BackgroundColor="#C8A96E"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="Transparent"
                                 Padding="0,12">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnCardDirections"/>
+                                <PointerGestureRecognizer PointerEntered="OnCardBtnHoverEnter"
+                                                          PointerExited="OnCardBtnHoverExit"/>
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
                                 <Label Text="🧭"
@@ -338,7 +341,8 @@
                         </Border>
 
                         <!-- Thuyết minh -->
-                        <Border Grid.Column="1"
+                        <Border x:Name="BtnNarrate"
+                                Grid.Column="1"
                                 BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="#3A2D22"
@@ -346,6 +350,8 @@
                                 Padding="0,12">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnCardNarrate"/>
+                                <PointerGestureRecognizer PointerEntered="OnCardBtnHoverEnter"
+                                                          PointerExited="OnCardBtnHoverExit"/>
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
                                 <Label Text="🎙️"
@@ -360,7 +366,8 @@
                         </Border>
 
                         <!-- Gọi ngay -->
-                        <Border Grid.Column="2"
+                        <Border x:Name="BtnCall"
+                                Grid.Column="2"
                                 BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="#3A2D22"
@@ -368,6 +375,8 @@
                                 Padding="0,12">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnCardCall"/>
+                                <PointerGestureRecognizer PointerEntered="OnCardBtnHoverEnter"
+                                                          PointerExited="OnCardBtnHoverExit"/>
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
                                 <Label Text="📞"
@@ -382,7 +391,8 @@
                         </Border>
 
                         <!-- Chi tiết -->
-                        <Border Grid.Column="3"
+                        <Border x:Name="BtnDetail"
+                                Grid.Column="3"
                                 BackgroundColor="#26201A"
                                 StrokeShape="RoundRectangle 12"
                                 Stroke="#3A2D22"
@@ -390,6 +400,8 @@
                                 Padding="0,12">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnCardDetail"/>
+                                <PointerGestureRecognizer PointerEntered="OnCardBtnHoverEnter"
+                                                          PointerExited="OnCardBtnHoverExit"/>
                             </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
                                 <Label Text="ℹ️"

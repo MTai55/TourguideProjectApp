@@ -36,7 +36,22 @@ public partial class TourDetailPage : ContentPage
         StopsCollection.ItemsSource = tour.Stops;
     }
 
-    private async void OnStartClicked(object sender, EventArgs e)
+    private void OnBackClicked(object sender, TappedEventArgs e)
+    {
+        Navigation.PopAsync();
+    }
+
+    private async void OnStopDirectionsClicked(object sender, TappedEventArgs e)
+    {
+        var placeId = e.Parameter?.ToString();
+        var place = _tour.Stops.FirstOrDefault(p => p.PlaceId.ToString() == placeId);
+        if (place is null) return;
+
+        MapPage.PendingRoute = (place.Latitude, place.Longitude, place.Name);
+        await Shell.Current.GoToAsync("//MainTabs/MapPage");
+    }
+
+    private async void OnStartClicked(object sender, TappedEventArgs e)
     {
         var first = _tour.Stops.FirstOrDefault();
         if (first is null)
@@ -45,16 +60,7 @@ public partial class TourDetailPage : ContentPage
             return;
         }
 
-        if (Shell.Current is AppShell appShell)
-        {
-            appShell.ActivateMapTab();
-        }
-        else
-        {
-            await Shell.Current.GoToAsync("//MainTabs/MapPage");
-        }
-
-        // Nếu cần thêm dữ liệu đích (destination), có thể dùng service trung gian ở đây.
+        MapPage.PendingRoute = (first.Latitude, first.Longitude, first.Name);
+        await Shell.Current.GoToAsync("//MainTabs/MapPage");
     }
 }
-

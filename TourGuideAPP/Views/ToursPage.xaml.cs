@@ -73,6 +73,12 @@ public partial class ToursPage : ContentPage
         BudgetValueLabel.Text = $"{v}k";
     }
 
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        _filters = _filters with { Query = (e.NewTextValue ?? "").Trim() };
+        RebuildTours();
+    }
+
     private void OnApplyFiltersClicked(object sender, EventArgs e)
     {
         _filters = new TourFilters(
@@ -86,21 +92,17 @@ public partial class ToursPage : ContentPage
         FilterPanel.IsVisible = false;
     }
 
-    private async void OnSelectTourClicked(object sender, EventArgs e)
+    private async void OnSelectTourClicked(object sender, TappedEventArgs e)
     {
-        if (sender is not Button btn || btn.CommandParameter is not string id)
-            return;
+        var id = e.Parameter?.ToString();
+        if (string.IsNullOrWhiteSpace(id)) return;
 
         var selected = Tours.FirstOrDefault(t => t.Id == id);
-        if (selected is null)
-        {
-            await DisplayAlertAsync("Chọn tour", "Không tìm thấy tour.", "OK");
-            return;
-        }
+        if (selected is null) return;
 
         if (selected.Stops.Count == 0)
         {
-            await DisplayAlertAsync("Chọn tour", "Tour demo chưa có điểm dừng để xem chi tiết.", "OK");
+            await DisplayAlertAsync("Chọn tour", "Tour này chưa có điểm dừng.", "OK");
             return;
         }
 
@@ -109,17 +111,19 @@ public partial class ToursPage : ContentPage
         var poiService = sp?.GetService<POIService>();
         var geofenceEngine = sp?.GetService<GeofenceEngine>();
         var narrationService = sp?.GetService<NarrationService>();
-
         var profileService = sp?.GetService<UserProfileService>();
         var authService = sp?.GetService<AuthService>();
 
-        if (locationService is null || poiService is null || geofenceEngine is null || narrationService is null || profileService is null || authService is null)
+        if (locationService is null || poiService is null || geofenceEngine is null ||
+            narrationService is null || profileService is null || authService is null)
         {
-            await DisplayAlertAsync("Thiếu dịch vụ", "Không khởi tạo được các dịch vụ để mở tour chi tiết.", "OK");
+            await DisplayAlertAsync("Lỗi", "Không khởi tạo được các dịch vụ.", "OK");
             return;
         }
 
-        await Navigation.PushAsync(new TourDetailPage(selected, locationService, poiService, geofenceEngine, narrationService, profileService, authService));
+        await Navigation.PushAsync(new TourDetailPage(selected, locationService, poiService,
+                                                       geofenceEngine, narrationService,
+                                                       profileService, authService));
     }
 
     private void RebuildTours()

@@ -52,7 +52,8 @@
                                TextColor="#F0E6D3"
                                BackgroundColor="Transparent"
                                Margin="8,0,0,0"
-                               FontSize="12"/>
+                               FontSize="12"
+                               TextChanged="OnSearchTextChanged"/>
                     </Grid>
                 </Border>
 

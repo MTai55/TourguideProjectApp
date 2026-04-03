@@ -76,6 +76,8 @@ public class GeoLocationService(AppDbContext db, IConfiguration config) : IGeoLo
         Math.Round(distKm, 2),
         p.Specialty,       
         p.PricePerPerson,  
+        p.PriceMin,
+        p.PriceMax,
         p.District,        
         p.HasParking,      
         p.HasAircon       

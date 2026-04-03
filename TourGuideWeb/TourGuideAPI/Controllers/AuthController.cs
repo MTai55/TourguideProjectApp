@@ -32,6 +32,28 @@ public class AuthController(IAuthService auth) : ControllerBase
         return Ok(result); ;
     }
 
+    // DEBUG: POST /api/auth/debug-login/{userId}
+    // Purpose: Login as any user without password (for testing only)
+    [HttpPost("debug-login/{userId}")]
+    public async Task<IActionResult> DebugLogin(int userId, [FromServices] IAuthService authService)
+    {
+        try
+        {
+            var result = await authService.GenerateTokenAsync(userId);
+            if (result == null)
+                return NotFound(new { message = $"User ID {userId} not found or inactive" });
+            return Ok(new
+            {
+                message = "🔐 DEBUG LOGIN (no password required)",
+                token = result
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     // POST /api/auth/refresh
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto dto)

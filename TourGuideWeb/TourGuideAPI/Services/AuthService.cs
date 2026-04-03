@@ -16,6 +16,7 @@ public interface IAuthService
     Task<AuthResponseDto?> LoginAsync(LoginDto dto);
     Task<AuthResponseDto?> RefreshAsync(string refreshToken);
     Task RevokeAsync(string refreshToken);
+    Task<AuthResponseDto?> GenerateTokenAsync(int userId);  // DEBUG: generate token for any user
 }
 
 public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
@@ -72,6 +73,14 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
         if (token == null) return;
         token.IsRevoked = true;
         await db.SaveChangesAsync();
+    }
+
+    // DEBUG: Generate JWT for any user by ID (no password required)
+    public async Task<AuthResponseDto?> GenerateTokenAsync(int userId)
+    {
+        var user = await db.Users.FirstOrDefaultAsync(u => u.UserId == userId && u.IsActive);
+        if (user == null) return null;
+        return await BuildResponse(user);
     }
 
     // ── Private helpers ───────────────────────────────────────────

@@ -36,4 +36,14 @@ public class AdminPlacesController(ApiService api) : Controller
         TempData["Success"] = "Đã từ chối quán!";
         return RedirectToAction("Index");
     }
+
+    // Tạm khóa quán
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Suspend(int id)
+    {
+        await api.SuspendPlaceAsync(id);
+        TempData["Success"] = "Đã tạm khóa quán!";
+        return RedirectToAction("Index");
+    }
 }

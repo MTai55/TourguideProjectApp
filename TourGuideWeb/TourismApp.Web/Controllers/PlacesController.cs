@@ -6,14 +6,58 @@ using TourismApp.Web.Filters;
 namespace TourismApp.Web.Controllers;
 
 [OwnerOnly]
-public class PlacesController(ApiService api) : Controller
+public class PlacesController(ApiService api, ILogger<PlacesController> logger) : Controller
 {
     private bool IsLoggedIn => HttpContext.Session.GetString("JwtToken") != null;
 
+    // ── GET /Places/Debug ─────────────────────────────────────────
+    [HttpGet("debug")]
+    public IActionResult Debug()
+    {
+        var token = HttpContext.Session.GetString("JwtToken");
+        var userName = HttpContext.Session.GetString("UserName");
+        var userId = HttpContext.Session.GetInt32("UserId");
+        var userRole = HttpContext.Session.GetString("UserRole");
+        
+        return Ok(new
+        {
+            message = "🔍 DEBUG INFO (Web)",
+            session = new
+            {
+                isLoggedIn = IsLoggedIn,
+                userName,
+                userId,
+                userRole,
+                tokenLength = token?.Length ?? 0,
+                tokenPrefix = token?.Substring(0, Math.Min(20, token?.Length ?? 0)) + "..."
+            }
+        });
+    }
+
     public async Task<IActionResult> Index(string? search, int page = 1)
     {
+        var token = HttpContext.Session.GetString("JwtToken");
+        var userName = HttpContext.Session.GetString("UserName");
+        var userId = HttpContext.Session.GetInt32("UserId");
+        var userRole = HttpContext.Session.GetString("UserRole");
+        
+        logger.LogInformation($"🔍 PlacesController.Index called");
+        logger.LogInformation($"   Token: {(token != null ? "✅ Present (" + token.Length + " chars)" : "❌ Not found")}");
+        logger.LogInformation($"   UserName: {userName ?? "null"}");
+        logger.LogInformation($"   UserId: {userId}");
+        logger.LogInformation($"   Role: {userRole ?? "null"}");
+        
         // Gọi /api/places/mine — chỉ quán của owner này
         var result = await api.GetMyPlacesAsync(page, search);
+        
+        logger.LogInformation($"   API Result: {(result != null ? $"✅ OK ({result.Items.Count} items)" : "❌ Null")}");
+        
+        // Debug: nếu result null → API có lỗi
+        if (result == null)
+        {
+            TempData["Error"] = "❌ Lỗi kết nối API. Hãy kiểm tra logs.";
+        }
+        
         ViewBag.Search = search;
         ViewBag.Page = page;
         ViewBag.Total = result?.Total ?? 0;
@@ -39,11 +83,20 @@ public class PlacesController(ApiService api) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreatePlaceViewModel vm)
     {
-        if (!ModelState.IsValid) return View(vm);
+        // Debug: xem ModelState lỗi gì
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage);
+            TempData["Error"] = "Validation: " + string.Join(", ", errors);
+            return View(vm);
+        }
+
         var (success, _, error) = await api.CreatePlaceAsync(vm);
         if (!success)
         {
-            ModelState.AddModelError("", "Không thể tạo quán. Vui lòng thử lại.");
+            TempData["Error"] = $"API lỗi: {error}"; // ← hiện lỗi từ API
             return View(vm);
         }
         TempData["Success"] = "Tạo quán thành công! Chờ Admin duyệt.";
@@ -64,7 +117,15 @@ public class PlacesController(ApiService api) : Controller
             Longitude = place.Longitude,
             Phone = place.Phone,
             OpenTime = place.OpenTime,
-            CloseTime = place.CloseTime
+            CloseTime = place.CloseTime,
+            CategoryId = place.CategoryId,
+            Specialty = place.Specialty,
+            PriceMin = place.PriceMin,
+            PriceMax = place.PriceMax,
+            District = place.District,
+            HasParking = place.HasParking,
+            HasAircon = place.HasAircon,
+            PricePerPerson = place.PricePerPerson
         };
         ViewBag.PlaceId = id;
         return View(vm);

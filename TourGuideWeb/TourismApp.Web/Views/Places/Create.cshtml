@@ -1,65 +1,259 @@
 @model TourismApp.Web.Models.CreatePlaceViewModel
-@{ ViewData["Title"] = "Thêm địa điểm"; }
+@{ ViewData["Title"] = "Thêm quán mới"; }
 
-<div class="d-flex align-items-center gap-2 mb-4">
-  <a href="/Places" class="btn btn-outline-secondary btn-sm">← Quay lại</a>
-  <h4 class="fw-bold mb-0">+ Thêm địa điểm mới</h4>
+<div class="flex items-center gap-3 mb-6 pt-2">
+  <a asp-controller="Places" asp-action="Index"
+     class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-sm font-semibold">
+    <span class="material-symbols-outlined text-lg">arrow_back</span> Quay lại
+  </a>
+  <span class="text-slate-300">/</span>
+  <h2 class="text-2xl font-bold tracking-tight">Thêm quán mới</h2>
 </div>
 
-<div class="card shadow-sm">
-  <div class="card-body p-4">
-    <form asp-action="Create" method="post">
-      @Html.AntiForgeryToken()
-      <div class="row g-3">
-        <div class="col-md-8">
-          <label asp-for="Name" class="form-label fw-semibold"></label>
-          <input asp-for="Name" class="form-control" placeholder="Tên địa điểm">
-          <span asp-validation-for="Name" class="text-danger small"></span>
+<div class="max-w-3xl">
+  <form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <!-- ── Thông tin cơ bản ─────────────────────────────────── -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden mb-5">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">storefront</span>
+        <h3 class="font-bold text-base">Thông tin cơ bản</h3>
+      </div>
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold mb-1.5">Tên quán <span class="text-red-500">*</span></label>
+          <input asp-for="Name" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                 placeholder="VD: Quán Bún Bò Huế cô Ba" />
+          <span asp-validation-for="Name" class="text-red-500 text-xs mt-1 block"></span>
         </div>
-        <div class="col-md-4">
-          <label asp-for="Phone" class="form-label fw-semibold"></label>
-          <input asp-for="Phone" class="form-control" placeholder="0901234567">
+
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Loại hình <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <select asp-for="CategoryId" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm appearance-none focus:ring-2 focus:ring-primary/20">
+              <option value="">Chọn loại hình...</option>
+              <option value="1">🍽️ Nhà hàng</option>
+              <option value="2">🥢 Quán ăn vặt</option>
+              <option value="3">☕ Cà phê</option>
+              <option value="4">🧋 Trà sữa & Đồ uống</option>
+              <option value="5">🍰 Bánh & Tráng miệng</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-sm">expand_more</span>
+          </div>
+          <span asp-validation-for="CategoryId" class="text-red-500 text-xs mt-1 block"></span>
         </div>
-        <div class="col-12">
-          <label asp-for="Address" class="form-label fw-semibold"></label>
-          <input asp-for="Address" class="form-control" placeholder="123 Đường ABC, Quận 1, TP.HCM">
-          <span asp-validation-for="Address" class="text-danger small"></span>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Số điện thoại</label>
+          <input asp-for="Phone" type="tel" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                 placeholder="0901234567" />
         </div>
-        <div class="col-md-6">
-          <label asp-for="Latitude" class="form-label fw-semibold"></label>
-          <input asp-for="Latitude" class="form-control" placeholder="10.7769">
-          <span asp-validation-for="Latitude" class="text-danger small"></span>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Món đặc trưng</label>
+          <input asp-for="Specialty" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                 placeholder="Bún bò, cơm tấm, cà phê trứng..." />
         </div>
-        <div class="col-md-6">
-          <label asp-for="Longitude" class="form-label fw-semibold"></label>
-          <input asp-for="Longitude" class="form-control" placeholder="106.7009">
-          <span asp-validation-for="Longitude" class="text-danger small"></span>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Quận / Huyện</label>
+          <div class="relative">
+            <select asp-for="District" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm appearance-none focus:ring-2 focus:ring-primary/20">
+              <option value="">Chọn quận...</option>
+              @foreach (var q in new[]{"Quận 1","Quận 2","Quận 3","Quận 4","Quận 5","Quận 6","Quận 7","Quận 8","Quận 9","Quận 10","Quận 11","Quận 12","Bình Thạnh","Phú Nhuận","Gò Vấp","Tân Bình","Tân Phú","Bình Tân","Thủ Đức"})
+              {
+                <option value="@q">@q</option>
+              }
+            </select>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-sm">expand_more</span>
+          </div>
         </div>
-        <div class="col-md-3">
-          <label asp-for="OpenTime" class="form-label fw-semibold"></label>
-          <input asp-for="OpenTime" type="time" class="form-control">
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold mb-1.5">Địa chỉ <span class="text-red-500">*</span></label>
+          <input asp-for="Address" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                 placeholder="123 Đường ABC, Phường XYZ, Quận 1, TP.HCM" />
+          <span asp-validation-for="Address" class="text-red-500 text-xs mt-1 block"></span>
         </div>
-        <div class="col-md-3">
-          <label asp-for="CloseTime" class="form-label fw-semibold"></label>
-          <input asp-for="CloseTime" type="time" class="form-control">
-        </div>
-        <div class="col-md-3">
-          <label asp-for="PriceMin" class="form-label fw-semibold"></label>
-          <input asp-for="PriceMin" class="form-control" placeholder="35000">
-        </div>
-        <div class="col-md-3">
-          <label asp-for="PriceMax" class="form-label fw-semibold"></label>
-          <input asp-for="PriceMax" class="form-control" placeholder="150000">
-        </div>
-        <div class="col-12">
-          <label asp-for="Description" class="form-label fw-semibold"></label>
-          <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả địa điểm..."></textarea>
-        </div>
-        <div class="col-12 pt-2">
-          <button type="submit" class="btn btn-primary px-4">💾 Lưu địa điểm</button>
-          <a href="/Places" class="btn btn-outline-secondary ms-2">Hủy</a>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-semibold mb-1.5">Mô tả</label>
+          <textarea asp-for="Description" rows="3"
+                    class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 resize-none"
+                    placeholder="Mô tả về quán, phong cách ẩm thực, điểm nổi bật..."></textarea>
         </div>
       </div>
-    </form>
-  </div>
+    </div>
+
+    <!-- ── Vị trí ──────────────────────────────────────────── -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden mb-5">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">location_on</span>
+        <h3 class="font-bold text-base">Vị trí trên bản đồ</h3>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+          <span class="material-symbols-outlined text-blue-500 text-sm">info</span>
+          <p class="text-xs text-blue-700 font-medium flex-1">
+            Hoặc <a asp-controller="Places" asp-action="Map" class="font-bold underline">dùng bản đồ</a>
+            để chọn vị trí chính xác bằng click/GPS.
+          </p>
+          <button type="button" onclick="geocodeFromAddress()"
+                  class="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs hover:bg-blue-700 transition-colors flex items-center gap-1 shrink-0">
+            <span class="material-symbols-outlined text-sm">search</span> Tự động lấy tọa độ
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Vĩ độ (Latitude) <span class="text-red-500">*</span></label>
+            <input asp-for="Latitude" id="inp-lat" type="number" step="0.000001"
+                   class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                   placeholder="10.7769" />
+            <span asp-validation-for="Latitude" class="text-red-500 text-xs mt-1 block"></span>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1.5">Kinh độ (Longitude) <span class="text-red-500">*</span></label>
+            <input asp-for="Longitude" id="inp-lng" type="number" step="0.000001"
+                   class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                   placeholder="106.7009" />
+            <span asp-validation-for="Longitude" class="text-red-500 text-xs mt-1 block"></span>
+          </div>
+        </div>
+
+        <!-- Mini map preview -->
+        <div id="mini-map-preview" class="w-full h-48 rounded-xl overflow-hidden border border-surface-container bg-surface-container-low hidden">
+          <div id="mini-map" style="height:100%;width:100%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Giờ & Giá ───────────────────────────────────────── -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden mb-5">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">schedule</span>
+        <h3 class="font-bold text-base">Giờ hoạt động & Giá cả</h3>
+      </div>
+      <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-5">
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Giờ mở cửa</label>
+          <input asp-for="OpenTime" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Giờ đóng cửa</label>
+          <input asp-for="CloseTime" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Giá tối thiểu</label>
+          <input asp-for="PriceMin" type="number" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="35000" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-1.5">Giá tối đa</label>
+          <input asp-for="PriceMax" type="number" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="150000" />
+        </div>
+        <div class="col-span-2">
+          <label class="block text-sm font-semibold mb-1.5">Giá trung bình / người (VNĐ)</label>
+          <input asp-for="PricePerPerson" type="number" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="65000" />
+          <p class="text-xs text-on-surface-variant mt-1">Hiển thị trong app di động</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tiện nghi ───────────────────────────────────────── -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden mb-6">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">local_parking</span>
+        <h3 class="font-bold text-base">Tiện nghi</h3>
+      </div>
+      <div class="p-6 flex gap-6">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input asp-for="HasParking" type="checkbox"
+                 class="w-5 h-5 rounded text-primary focus:ring-primary/30" />
+          <div>
+            <p class="text-sm font-bold">🅿️ Có bãi giữ xe</p>
+            <p class="text-xs text-on-surface-variant">Xe máy, ô tô</p>
+          </div>
+        </label>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input asp-for="HasAircon" type="checkbox"
+                 class="w-5 h-5 rounded text-primary focus:ring-primary/30" />
+          <div>
+            <p class="text-sm font-bold">❄️ Có máy lạnh</p>
+            <p class="text-xs text-on-surface-variant">Máy lạnh / điều hòa</p>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── Actions ──────────────────────────────────────────── -->
+    <div class="flex gap-3">
+      <button type="submit"
+              class="flex items-center gap-2 px-8 py-3.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+              style="background:linear-gradient(135deg,#954400,#fc8127)">
+        <span class="material-symbols-outlined text-sm">save</span> Lưu quán
+      </button>
+      <a asp-controller="Places" asp-action="Map"
+         class="flex items-center gap-2 px-6 py-3.5 bg-blue-50 text-blue-700 font-bold rounded-xl text-sm hover:bg-blue-100 transition-colors">
+        <span class="material-symbols-outlined text-sm">map</span> Thêm trên bản đồ
+      </a>
+      <a asp-controller="Places" asp-action="Index"
+         class="flex items-center gap-2 px-6 py-3.5 bg-surface-container-low text-on-surface font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-sm">close</span> Hủy
+      </a>
+    </div>
+  </form>
 </div>
+
+@section Scripts {
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let miniMap = null, miniMarker = null;
+
+// Tự động hiện mini-map khi có lat/lng
+['inp-lat','inp-lng'].forEach(id => {
+  document.getElementById(id).addEventListener('change', tryShowMiniMap);
+});
+
+function tryShowMiniMap() {
+  const lat = parseFloat(document.getElementById('inp-lat').value);
+  const lng = parseFloat(document.getElementById('inp-lng').value);
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) return;
+  document.getElementById('mini-map-preview').classList.remove('hidden');
+  if (!miniMap) {
+    miniMap = L.map('mini-map', { zoomControl:true, attributionControl:false }).setView([lat,lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMap);
+    miniMarker = L.marker([lat,lng], { draggable:true }).addTo(miniMap);
+    miniMarker.on('dragend', e => {
+      const p = e.target.getLatLng();
+      document.getElementById('inp-lat').value = p.lat.toFixed(6);
+      document.getElementById('inp-lng').value = p.lng.toFixed(6);
+    });
+    miniMap.on('click', e => {
+      miniMarker.setLatLng(e.latlng);
+      document.getElementById('inp-lat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('inp-lng').value = e.latlng.lng.toFixed(6);
+    });
+  } else {
+    miniMap.setView([lat,lng], 16);
+    miniMarker.setLatLng([lat,lng]);
+    setTimeout(() => miniMap.invalidateSize(), 100);
+  }
+}
+
+async function geocodeFromAddress() {
+  const addr = document.querySelector('[name="Address"]').value.trim();
+  if (!addr) { alert('Nhập địa chỉ trước!'); return; }
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr + ', TP.HCM, Vietnam')}&format=json&limit=1`);
+    const data = await r.json();
+    if (!data.length) { alert('Không tìm thấy địa chỉ. Thử nhập cụ thể hơn.'); return; }
+    document.getElementById('inp-lat').value = parseFloat(data[0].lat).toFixed(6);
+    document.getElementById('inp-lng').value = parseFloat(data[0].lon).toFixed(6);
+    tryShowMiniMap();
+  } catch(e) { alert('Lỗi: ' + e.message); }
+}
+</script>
+}

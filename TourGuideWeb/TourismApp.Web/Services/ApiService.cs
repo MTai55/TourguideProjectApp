@@ -1,29 +1,62 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System.Net.Http.Headers;
 using System.Text;
 using TourismApp.Web.Models;
 
 namespace TourismApp.Web.Services;
 
-public class ApiService(HttpClient http, IHttpContextAccessor accessor)
+public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<ApiService> logger)
 {
+    private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+    {
+        NullValueHandling = NullValueHandling.Ignore,
+        ContractResolver = new DefaultContractResolver
+        {
+            NamingStrategy = new CamelCaseNamingStrategy()
+        }
+    };
+
     // ── Tự động lấy token từ Session ─────────────────────────────
     private void SetAuthHeader()
     {
         var token = accessor.HttpContext?.Session.GetString("JwtToken");
         if (!string.IsNullOrEmpty(token))
+        {
             http.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", token);
+            var prefix = token.Length > 50 ? token.Substring(0, 50) + "..." : token;
+            logger.LogInformation($"✅ JWT Token set: {prefix} (total {token.Length} chars)");
+        }
+        else
+        {
+            logger.LogWarning("⚠️ No JWT Token in session");
+            http.DefaultRequestHeaders.Remove("Authorization");  // Clear any old token
+        }
     }
 
     // ── Helper GET ────────────────────────────────────────────────
     private async Task<T?> GetAsync<T>(string url)
     {
         SetAuthHeader();
-        var res = await http.GetAsync(url);
-        var json = await res.Content.ReadAsStringAsync();
-        if (!res.IsSuccessStatusCode) return default;
-        return JsonConvert.DeserializeObject<T>(json);
+        try
+        {
+            logger.LogInformation($"📡 GET {url}");
+            var res = await http.GetAsync(url);
+            var json = await res.Content.ReadAsStringAsync();
+            logger.LogInformation($"   Response: [{res.StatusCode}] {json.Substring(0, Math.Min(100, json.Length))}");
+            if (!res.IsSuccessStatusCode)
+            {
+                logger.LogError($"❌ API Error [{res.StatusCode}]: {url}\nFull response: {json}");
+                return default;
+            }
+            return JsonConvert.DeserializeObject<T>(json, JsonSettings);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"❌ Exception calling {url}: {ex.Message}\n{ex.StackTrace}");
+            return default;
+        }
     }
 
     // ── Helper POST ───────────────────────────────────────────────
@@ -35,7 +68,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
         var res = await http.PostAsync(url, content);
         var json = await res.Content.ReadAsStringAsync();
         if (res.IsSuccessStatusCode)
-            return (true, JsonConvert.DeserializeObject<T>(json), string.Empty);
+            return (true, JsonConvert.DeserializeObject<T>(json, JsonSettings), string.Empty);
         return (false, default, json);
     }
 
@@ -88,12 +121,6 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
     public Task<PlaceViewModel?> GetPlaceAsync(int id)
         => GetAsync<PlaceViewModel>($"/api/places/{id}");
 
-    public Task<(bool, PlaceViewModel?, string)> CreatePlaceAsync(CreatePlaceViewModel vm)
-        => PostAsync<PlaceViewModel>("/api/places", vm);
-
-    public Task<(bool, string)> UpdatePlaceAsync(int id, CreatePlaceViewModel vm)
-        => PutAsync($"/api/places/{id}", vm);
-
     public Task<bool> DeletePlaceAsync(int id)
         => DeleteAsync($"/api/places/{id}");
 
@@ -106,7 +133,52 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
 
     public Task<(bool, string)> UpdateOpenStatusAsync(int id, string openStatus)
         => PutAsync($"/api/places/{id}/status", openStatus);
+    public async Task<(bool, PlaceViewModel?, string)> CreatePlaceAsync(CreatePlaceViewModel vm)
+    {
+        var body = new
+        {
+            name           = vm.Name,
+            description    = vm.Description,
+            address        = vm.Address,
+            latitude       = vm.Latitude,
+            longitude      = vm.Longitude,
+            phone          = vm.Phone,
+            categoryId     = vm.CategoryId,
+            priceMin       = vm.PriceMin,
+            priceMax       = vm.PriceMax,
+            specialty      = vm.Specialty,
+            pricePerPerson = vm.PricePerPerson,
+            district       = vm.District,
+            openTime       = vm.OpenTime,
+            closeTime      = vm.CloseTime,
+            hasParking     = vm.HasParking,
+            hasAircon      = vm.HasAircon,
+        };
+        var (success, place, error) = await PostAsync<PlaceViewModel>("/api/places", body);
+        return (success, place, error);
+    }
 
+    public async Task<(bool, string)> UpdatePlaceAsync(int id, CreatePlaceViewModel vm)
+    {
+        var body = new
+        {
+            name           = vm.Name,
+            description    = vm.Description,
+            address        = vm.Address,
+            phone          = vm.Phone,
+            openTime       = vm.OpenTime,
+            closeTime      = vm.CloseTime,
+            specialty      = vm.Specialty,
+            pricePerPerson = vm.PricePerPerson,
+            priceMin       = vm.PriceMin,
+            priceMax       = vm.PriceMax,
+            district       = vm.District,
+            hasParking     = vm.HasParking,
+            hasAircon      = vm.HasAircon,
+        };
+        var (success, error) = await PutAsync($"/api/places/{id}", body);
+        return (success, error);    
+    }
     // ══════════════════════════════════════════════════════════════
     // REVIEWS
     // ══════════════════════════════════════════════════════════════
@@ -124,8 +196,11 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
 
     public Task<(bool, string)> ShowReviewAsync(int id)
         => PutAsync($"/api/admin/reviews/{id}/show", new { });
-    public Task<(bool, string)> CreateComplaintAsync(CreateComplaintViewModel vm)
-    => PutAsync("/api/complaints", vm);
+    public async Task<(bool, string)> CreateComplaintAsync(CreateComplaintViewModel vm)
+    {
+        var (success, _, error) = await PostAsync<object>("/api/complaints", vm);
+        return (success, error);
+    }
 
     // ══════════════════════════════════════════════════════════════
     // PROMOTIONS
@@ -177,11 +252,8 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor)
     public Task<(bool, string)> RejectPlaceAsync(int id)
         => PutAsync($"/api/admin/places/{id}/reject", new { });
 
-    public Task<List<ComplaintViewModel>?> GetComplaintsAsync(string status)
-        => GetAsync<List<ComplaintViewModel>>($"/api/complaints?status={status}");
-
-    public Task<(bool, string)> ResolveComplaintAsync(int id, string note, string action)
-        => PutAsync($"/api/complaints/{id}/resolve", new { note, action });
+    public Task<(bool, string)> SuspendPlaceAsync(int id)
+        => PutAsync($"/api/admin/places/{id}/suspend", new { });
 
     // ── Helper class phân trang ───────────────────────────────────────
     public class PlaceListResponse

@@ -119,8 +119,6 @@
           ("AdminDashboard","Index",  "dashboard",         "Dashboard"),
           ("AdminPlaces",   "Index",  "storefront",        "Duyệt quán"),
           ("AdminUsers",    "Index",  "people",            "Tài khoản"),
-          ("AdminReviews",  "Index",  "shield_check",      "Kiểm duyệt"),
-          ("AdminComplaints","Index", "warning",           "Khiếu nại"),
         })
         {
           var isActive = ctrl == c;
@@ -150,7 +148,6 @@
           ("Places",      "Index", "storefront",   "Quán của tôi"),
           ("Reviews",     "Index", "rate_review",  "Đánh giá"),
           ("Promotions",  "Index", "local_offer",  "Khuyến mãi"),
-          ("Complaints",  "Index", "feedback",     "Khiếu nại"),
         })
         {
           var isActive = ctrl == c && (c != "Places" || action != "Map");
@@ -225,22 +222,6 @@
         <button class="p-2 text-slate-500 hover:bg-surface-container-low rounded-full transition-all" title="Thông báo">
           <span class="material-symbols-outlined">notifications</span>
         </button>
-
-        @if (userRole == "Admin")
-        {
-          <a asp-controller="AdminPlaces" asp-action="Index" asp-route-pendingOnly="true"
-             class="hidden md:flex items-center gap-1.5 px-4 py-2 bg-amber-50 text-amber-700 font-bold text-xs rounded-xl hover:bg-amber-100 transition-all">
-            <span class="material-symbols-outlined text-sm">schedule</span> Chờ duyệt
-          </a>
-        }
-        else
-        {
-          <a asp-controller="Places" asp-action="Create"
-             class="hidden md:flex items-center gap-1.5 px-4 py-2 text-white font-bold text-xs rounded-xl hover:scale-105 transition-all shadow-sm"
-             style="background:linear-gradient(135deg,#954400,#fc8127)">
-            <span class="material-symbols-outlined text-sm">add</span> Thêm quán
-          </a>
-        }
       </div>
     </header>
 

@@ -49,9 +49,36 @@
                  placeholder="0901234567" />
         </div>
         <div>
+          <label class="block text-sm font-semibold mb-2">Loại hình</label>
+          <div class="relative">
+            <select asp-for="CategoryId" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm appearance-none focus:ring-2 focus:ring-primary/20">
+              <option value="">Chọn loại hình...</option>
+              <option value="1">🍽️ Nhà hàng</option>
+              <option value="2">🥢 Quán ăn vặt</option>
+              <option value="3">☕ Cà phê</option>
+              <option value="4">🧋 Trà sữa & Đồ uống</option>
+              <option value="5">🍰 Bánh & Tráng miệng</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-sm">expand_more</span>
+          </div>
+        </div>
+        <div>
           <label class="block text-sm font-semibold mb-2">Món đặc trưng</label>
           <input asp-for="Specialty" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
                  placeholder="VD: Bún bò, Cơm tấm, Cà phê trứng..." />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Quận / Huyện</label>
+          <div class="relative">
+            <select asp-for="District" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm appearance-none focus:ring-2 focus:ring-primary/20">
+              <option value="">Chọn quận...</option>
+              @foreach (var q in new[]{"Quận 1","Quận 2","Quận 3","Quận 4","Quận 5","Quận 6","Quận 7","Quận 8","Quận 9","Quận 10","Quận 11","Quận 12","Bình Thạnh","Phú Nhuận","Gò Vấp","Tân Bình","Tân Phú","Bình Tân","Thủ Đức"})
+              {
+                <option value="@q" @(Model?.District == q ? "selected" : "")>@q</option>
+              }
+            </select>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-sm">expand_more</span>
+          </div>
         </div>
         <div class="md:col-span-2">
           <label class="block text-sm font-semibold mb-2">Địa chỉ *</label>
@@ -86,6 +113,23 @@
           <label class="block text-sm font-semibold mb-2">Giá cao nhất (VNĐ)</label>
           <input asp-for="PriceMax" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
                  placeholder="150000" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2">Giá/người (VNĐ)</label>
+          <input asp-for="PricePerPerson" type="number" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                 placeholder="50000" />
+        </div>
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" asp-for="HasParking" class="w-4 h-4 rounded" />
+            <span class="text-sm font-semibold">Có bãi đỗ xe</span>
+          </label>
+        </div>
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" asp-for="HasAircon" class="w-4 h-4 rounded" />
+            <span class="text-sm font-semibold">Có điều hòa</span>
+          </label>
         </div>
         <div class="md:col-span-2">
           <label class="block text-sm font-semibold mb-2">Mô tả quán</label>

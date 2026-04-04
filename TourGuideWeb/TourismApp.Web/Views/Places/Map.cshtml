@@ -1,57 +1,685 @@
 @using TourismApp.Web.Models
 @model List<TourismApp.Web.Models.PlaceViewModel>
-@{ ViewData["Title"] = "Bản đồ địa điểm"; }
+@{
+  ViewData["Title"] = "Bản đồ quán ăn";
+  var isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+}
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  #map { height: 600px; width: 100%; }
+  .leaflet-popup-content { margin: 0 !important; padding: 0 !important; }
+  .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 14px !important; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important; }
+  .slide-panel { transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s; }
+  .slide-panel.hidden-panel { transform: translateX(100%); opacity: 0; pointer-events: none; }
+  .leaflet-control-locate { background: white; border-radius: 8px !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important; }
+  .locating-pulse { animation: locPulse 1.2s infinite; }
+  @@keyframes locPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .user-dot { width:18px; height:18px; background:#3b82f6; border:3px solid white; border-radius:50%; box-shadow:0 0 0 4px rgba(59,130,246,0.3); }
+  .user-dot-outer { width:60px; height:60px; background:rgba(59,130,246,0.15); border:2px solid rgba(59,130,246,0.4); border-radius:50%; display:flex;align-items:center;justify-content:center; animation:ripple 2s infinite; }
+  @@keyframes ripple { 0%{box-shadow:0 0 0 0 rgba(59,130,246,0.3)} 70%{box-shadow:0 0 0 20px rgba(59,130,246,0)} 100%{box-shadow:0 0 0 0 rgba(59,130,246,0)} }
+</style>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="fw-bold mb-0">🗺️ Bản đồ địa điểm</h4>
-  <span class="badge bg-primary">@Model.Count địa điểm</span>
+<div class="flex items-center justify-between mb-5 pt-2">
+  <div>
+    <h2 class="text-3xl font-extrabold tracking-tight">@(isAdmin ? "🗺️ Bản đồ toàn hệ thống" : "🗺️ Bản đồ quán của tôi")</h2>
+    <p class="text-sm text-on-surface-variant mt-1">
+      @Model.Count quán &bull; @Model.Count(p => p.OpenStatus == "Open") đang mở
+      @if (!isAdmin) { <span> &bull; <span class="text-primary font-semibold">Click bản đồ để thêm quán mới</span></span> }
+    </p>
+  </div>
+  <div class="flex items-center gap-2">
+    <!-- Locate me button -->
+    <button id="btn-locate" onclick="locateMe()"
+            class="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl text-sm hover:bg-blue-100 transition-all"
+            title="Định vị vị trí của tôi">
+      <span class="material-symbols-outlined text-sm" id="locate-icon">my_location</span>
+      <span id="locate-text" class="hidden sm:inline">Vị trí của tôi</span>
+    </button>
+    @if (!isAdmin)
+    {
+      <button id="btn-add-mode" onclick="toggleAddMode()"
+              class="flex items-center gap-2 px-5 py-2.5 text-white font-bold rounded-xl text-sm transition-all"
+              style="background:linear-gradient(135deg,#954400,#fc8127)">
+        <span class="material-symbols-outlined text-sm" id="add-mode-icon">add_location</span>
+        <span id="add-mode-text">+ Thêm quán</span>
+      </button>
+    }
+    <div class="hidden md:flex items-center gap-3 bg-surface-container-lowest px-4 py-2.5 rounded-xl shadow-sm text-xs font-bold">
+      <span class="flex items-center gap-1.5 text-emerald-600"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>Mở</span>
+      <span class="flex items-center gap-1.5 text-amber-600"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>Bận</span>
+      <span class="flex items-center gap-1.5 text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>Đóng</span>
+      <span class="flex items-center gap-1.5 text-blue-600"><span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>Bạn</span>
+      @if (isAdmin) {
+        <span class="flex items-center gap-1.5 text-amber-700"><span class="w-2.5 h-2.5 rounded-full bg-amber-300 border border-amber-500"></span>Chờ duyệt</span>
+      }
+    </div>
+  </div>
 </div>
 
-<div class="card shadow-sm">
-  <div id="map" style="height:600px;border-radius:12px"></div>
+<div id="add-notice" class="hidden mb-3 flex items-center gap-3 p-4 bg-primary/10 border border-primary/20 rounded-xl">
+  <span class="material-symbols-outlined text-primary">touch_app</span>
+  <p class="text-sm font-semibold text-primary flex-1">Đang ở chế độ thêm quán — Click vào vị trí trên bản đồ để đặt pin</p>
+  <button onclick="toggleAddMode()" class="text-primary font-bold text-sm">Hủy</button>
+</div>
+
+<!-- Locate status bar -->
+<div id="locate-status" class="hidden mb-3 flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700 font-semibold">
+  <span class="material-symbols-outlined text-blue-500 locating-pulse" id="locate-status-icon">gps_fixed</span>
+  <span id="locate-status-text">Đang định vị...</span>
+  <button onclick="clearLocation()" class="ml-auto text-blue-400 hover:text-blue-600 text-xs font-bold">Xóa</button>
+</div>
+
+<div class="relative grid grid-cols-1 lg:grid-cols-3 gap-5">
+  <!-- Map -->
+  <div class="lg:col-span-2 bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden relative">
+    <div id="map"></div>
+    <!-- Nearby counter badge -->
+    <div id="nearby-badge" class="hidden absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur px-4 py-2 rounded-xl shadow-lg text-sm font-bold text-blue-700 flex items-center gap-2">
+      <span class="material-symbols-outlined text-sm">place</span>
+      <span id="nearby-text">0 quán trong 500m</span>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
+    <div class="px-5 py-4 border-b border-surface-container">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-bold text-sm">Danh sách quán</h3>
+        <!-- Sort by distance toggle -->
+        <button id="btn-sort-dist" onclick="sortByDistance()" title="Sắp xếp theo khoảng cách"
+                class="text-[10px] font-bold px-2.5 py-1 bg-surface-container-low rounded-lg text-on-surface-variant hover:bg-blue-50 hover:text-blue-700 transition-all hidden">
+          📍 Gần nhất
+        </button>
+      </div>
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+        <input id="place-search" type="text" placeholder="Tìm quán..."
+               class="w-full pl-9 pr-4 py-2 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" />
+      </div>
+    </div>
+    <div id="place-list" class="flex-1 overflow-y-auto divide-y divide-surface-container" style="max-height:510px">
+      @foreach (var p in Model.OrderBy(p => p.Name))
+      {
+        <div class="place-item px-5 py-3.5 hover:bg-surface-container-low transition-colors cursor-pointer"
+             data-place-id="@p.PlaceId"
+             data-name="@p.Name.ToLower()"
+             data-lat="@p.Latitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)"
+             data-lng="@p.Longitude.ToString("F6", System.Globalization.CultureInfo.InvariantCulture)"
+             onclick="focusPlace(@p.PlaceId)">
+          <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0 mt-0.5
+                         @(p.OpenStatus=="Open"?"bg-emerald-500":p.OpenStatus=="Busy"?"bg-amber-500":"bg-slate-300")"></span>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-sm truncate">@p.Name</p>
+              <p class="text-[11px] text-on-surface-variant truncate">@p.Address</p>
+              @if (isAdmin && !string.IsNullOrEmpty(p.OwnerName))
+              {
+                <p class="text-[10px] text-primary font-semibold">@("👤 " + p.OwnerName)</p>
+              }
+              <p class="dist-label text-[10px] text-blue-600 font-semibold hidden"></p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-xs font-bold text-amber-600">@("⭐" + p.AverageRating.ToString("F1"))</p>
+              @{
+                var (sc,st) = p.Status switch {
+                  "Active"    => ("text-emerald-600","✓"),
+                  "Pending"   => ("text-amber-600","⏳"),
+                  "Suspended" => ("text-red-500","🔒"),
+                  _           => ("text-slate-400","—")
+                };
+              }
+              <p class="text-[10px] font-bold @sc">@st</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="px-5 py-3 border-t border-surface-container bg-surface-container-low">
+      <div class="flex justify-between text-xs text-on-surface-variant font-semibold">
+        <span>@Model.Count(p=>p.OpenStatus=="Open") đang mở</span>
+        <span>@Model.Count(p=>p.Status=="Active") hoạt động</span>
+        @if (isAdmin) { <span>@Model.Count(p=>p.Status=="Pending") chờ duyệt</span> }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide Panel Add/Edit -->
+<div id="slide-panel" class="slide-panel hidden-panel fixed right-0 top-0 h-full w-full md:w-[420px] bg-white z-[2000] shadow-2xl flex flex-col overflow-hidden">
+  <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100"
+       style="background:linear-gradient(135deg,#0f172a,#020617)">
+    <div>
+      <h3 id="panel-title" class="text-base font-extrabold text-white">Thêm quán mới</h3>
+      <p id="panel-subtitle" class="text-xs text-slate-400 mt-0.5">Điền thông tin cơ bản</p>
+    </div>
+    <button onclick="closePanel()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+  <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+    <input type="hidden" id="edit-place-id" />
+    <input type="hidden" id="edit-lat" />
+    <input type="hidden" id="edit-lng" />
+    <div class="flex items-center gap-3 p-3 bg-primary/10 rounded-xl border border-primary/20">
+      <span class="material-symbols-outlined text-primary">location_on</span>
+      <div class="flex-1">
+        <p class="text-xs font-bold text-primary">Vị trí đã chọn</p>
+        <p id="location-text" class="text-xs text-on-surface-variant mt-0.5">—</p>
+      </div>
+      <button id="btn-use-my-loc" onclick="useMyLocation()" title="Dùng vị trí của tôi"
+              class="text-blue-600 hover:text-blue-800 text-xs font-bold px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-sm">my_location</span> Dùng vị trí tôi
+      </button>
+    </div>
+    <!-- Mini map for drag-adjust -->
+    <div>
+      <p class="text-xs font-semibold text-on-surface-variant mb-1.5">Kéo pin để điều chỉnh vị trí chính xác</p>
+      <div id="mini-map" class="w-full h-36 rounded-xl overflow-hidden border border-surface-container"></div>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1.5">Tên quán *</label>
+      <input id="f-name" type="text" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="Tên quán ăn..." />
+    </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1.5">Số điện thoại</label>
+      <input id="f-phone" type="text" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="0901234567" />
+    </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1.5">Địa chỉ *</label>
+      <div class="flex gap-2">
+        <input id="f-address" type="text" class="flex-1 px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="123 Đường ABC, Quận 1..." />
+        <button onclick="geocodeAddress()" title="Tìm tọa độ từ địa chỉ"
+                class="px-3 py-3 bg-blue-50 text-blue-700 font-bold rounded-xl text-xs hover:bg-blue-100 transition-colors flex items-center gap-1 shrink-0">
+          <span class="material-symbols-outlined text-sm">search</span>
+        </button>
+      </div>
+      <p class="text-[10px] text-on-surface-variant mt-1">Nhấn 🔍 để tự động lấy tọa độ từ địa chỉ</p>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1.5">Món đặc trưng</label>
+      <input id="f-specialty" type="text" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="Bún bò, cơm tấm, cà phê trứng..." />
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">Giờ mở cửa</label>
+        <input id="f-open" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">Giờ đóng cửa</label>
+        <input id="f-close" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" />
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1.5">Giá TB / người (VNĐ)</label>
+      <input id="f-price" type="number" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" placeholder="50000" />
+    </div>
+    <div>
+      <label class="block text-sm font-semibold mb-1.5">Mô tả</label>
+      <textarea id="f-desc" rows="3" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20 resize-none" placeholder="Mô tả ngắn về quán..."></textarea>
+    </div>
+    <div id="delete-section" class="hidden pt-2 border-t border-surface-container">
+      <div class="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-100">
+        <div>
+          <p class="text-sm font-bold text-red-700">Xóa quán</p>
+          <p class="text-xs text-red-500 mt-0.5">Ẩn quán khỏi hệ thống</p>
+        </div>
+        <button id="btn-delete" onclick="deletePlace()"
+                class="px-4 py-2 bg-red-600 text-white font-bold rounded-xl text-sm flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">delete</span> Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="px-6 py-4 border-t border-slate-100 flex gap-3">
+    <button onclick="closePanel()" class="flex-1 py-3 bg-surface-container-low font-bold rounded-xl text-sm">Hủy</button>
+    <button id="btn-save" onclick="savePlace()"
+            class="flex-1 py-3 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2"
+            style="background:linear-gradient(135deg,#954400,#fc8127)">
+      <span class="material-symbols-outlined text-sm">save</span>
+      <span id="btn-save-text">Lưu quán</span>
+    </button>
+  </div>
+</div>
+<div id="panel-overlay" onclick="closePanel()" class="fixed inset-0 bg-black/30 z-[1999] hidden backdrop-blur-sm"></div>
+
+<!-- Delete confirm -->
+<div id="delete-modal" class="fixed inset-0 z-[3000] hidden flex items-center justify-center p-4" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center">
+    <span class="material-symbols-outlined text-5xl text-red-500 block mb-2">delete_forever</span>
+    <h3 class="font-bold text-lg mb-1">Xóa quán này?</h3>
+    <p id="delete-confirm-name" class="text-sm text-on-surface-variant mb-1"></p>
+    <p class="text-xs text-on-surface-variant mb-5">Quán sẽ bị ẩn. Thao tác không thể hoàn tác.</p>
+    <div class="flex gap-3">
+      <button onclick="document.getElementById('delete-modal').classList.add('hidden')"
+              class="flex-1 py-3 bg-surface-container-low font-bold rounded-xl text-sm">Hủy</button>
+      <button id="btn-confirm-delete"
+              class="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl text-sm">Xóa</button>
+    </div>
+  </div>
 </div>
 
 @section Scripts {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const places = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
-const isAdmin = @Html.Raw(ViewBag.IsAdmin ? "true" : "false");
+const isAdmin  = @(isAdmin ? "true" : "false");
+const API_BASE = 'http://localhost:5010';
+const jwt      = '@Html.Raw(Context.Session.GetString("JwtToken") ?? "")';
 
+const places = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(p => new {
+  placeId       = p.PlaceId, name = p.Name, address = p.Address,
+  latitude      = p.Latitude, longitude = p.Longitude,
+  openStatus    = p.OpenStatus, status = p.Status,
+  averageRating = p.AverageRating, totalVisits = p.TotalVisits,
+  categoryName  = p.CategoryName, specialty = p.Specialty,
+  pricePerPerson= p.PricePerPerson, ownerName = p.OwnerName,
+  openTime      = p.OpenTime, closeTime = p.CloseTime,
+  mainImageUrl  = p.MainImageUrl, phone = p.Phone,
+})));
+
+// ── Map ───────────────────────────────────────────────────────
 const map = L.map('map').setView([10.7769, 106.7009], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap', maxZoom:19 }).addTo(map);
 
-// Icon theo trạng thái OpenStatus
-const icons = {
-  'Open':   '🟢',
-  'Busy':   '🟡',
-  'Closed': '🔴'
-};
+// ── Mini map (inside panel) ───────────────────────────────────
+let miniMap = null, miniMarker = null;
+
+function initMiniMap(lat, lng) {
+  if (!miniMap) {
+    miniMap = L.map('mini-map', { zoomControl:true, attributionControl:false }).setView([lat,lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMap);
+    miniMarker = L.marker([lat,lng], { icon:makeIcon('#954400',28), draggable:true }).addTo(miniMap);
+    miniMarker.on('dragend', e => {
+      const p = e.target.getLatLng();
+      document.getElementById('edit-lat').value = p.lat.toFixed(6);
+      document.getElementById('edit-lng').value = p.lng.toFixed(6);
+      document.getElementById('location-text').textContent = `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`;
+    });
+    miniMap.on('click', e => {
+      miniMarker.setLatLng(e.latlng);
+      document.getElementById('edit-lat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('edit-lng').value = e.latlng.lng.toFixed(6);
+      document.getElementById('location-text').textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+    });
+  } else {
+    miniMap.setView([lat,lng], 16);
+    miniMarker.setLatLng([lat,lng]);
+    setTimeout(() => miniMap.invalidateSize(), 100);
+  }
+}
+
+// ── User location layer ───────────────────────────────────────
+let userMarker = null, userCircle = null, userPos = null;
+let watchId = null;
+
+function locateMe() {
+  if (!navigator.geolocation) { toast('Trình duyệt không hỗ trợ định vị', 'error'); return; }
+  document.getElementById('locate-icon').textContent = 'gps_not_fixed';
+  document.getElementById('locate-icon').classList.add('locating-pulse');
+  document.getElementById('locate-status').classList.remove('hidden');
+  document.getElementById('locate-status-text').textContent = 'Đang định vị...';
+
+  if (watchId) { navigator.geolocation.clearWatch(watchId); }
+
+  watchId = navigator.geolocation.watchPosition(
+    pos => onLocationSuccess(pos),
+    err => onLocationError(err),
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+  );
+}
+
+function onLocationSuccess(pos) {
+  const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+  userPos = { lat, lng, accuracy };
+
+  document.getElementById('locate-icon').textContent = 'gps_fixed';
+  document.getElementById('locate-icon').classList.remove('locating-pulse');
+  document.getElementById('locate-status-text').textContent =
+    `Vị trí của bạn • Độ chính xác: ±${Math.round(accuracy)}m`;
+
+  // Custom user icon
+  const userIcon = L.divIcon({
+    html: `<div class="user-dot-outer"><div class="user-dot"></div></div>`,
+    className: '', iconSize: [60,60], iconAnchor: [30,30]
+  });
+
+  if (!userMarker) {
+    userMarker = L.marker([lat,lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+    userMarker.bindPopup(`<div style="padding:10px 12px;font-family:'Inter',sans-serif;min-width:160px">
+      <div style="font-weight:800;font-size:13px;color:#2563eb">📍 Vị trí của bạn</div>
+      <div style="font-size:11px;color:#595c5e;margin-top:4px">Độ chính xác: ±${Math.round(accuracy)}m</div>
+      <div style="font-size:11px;color:#595c5e">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+    </div>`);
+    userCircle = L.circle([lat,lng], { radius: accuracy, color:'#3b82f6', weight:1, fillColor:'#3b82f6', fillOpacity:0.08 }).addTo(map);
+    map.setView([lat,lng], 16, { animate:true });
+  } else {
+    userMarker.setLatLng([lat,lng]);
+    userCircle.setLatLng([lat,lng]).setRadius(accuracy);
+  }
+
+  // Show nearby badge
+  updateNearbyCount(lat, lng);
+  // Show sort button
+  document.getElementById('btn-sort-dist').classList.remove('hidden');
+  // Update distances in list
+  updateDistances(lat, lng);
+}
+
+function onLocationError(err) {
+  document.getElementById('locate-icon').textContent = 'location_disabled';
+  document.getElementById('locate-icon').classList.remove('locating-pulse');
+  document.getElementById('locate-status-text').textContent =
+    err.code === 1 ? 'Bạn đã từ chối quyền truy cập vị trí' :
+    err.code === 2 ? 'Không thể xác định vị trí' : 'Hết thời gian chờ';
+  toast('Không thể định vị: ' + (err.message || 'Lỗi không xác định'), 'error');
+}
+
+function clearLocation() {
+  if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  if (userMarker) { map.removeLayer(userMarker); userMarker = null; }
+  if (userCircle) { map.removeLayer(userCircle); userCircle = null; }
+  userPos = null;
+  document.getElementById('locate-icon').textContent = 'my_location';
+  document.getElementById('locate-status').classList.add('hidden');
+  document.getElementById('nearby-badge').classList.add('hidden');
+  document.getElementById('btn-sort-dist').classList.add('hidden');
+  document.querySelectorAll('.dist-label').forEach(el => { el.textContent = ''; el.classList.add('hidden'); });
+  document.querySelectorAll('.place-item').forEach(el => el.style.display = '');
+}
+
+function haversine(lat1,lng1,lat2,lng2) {
+  const R=6371000, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function fmtDist(m) { return m < 1000 ? `${Math.round(m)}m` : `${(m/1000).toFixed(1)}km`; }
+
+function updateNearbyCount(lat, lng) {
+  const radius = 500;
+  const nearby = places.filter(p => haversine(lat,lng,p.latitude,p.longitude) <= radius);
+  const badge  = document.getElementById('nearby-badge');
+  if (nearby.length > 0) {
+    document.getElementById('nearby-text').textContent = `${nearby.length} quán trong ${fmtDist(radius)}`;
+    badge.classList.remove('hidden');
+  } else { badge.classList.add('hidden'); }
+}
+
+function updateDistances(lat, lng) {
+  document.querySelectorAll('.place-item').forEach(el => {
+    const pLat = parseFloat(el.dataset.lat);
+    const pLng = parseFloat(el.dataset.lng);
+    if (!pLat || !pLng) return;
+    const dist = haversine(lat,lng,pLat,pLng);
+    const label = el.querySelector('.dist-label');
+    label.textContent = `📍 ${fmtDist(dist)}`;
+    label.classList.remove('hidden');
+    el.dataset.dist = dist;
+  });
+}
+
+function sortByDistance() {
+  if (!userPos) return;
+  updateDistances(userPos.lat, userPos.lng);
+  const list = document.getElementById('place-list');
+  const items = Array.from(list.querySelectorAll('.place-item'));
+  items.sort((a,b) => (parseFloat(a.dataset.dist)||99999) - (parseFloat(b.dataset.dist)||99999));
+  items.forEach(el => list.appendChild(el));
+  toast('Đã sắp xếp theo khoảng cách', 'success');
+}
+
+// ── Geocode address → lat/lng ─────────────────────────────────
+async function geocodeAddress() {
+  const addr = document.getElementById('f-address').value.trim();
+  if (!addr) { alert('Nhập địa chỉ trước!'); return; }
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr + ', TP.HCM, Vietnam')}&format=json&limit=1`);
+    const data = await r.json();
+    if (!data.length) { toast('Không tìm thấy địa chỉ. Thử nhập cụ thể hơn.', 'error'); return; }
+    const { lat, lon } = data[0];
+    document.getElementById('edit-lat').value = parseFloat(lat).toFixed(6);
+    document.getElementById('edit-lng').value = parseFloat(lon).toFixed(6);
+    document.getElementById('location-text').textContent = `${parseFloat(lat).toFixed(5)}, ${parseFloat(lon).toFixed(5)}`;
+    initMiniMap(parseFloat(lat), parseFloat(lon));
+    toast(`Đã tìm thấy: ${data[0].display_name.slice(0,60)}...`, 'success');
+  } catch(e) { toast('Lỗi geocoding: ' + e.message, 'error'); }
+}
+
+function useMyLocation() {
+  if (!userPos) { toast('Hãy bấm "Vị trí của tôi" trước!', 'info'); return; }
+  document.getElementById('edit-lat').value = userPos.lat.toFixed(6);
+  document.getElementById('edit-lng').value = userPos.lng.toFixed(6);
+  document.getElementById('location-text').textContent = `${userPos.lat.toFixed(5)}, ${userPos.lng.toFixed(5)}`;
+  initMiniMap(userPos.lat, userPos.lng);
+  toast('Đã dùng vị trí của bạn', 'success');
+}
+
+// ── Icon factory ──────────────────────────────────────────────
+function makeIcon(color, sz) {
+  sz = sz||36;
+  return L.divIcon({
+    html:`<svg xmlns="http://www.w3.org/2000/svg" width="${sz}" height="${Math.round(sz*1.22)}" viewBox="0 0 36 44">
+      <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.25)"/></filter>
+      <ellipse cx="18" cy="42" rx="5" ry="1.5" fill="rgba(0,0,0,0.15)"/>
+      <path d="M18 2C10.27 2 4 8.27 4 16c0 10.5 14 26 14 26S32 26.5 32 16C32 8.27 25.73 2 18 2z" fill="${color}" filter="url(#sh)"/>
+      <circle cx="18" cy="16" r="7" fill="white" opacity="0.9"/>
+      <text x="18" y="20" text-anchor="middle" font-size="9">🍜</text>
+    </svg>`,
+    className:'', iconSize:[sz,Math.round(sz*1.22)], iconAnchor:[sz/2,Math.round(sz*1.22)], popupAnchor:[0,-Math.round(sz*1.22)]
+  });
+}
+
+function colorFor(p) {
+  if (p.status==='Suspended') return '#ef4444';
+  if (p.status==='Pending')   return '#f59e0b';
+  return p.openStatus==='Open'?'#16a34a':p.openStatus==='Busy'?'#d97706':'#94a3b8';
+}
+function bs(bg,col){ return `flex:1;padding:7px 4px;background:${bg};color:${col};font-weight:700;font-size:11px;border-radius:8px;text-align:center;text-decoration:none;border:none;cursor:pointer`; }
+
+function buildPopup(p) {
+  const ownerRow = isAdmin&&p.ownerName?`<div style="font-size:11px;color:#954400;font-weight:600;margin:2px 0">👤 ${p.ownerName}</div>`:'';
+  const sb = {Open:`<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">🟢 Đang mở</span>`,
+    Busy:`<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">🟡 Đông</span>`,
+    Closed:`<span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700">🔴 Đóng</span>`}[p.openStatus]||'';
+  const eb = p.status==='Pending'?`<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;margin-left:4px">⏳ Chờ</span>`
+    :p.status==='Suspended'?`<span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;margin-left:4px">🔒 Khóa</span>`:'';
+  const img = p.mainImageUrl?`<img src="${p.mainImageUrl}" style="width:100%;height:90px;object-fit:cover"/>`
+    :`<div style="width:100%;height:52px;background:linear-gradient(135deg,#954400,#fc8127);display:flex;align-items:center;justify-content:center;font-size:22px">🍜</div>`;
+  const distRow = userPos ? `<div style="font-size:10px;color:#2563eb;font-weight:600;margin-bottom:4px">📍 ${fmtDist(haversine(userPos.lat,userPos.lng,p.latitude,p.longitude))} từ vị trí bạn</div>` : '';
+  const dirBtn  = userPos ? `<button onclick="openDirections(${p.latitude},${p.longitude})" style="${bs('#eff6ff','#1d4ed8')}">🧭 Đường đi</button>` : '';
+  const editBtn = isAdmin?`<a href="/AdminPlaces" style="${bs('#f1f5f9','#2c2f31')}">Kiểm duyệt</a>`
+    :`<button onclick="openEditPanel(${p.placeId})" style="${bs('linear-gradient(135deg,#954400,#fc8127)','white')}">✏️ Sửa</button>`;
+  const delBtn  = !isAdmin?`<button onclick="confirmDeleteFromPopup(${p.placeId},'${p.name.replace(/'/g,"\\'")}') " style="${bs('#fee2e2','#b91c1c')}">🗑️ Xóa</button>`:'';
+  const reviewBtn=`<a href="/Reviews/ByPlace/${p.placeId}" style="${bs('#f1f5f9','#2c2f31')}">⭐ Reviews</a>`;
+  return `<div style="min-width:235px;font-family:'Inter',sans-serif">
+    ${img}
+    <div style="padding:10px 12px 12px">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px">${p.name}</div>
+      ${ownerRow}
+      <div style="font-size:11px;color:#595c5e;margin:3px 0 6px;line-height:1.4">${p.address}</div>
+      ${distRow}
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">${sb}${eb}</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px">
+        <span>⭐ <b>${p.averageRating.toFixed(1)}</b></span>
+        <span>📍 <b>${p.totalVisits}</b> lượt</span>
+        ${p.pricePerPerson?`<span style="color:#954400;font-weight:700">~${p.pricePerPerson.toLocaleString('vi-VN')}đ</span>`:''}
+      </div>
+      ${p.specialty?`<div style="font-size:10px;color:#595c5e;margin-bottom:4px">🍽️ ${p.specialty}</div>`:''}
+      ${p.openTime?`<div style="font-size:10px;color:#595c5e;margin-bottom:8px">🕐 ${p.openTime} – ${p.closeTime}</div>`:''}
+      <div style="display:flex;gap:5px;flex-wrap:wrap">${editBtn}${reviewBtn}${delBtn}${dirBtn}</div>
+    </div>
+  </div>`;
+}
+
+function openDirections(lat, lng) {
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+}
+
+// ── Markers ───────────────────────────────────────────────────
+const markers = {};
+const bounds  = [];
+const tempM   = { ref: null };
 
 places.forEach(p => {
-  if (!p.latitude || !p.longitude) return;
+  if (!p.latitude||!p.longitude) return;
+  const m = L.marker([p.latitude,p.longitude], { icon:makeIcon(colorFor(p)) }).addTo(map);
+  m.bindPopup(buildPopup(p), { maxWidth:270 });
+  m.on('click', () => hlItem(p.placeId));
+  markers[p.placeId] = m;
+  bounds.push([p.latitude,p.longitude]);
+});
+if (bounds.length) map.fitBounds(bounds, { padding:[40,40], maxZoom:15 });
 
-  const statusIcon = icons[p.openStatus] || '⚫';
-  const marker = L.marker([p.latitude, p.longitude]).addTo(map);
-  marker.bindPopup(`
-    <div style="min-width:220px">
-      <strong>${statusIcon} ${p.name}</strong>
-      <span class="badge bg-${p.status==='Active'?'success':'warning'}">${p.status}</span><br>
-      <small>${p.address}</small><br>
-      ⭐ ${p.averageRating?.toFixed(1)} | 📍 ${p.totalVisits} lượt ghé<br>
-      ${p.specialty ? '🍽️ ' + p.specialty + '<br>' : ''}
-      <div class="mt-2">
-        <a href="/Places/Edit/${p.placeId}" class="btn btn-sm btn-primary">✏️ Sửa</a>
-        <a href="/Reviews/ByPlace/${p.placeId}" class="btn btn-sm btn-outline-secondary ms-1">⭐</a>
-      </div>
-    </div>
-  `);
+function focusPlace(id) {
+  const m = markers[id]; if (!m) return;
+  map.setView(m.getLatLng(), 17, { animate:true });
+  setTimeout(() => m.openPopup(), 300);
+  hlItem(id);
+}
+function hlItem(id) {
+  document.querySelectorAll('.place-item').forEach(el => el.style.background='');
+  const el = document.querySelector(`[data-place-id="${id}"]`);
+  if (el) { el.style.background='rgba(149,68,0,0.07)'; el.scrollIntoView({ block:'nearest' }); }
+}
+
+document.getElementById('place-search').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.place-item').forEach(el => { el.style.display = el.dataset.name?.includes(q)?'':'none'; });
 });
 
-if (places.length > 0) {
-  const bounds = places.filter(p => p.latitude && p.longitude).map(p => [p.latitude, p.longitude]);
-  if (bounds.length) map.fitBounds(bounds, { padding: [50, 50] });
+// ── Add mode ──────────────────────────────────────────────────
+let addMode = false;
+function toggleAddMode() {
+  addMode = !addMode;
+  const btn    = document.getElementById('btn-add-mode');
+  const notice = document.getElementById('add-notice');
+  if (addMode) {
+    document.getElementById('add-mode-icon').textContent = 'close';
+    document.getElementById('add-mode-text').textContent = 'Hủy';
+    btn.style.background='#475569'; notice.classList.remove('hidden');
+    map.getContainer().style.cursor='crosshair';
+  } else {
+    document.getElementById('add-mode-icon').textContent = 'add_location';
+    document.getElementById('add-mode-text').textContent = '+ Thêm quán';
+    btn.style.background='linear-gradient(135deg,#954400,#fc8127)'; notice.classList.add('hidden');
+    map.getContainer().style.cursor='';
+    if (tempM.ref) { map.removeLayer(tempM.ref); tempM.ref=null; }
+  }
+}
+
+map.on('click', e => {
+  if (!addMode) return;
+  const { lat, lng } = e.latlng;
+  if (tempM.ref) map.removeLayer(tempM.ref);
+  tempM.ref = L.marker([lat,lng], { icon:makeIcon('#954400',40), draggable:true }).addTo(map);
+  tempM.ref.on('dragend', ev => {
+    const p = ev.target.getLatLng();
+    document.getElementById('edit-lat').value = p.lat.toFixed(6);
+    document.getElementById('edit-lng').value = p.lng.toFixed(6);
+    document.getElementById('location-text').textContent = `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`;
+    if (miniMap) { miniMap.setView([p.lat,p.lng]); miniMarker?.setLatLng([p.lat,p.lng]); }
+  });
+  document.getElementById('edit-lat').value = lat.toFixed(6);
+  document.getElementById('edit-lng').value = lng.toFixed(6);
+  document.getElementById('edit-place-id').value = '';
+  document.getElementById('location-text').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  ['f-name','f-phone','f-address','f-specialty','f-open','f-close','f-price','f-desc'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('panel-title').textContent    = 'Thêm quán mới';
+  document.getElementById('panel-subtitle').textContent = 'Kéo pin để điều chỉnh vị trí';
+  document.getElementById('btn-save-text').textContent  = 'Thêm quán';
+  document.getElementById('delete-section').classList.add('hidden');
+  openPanel();
+  setTimeout(() => initMiniMap(lat, lng), 350);
+});
+
+function openEditPanel(placeId) {
+  map.closePopup();
+  const p = places.find(x => x.placeId===placeId); if (!p) return;
+  document.getElementById('edit-place-id').value    = placeId;
+  document.getElementById('edit-lat').value         = p.latitude;
+  document.getElementById('edit-lng').value         = p.longitude;
+  document.getElementById('f-name').value           = p.name??'';
+  document.getElementById('f-phone').value          = p.phone??'';
+  document.getElementById('f-address').value        = p.address??'';
+  document.getElementById('f-specialty').value      = p.specialty??'';
+  document.getElementById('f-open').value           = p.openTime??'';
+  document.getElementById('f-close').value          = p.closeTime??'';
+  document.getElementById('f-price').value          = p.pricePerPerson??'';
+  document.getElementById('f-desc').value           = '';
+  document.getElementById('location-text').textContent    = `${Number(p.latitude).toFixed(5)}, ${Number(p.longitude).toFixed(5)}`;
+  document.getElementById('panel-title').textContent      = 'Chỉnh sửa quán';
+  document.getElementById('panel-subtitle').textContent   = p.name;
+  document.getElementById('btn-save-text').textContent    = 'Lưu thay đổi';
+  document.getElementById('delete-section').classList.remove('hidden');
+  document.getElementById('btn-delete').dataset.placeId   = placeId;
+  document.getElementById('btn-delete').dataset.placeName = p.name;
+  openPanel();
+  setTimeout(() => initMiniMap(Number(p.latitude), Number(p.longitude)), 350);
+}
+
+function openPanel()  { document.getElementById('slide-panel').classList.remove('hidden-panel'); document.getElementById('panel-overlay').classList.remove('hidden'); }
+function closePanel() { document.getElementById('slide-panel').classList.add('hidden-panel'); document.getElementById('panel-overlay').classList.add('hidden'); if (addMode) toggleAddMode(); }
+
+async function savePlace() {
+  const id   = document.getElementById('edit-place-id').value;
+  const name = document.getElementById('f-name').value.trim();
+  const addr = document.getElementById('f-address').value.trim();
+  if (!name||!addr) { alert('Vui lòng nhập tên và địa chỉ!'); return; }
+  const btn = document.getElementById('btn-save');
+  btn.disabled=true; btn.innerHTML='Đang lưu...';
+  const body = {
+    name, phone: document.getElementById('f-phone').value||null, address:addr,
+    latitude:   parseFloat(document.getElementById('edit-lat').value),
+    longitude:  parseFloat(document.getElementById('edit-lng').value),
+    specialty:  document.getElementById('f-specialty').value||null,
+    openTime:   document.getElementById('f-open').value||null,
+    closeTime:  document.getElementById('f-close').value||null,
+    pricePerPerson: document.getElementById('f-price').value?parseInt(document.getElementById('f-price').value):null,
+    description: document.getElementById('f-desc').value||null
+  };
+  try {
+    const isEdit = !!id;
+    const res = await fetch(`${API_BASE}/api/places${isEdit?'/'+id:''}`, {
+      method: isEdit?'PUT':'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${jwt}` },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
+    toast(isEdit?`Đã cập nhật «${name}»`:`Đã thêm «${name}» — chờ Admin duyệt`,'success');
+    closePanel(); setTimeout(()=>location.reload(),1500);
+  } catch(e) {
+    toast('Lỗi: '+e.message,'error');
+    btn.disabled=false; btn.innerHTML='<span class="material-symbols-outlined text-sm">save</span> <span id="btn-save-text">Lưu</span>';
+  }
+}
+
+function deletePlace() {
+  const btn=document.getElementById('btn-delete');
+  confirmDeleteFromPopup(btn.dataset.placeId, btn.dataset.placeName);
+}
+function confirmDeleteFromPopup(id,name) {
+  map.closePopup();
+  document.getElementById('delete-confirm-name').textContent=`«${name}»`;
+  document.getElementById('delete-modal').classList.remove('hidden');
+  document.getElementById('btn-confirm-delete').onclick = async () => {
+    document.getElementById('delete-modal').classList.add('hidden');
+    try {
+      const res=await fetch(`${API_BASE}/api/places/${id}`,{ method:'DELETE', headers:{'Authorization':`Bearer ${jwt}`} });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      toast(`Đã xóa «${name}»`,'info');
+      closePanel(); setTimeout(()=>location.reload(),1500);
+    } catch(e) { toast('Lỗi: '+e.message,'error'); }
+  };
+}
+
+function toast(msg,type) {
+  const cfg={success:'bg-emerald-50 border-emerald-100 text-emerald-700',error:'bg-red-50 border-red-100 text-red-700',info:'bg-blue-50 border-blue-100 text-blue-700'};
+  const el=document.createElement('div');
+  el.className=`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg min-w-[260px] ${cfg[type]||cfg.success}`;
+  el.textContent=msg;
+  let c=document.getElementById('toast-container');
+  if(!c){c=document.createElement('div');c.id='toast-container';c.className='fixed bottom-6 right-6 z-[9999] flex flex-col gap-3';document.body.appendChild(c);}
+  c.appendChild(el); setTimeout(()=>el.remove(),4000);
 }
 </script>
 }

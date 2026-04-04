@@ -18,6 +18,8 @@ public record PlaceDto(
     double? DistanceKm,
     string? Specialty,
     int? PricePerPerson,
+    decimal? PriceMin,
+    decimal? PriceMax,
     string? District,
     bool HasParking,
     bool HasAircon
@@ -30,14 +32,14 @@ public record CreatePlaceDto(
     double Latitude,
     double Longitude,
     string? Phone,
-    string? OpenTime,
-    string? CloseTime,
-    int? CategoryId,
+    int?     CategoryId,
     decimal? PriceMin,
     decimal? PriceMax,
     string? Specialty,
     int? PricePerPerson,
     string? District,
+    string? OpenTime,
+    string? CloseTime,
     bool HasParking = false,
     bool HasAircon = false
 );

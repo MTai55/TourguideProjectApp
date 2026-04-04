@@ -1,0 +1,61 @@
+@using TourismApp.Web.Models
+@model CreatePromotionViewModel
+@{ ViewData["Title"] = "Tạo khuyến mãi"; }
+
+<div class="flex flex-col gap-4 p-6">
+  <h2 class="text-2xl font-bold">Tạo khuyến mãi</h2>
+  <form asp-action="Create" method="post" class="space-y-4">
+    @Html.AntiForgeryToken()
+    
+    <div asp-validation-summary="All" class="text-red-500 text-sm"></div>
+    
+    <div>
+      <label class="block text-sm font-semibold mb-2">Quán áp dụng *</label>
+      <select asp-for="PlaceId" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" required>
+        <option value="">Chọn quán...</option>
+      </select>
+      <span asp-validation-for="PlaceId" class="text-red-500 text-sm"></span>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-semibold mb-2">Tiêu đề *</label>
+      <input asp-for="Title" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" placeholder="VD: Giảm 20% cuối tuần" />
+      <span asp-validation-for="Title" class="text-red-500 text-sm"></span>
+    </div>
+    
+    <div>
+      <label class="block text-sm font-semibold mb-2">Mô tả</label>
+      <textarea asp-for="Description" rows="2" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" placeholder="Chi tiết chương trình..."></textarea>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold mb-2">% Giảm</label>
+        <input asp-for="Discount" type="number" min="1" max="100" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" />
+        <span asp-validation-for="Discount" class="text-red-500 text-sm"></span>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2">Mã Voucher</label>
+        <input asp-for="VoucherCode" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" />
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-semibold mb-2">Bắt đầu *</label>
+        <input asp-for="StartDate" type="datetime-local" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" />
+        <span asp-validation-for="StartDate" class="text-red-500 text-sm"></span>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-2">Kết thúc *</label>
+        <input asp-for="EndDate" type="datetime-local" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" />
+        <span asp-validation-for="EndDate" class="text-red-500 text-sm"></span>
+      </div>
+    </div>
+    
+    <div class="flex gap-3">
+      <a href="@Url.Action("Index")" class="flex-1 py-3 bg-surface-container-low font-bold rounded-xl text-center">Hủy</a>
+      <button type="submit" class="flex-1 py-3 text-white font-bold rounded-xl" style="background:linear-gradient(135deg,#954400,#fc8127)">Tạo</button>
+    </div>
+  </form>
+</div>

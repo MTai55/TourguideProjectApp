@@ -2,39 +2,92 @@
 @model List<TourismApp.Web.Models.ComplaintViewModel>
 @{ ViewData["Title"] = "Xử lý khiếu nại"; }
 
-<h4 class="fw-bold mb-4">⚠️ Xử lý khiếu nại</h4>
+<!-- Header -->
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-slate-900">⚠️ Xử lý khiếu nại</h1>
+  <p class="text-slate-500 mt-2">Quản lý các khiếu nại từ người dùng và chủ quán</p>
+</div>
 
-@foreach (var c in Model) {
-  <div class="card shadow-sm mb-3">
-    <div class="card-body">
-      <div class="d-flex justify-content-between">
-        <div>
-          <h6 class="fw-bold">@c.Title</h6>
-          <small class="text-muted">Từ: @c.UserName | @c.CreatedAt.ToString("dd/MM/yyyy")</small>
-        </div>
-        <span class="badge bg-warning text-dark">@c.Status</span>
-      </div>
-      <p class="mt-2">@c.Content</p>
+<!-- Complaints List -->
+<div class="space-y-4">
+  @if (!Model.Any()) {
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+      <span class="inline-block text-4xl text-slate-300 mb-3">✉️</span>
+      <p class="font-semibold text-slate-700">Không có khiếu nại nào</p>
+      <p class="text-sm text-slate-500 mt-1">Tất cả khiếu nại đã được xử lý hoặc không có khiếu nại mới</p>
+    </div>
+  }
 
-      @if (c.Status == "Pending") {
-        <form method="post" asp-action="Resolve" asp-route-id="@c.ComplaintId">
-          @Html.AntiForgeryToken()
-          <div class="row g-2 mt-2">
-            <div class="col-md-6">
-              <textarea name="note" class="form-control" rows="2"
-                        placeholder="Ghi chú phản hồi..." required></textarea>
-            </div>
-            <div class="col-md-6 d-flex gap-2 align-items-start">
-              <button name="status" value="Resolved" class="btn btn-success">✅ Giải quyết</button>
-              <button name="status" value="Rejected" class="btn btn-danger">❌ Từ chối</button>
+  @foreach (var c in Model) {
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-slate-900">@c.Title</h3>
+            <div class="text-sm text-slate-600 mt-1">
+              <span>📝 Từ: <strong>@c.UserName</strong></span>
+              <span class="mx-2">•</span>
+              <span>📅 @c.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
             </div>
           </div>
-        </form>
-      } else if (!string.IsNullOrEmpty(c.AdminNote)) {
-        <div class="bg-light rounded p-2 mt-2">
-          <small class="fw-bold">Phản hồi Admin:</small> @c.AdminNote
+          
+          @if (c.Status == "Pending") {
+            <span class="inline-block px-4 py-2 bg-amber-50 text-amber-700 text-xs font-bold rounded-full">
+              ⏳ @c.Status
+            </span>
+          } else if (c.Status == "Resolved") {
+            <span class="inline-block px-4 py-2 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full">
+              ✅ @c.Status
+            </span>
+          } else {
+            <span class="inline-block px-4 py-2 bg-red-50 text-red-700 text-xs font-bold rounded-full">
+              ❌ @c.Status
+            </span>
+          }
         </div>
-      }
+
+        <!-- Content -->
+        <div class="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <p class="text-slate-700 text-sm leading-relaxed">@c.Content</p>
+        </div>
+
+        <!-- Action or Reply -->
+        @if (c.Status == "Pending") {
+          <form method="post" asp-action="Resolve" asp-route-id="@c.ComplaintId" class="space-y-4">
+            @Html.AntiForgeryToken()
+            
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">
+                Ghi chú phản hồi <span class="text-red-500">*</span>
+              </label>
+              <textarea name="note" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white resize-none" 
+                        rows="3" placeholder="Viết phản hồi cho khiếu nại này..." required></textarea>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+              <button type="submit" name="status" value="Resolved" 
+                class="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition">
+                <span class="material-symbols-outlined">check_circle</span>
+                Giải quyết
+              </button>
+              <button type="submit" name="status" value="Rejected" 
+                class="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
+                <span class="material-symbols-outlined">cancel</span>
+                Từ chối
+              </button>
+            </div>
+          </form>
+        } else if (!string.IsNullOrEmpty(c.AdminNote)) {
+          <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="font-semibold text-blue-900 text-sm mb-2">
+              <span class="material-symbols-outlined text-sm align-middle">reply</span>
+              Phản hồi từ Admin
+            </div>
+            <p class="text-blue-800 text-sm">@c.AdminNote</p>
+          </div>
+        }
+      </div>
     </div>
-  </div>
-}
+  }
+</div>

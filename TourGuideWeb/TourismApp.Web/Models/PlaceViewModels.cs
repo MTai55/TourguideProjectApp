@@ -16,11 +16,14 @@ public class PlaceViewModel
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalVisits { get; set; }
+    public int? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public string? MainImageUrl { get; set; }
     public bool IsApproved { get; set; }
     public string? Specialty { get; set; }
     public int? PricePerPerson { get; set; }
+    public decimal? PriceMin { get; set; }
+    public decimal? PriceMax { get; set; }
     public string? District { get; set; }
     public bool HasParking { get; set; }
     public bool HasAircon { get; set; }
@@ -31,31 +34,33 @@ public class PlaceViewModel
 
 public class CreatePlaceViewModel
 {
-    [Required(ErrorMessage = "Vui lòng nhập tên địa điểm")]
+    [Required(ErrorMessage = "Tên quán không được để trống")]
+    [MaxLength(200)]
     public string Name { get; set; } = string.Empty;
 
     public string? Description { get; set; }
 
-    [Required(ErrorMessage = "Vui lòng nhập địa chỉ")]
+    [Required(ErrorMessage = "Địa chỉ không được để trống")]
+    [MaxLength(500)]
     public string Address { get; set; } = string.Empty;
 
-    [Required]
-    [Range(-90, 90)]
+    [Required(ErrorMessage = "Vĩ độ không được để trống")]
     public double Latitude { get; set; }
 
-    [Required]
-    [Range(-180, 180)]
+    [Required(ErrorMessage = "Kinh độ không được để trống")]
     public double Longitude { get; set; }
 
     public string? Phone { get; set; }
     public string? OpenTime { get; set; }
     public string? CloseTime { get; set; }
-    public int? CategoryId { get; set; }
     public decimal? PriceMin { get; set; }
     public decimal? PriceMax { get; set; }
+    public int? CategoryId { get; set; }
     public string? Specialty { get; set; }
     public int? PricePerPerson { get; set; }
     public string? District { get; set; }
+    public bool HasParking { get; set; }
+    public bool HasAircon { get; set; }
 }
 
 public class ReviewViewModel

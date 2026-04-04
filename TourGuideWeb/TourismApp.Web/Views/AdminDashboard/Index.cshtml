@@ -2,46 +2,111 @@
 @model TourismApp.Web.Models.AdminStatsViewModel
 @{ ViewData["Title"] = "Admin Dashboard"; }
 
-<h4 class="fw-bold mb-4">🔴 Quản trị hệ thống</h4>
+<!-- Header -->
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-slate-900">🔴 Quản trị hệ thống</h1>
+  <p class="text-slate-500 mt-2">Xem tổng quan và quản lý các hoạt động trên hệ thống</p>
+</div>
 
-<div class="row g-3 mb-4">
-  @foreach (var stat in new[] {
-    ("👥", Model?.TotalUsers.ToString(), "Tổng users", "primary"),
-    ("🍜", Model?.TotalPlaces.ToString(), "Tổng quán", "success"),
-    ("⏳", Model?.PendingPlaces.ToString(), "Chờ duyệt", "warning"),
-    ("⭐", Model?.TotalReviews.ToString(), "Tổng review", "info"),
-    ("🙈", Model?.HiddenReviews.ToString(), "Review ẩn", "secondary"),
-    ("⚠️", Model?.PendingComplaints.ToString(), "Khiếu nại mới", "danger")
+<!-- Stats Grid -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+  @foreach (var (icon, value, label, color) in new[] {
+    ("👥", Model?.TotalUsers.ToString(), "Tổng users", "blue"),
+    ("🍜", Model?.TotalPlaces.ToString(), "Tổng quán", "emerald"),
+    ("⏳", Model?.PendingPlaces.ToString(), "Chờ duyệt", "amber"),
+    ("⭐", Model?.TotalReviews.ToString(), "Tổng review", "cyan"),
+    ("🙈", Model?.HiddenReviews.ToString(), "Review ẩn", "slate"),
+    ("⚠️", Model?.PendingComplaints.ToString(), "Khiếu nại", "red")
   }) {
-    <div class="col-md-2">
-      <div class="card p-3 text-center border-0 shadow-sm">
-        <div class="fs-1">@stat.Item1</div>
-        <div class="fs-2 fw-bold text-@stat.Item4">@stat.Item2</div>
-        <small class="text-muted">@stat.Item3</small>
+    var colorClasses = color switch {
+      "blue" => "bg-blue-50 text-blue-700",
+      "emerald" => "bg-emerald-50 text-emerald-700",
+      "amber" => "bg-amber-50 text-amber-700",
+      "cyan" => "bg-cyan-50 text-cyan-700",
+      "red" => "bg-red-50 text-red-700",
+      _ => "bg-slate-50 text-slate-700"
+    };
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center hover:shadow-md transition">
+      <div class="text-4xl mb-3">@icon</div>
+      <div class="text-3xl font-bold text-slate-900 mb-1">@value</div>
+      <div class="text-sm font-semibold @colorClasses px-3 py-1 rounded-full inline-block">
+        @label
       </div>
     </div>
   }
 </div>
 
 <!-- Quick Actions -->
-<div class="row g-3">
-  <div class="col-md-4">
-    <div class="card shadow-sm p-3">
-      <h6 class="fw-bold">⏳ Quán chờ duyệt (@Model?.PendingPlaces)</h6>
-      <a asp-controller="AdminPlaces" asp-action="Index"
-         asp-route-pendingOnly="true" class="btn btn-warning btn-sm">Duyệt ngay →</a>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <!-- Pending Places Card -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h3 class="text-xl font-bold text-slate-900">⏳ Quán chờ duyệt</h3>
+        <div class="mt-2 inline-block px-3 py-1 bg-amber-50 text-amber-700 text-sm font-bold rounded-full">
+          @(Model?.PendingPlaces ?? 0) quán
+        </div>
+      </div>
+      <span class="text-4xl opacity-20">🏪</span>
     </div>
+    <p class="text-slate-600 text-sm mb-4">
+      @if ((Model?.PendingPlaces ?? 0) > 0) {
+        <span>Có <strong>@Model.PendingPlaces</strong> quán đang chờ xét duyệt</span>
+      } else {
+        <span>Tất cả quán đã được duyệt</span>
+      }
+    </p>
+    <a asp-controller="AdminPlaces" asp-action="Index" asp-route-pendingOnly="true"
+       class="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition w-fit">
+      <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      Duyệt ngay
+    </a>
   </div>
-  <div class="col-md-4">
-    <div class="card shadow-sm p-3">
-      <h6 class="fw-bold">⚠️ Khiếu nại (@Model?.PendingComplaints)</h6>
-      <a asp-controller="AdminComplaints" asp-action="Index" class="btn btn-danger btn-sm">Xử lý →</a>
+
+  <!-- Complaints Card -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h3 class="text-xl font-bold text-slate-900">⚠️ Khiếu nại</h3>
+        <div class="mt-2 inline-block px-3 py-1 bg-red-50 text-red-700 text-sm font-bold rounded-full">
+          @(Model?.PendingComplaints ?? 0) mới
+        </div>
+      </div>
+      <span class="text-4xl opacity-20">⚠️</span>
     </div>
+    <p class="text-slate-600 text-sm mb-4">
+      @if ((Model?.PendingComplaints ?? 0) > 0) {
+        <span>Có <strong>@Model.PendingComplaints</strong> khiếu nại cần xử lý</span>
+      } else {
+        <span>Không có khiếu nại mới</span>
+      }
+    </p>
+    <a asp-controller="AdminComplaints" asp-action="Index"
+       class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition w-fit">
+      <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      Xử lý ngay
+    </a>
   </div>
-  <div class="col-md-4">
-    <div class="card shadow-sm p-3">
-      <h6 class="fw-bold">👥 Tài khoản (@Model?.TotalUsers)</h6>
-      <a asp-controller="AdminUsers" asp-action="Index" class="btn btn-primary btn-sm">Quản lý →</a>
+
+  <!-- Users Card -->
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
+    <div class="flex items-start justify-between mb-4">
+      <div>
+        <h3 class="text-xl font-bold text-slate-900">👥 Tài khoản</h3>
+        <div class="mt-2 inline-block px-3 py-1 bg-blue-50 text-blue-700 text-sm font-bold rounded-full">
+          @(Model?.TotalUsers ?? 0) người
+        </div>
+      </div>
+      <span class="text-4xl opacity-20">👤</span>
     </div>
+    <p class="text-slate-600 text-sm mb-4">
+      Quản lý người dùng, phân quyền, khóa tài khoản
+    </p>
+    <a asp-controller="AdminUsers" asp-action="Index"
+       class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition w-fit">
+      <span class="material-symbols-outlined text-lg">arrow_forward</span>
+      Quản lý
+    </a>
   </div>
 </div>

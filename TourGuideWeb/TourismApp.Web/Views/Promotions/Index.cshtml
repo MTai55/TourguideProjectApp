@@ -104,6 +104,14 @@
     </div>
     <form asp-action="Create" method="post" class="p-6 space-y-4">
       @Html.AntiForgeryToken()
+      
+      @if (ViewBag.TempData?["Error"] != null)
+      {
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+          @ViewBag.TempData?["Error"]
+        </div>
+      }
+      
       <div>
         <label class="block text-sm font-semibold mb-2">Quán áp dụng *</label>
         <select name="PlaceId" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" required>

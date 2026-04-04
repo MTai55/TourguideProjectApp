@@ -104,7 +104,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.ToTable("Promotions");
             e.HasKey(p => p.PromoId);
             e.HasOne(p => p.Place)
-             .WithMany()
+             .WithMany(p => p.Promotions)
              .HasForeignKey(p => p.PlaceId)
              .OnDelete(DeleteBehavior.Cascade);
         });

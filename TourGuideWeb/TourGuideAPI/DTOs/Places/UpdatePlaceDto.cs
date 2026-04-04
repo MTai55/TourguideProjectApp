@@ -10,7 +10,10 @@ public record UpdatePlaceDto(
     string? Specialty,
     int? PricePerPerson,
     decimal? PriceMin,
-    decimal? PriceMax
+    decimal? PriceMax,
+    string? District,
+    bool HasParking = false,
+    bool HasAircon = false
 );
 
 public record AddImageDto(

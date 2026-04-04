@@ -1,3 +1,4 @@
+using Microsoft.Maui.ApplicationModel.Communication;
 using TourGuideAPP.Data.Models;
 using TourGuideAPP.Services;
 
@@ -12,7 +13,6 @@ public partial class PlaceDetailPage : ContentPage
     private readonly NarrationService _narrationService;
     private readonly UserProfileService _profileService;
 
-    // Nhận Place object và AuthService từ trang trước truyền vào
     public PlaceDetailPage(
         Place place,
         AuthService authService,
@@ -32,71 +32,102 @@ public partial class PlaceDetailPage : ContentPage
         LoadPlaceDetail();
     }
 
-    // Hiển thị thông tin địa điểm lên UI
     private void LoadPlaceDetail()
     {
-        // Ảnh bìa
         MainImage.Source = _place.ImageUrl;
-
-        // Tên
         NameLabel.Text = _place.Name;
 
-        // Rating
         RatingLabel.Text = _place.AverageRating.HasValue
-            ? $"⭐ {_place.AverageRating:F1}"
+            ? $"★ {_place.AverageRating:F1}"
             : "Chưa có đánh giá";
+        ReviewsLabel.Text = _place.TotalReviews.HasValue
+            ? $"({_place.TotalReviews} đánh giá Google)"
+            : "";
 
-        // Số lượt đánh giá
-        ReviewsLabel.Text = $"({_place.TotalReviews ?? 0} đánh giá)";
+        // Status badge
+        bool isOpen = IsPlaceOpen(_place);
+        StatusLabel.Text = isOpen ? "Đang mở" : "Đóng cửa";
+        StatusLabel.TextColor = isOpen ? Color.FromArgb("#4CAF50") : Color.FromArgb("#E94560");
+        StatusBadge.BackgroundColor = isOpen ? Color.FromArgb("#1B3A28") : Color.FromArgb("#3A1B20");
 
-        // Mô tả
-        DescriptionLabel.Text = _place.Description ?? "Chưa có mô tả";
-
-        // Địa chỉ
+        DescriptionLabel.Text = _place.Description ?? "Chưa có mô tả.";
         AddressLabel.Text = _place.Address ?? "Chưa cập nhật";
-
-        // Giờ mở cửa
         OpenTimeLabel.Text = _place.OpenTime != null
-            ? $"{_place.OpenTime} - {_place.CloseTime}"
+            ? $"{_place.OpenTime} – {_place.CloseTime}"
             : "Chưa cập nhật";
-
-        // SĐT
-        PhoneLabel.Text = _place.Phone ?? "Chưa cập nhật";
-
-        // Giá
         PriceLabel.Text = _place.PriceMin.HasValue
-            ? $"{_place.PriceMin:N0}đ - {_place.PriceMax:N0}đ"
+            ? $"{_place.PriceMin:N0}đ – {_place.PriceMax:N0}đ"
             : "Liên hệ";
 
-        // Website
-        WebsiteLabel.Text = _place.Website ?? "Chưa cập nhật";
+        if (!string.IsNullOrWhiteSpace(_place.Website))
+            WebsiteLabel.Text = _place.Website;
+        else
+            WebsiteRow.IsVisible = false;
     }
 
-    // Mở MapPage và chỉ đường đến địa điểm hiện tại
-    private async void OnDirectionsClicked(object sender, EventArgs e)
+    private static bool IsPlaceOpen(Place place)
+    {
+        if (place.OpenTime is null || place.CloseTime is null) return false;
+        if (!TimeSpan.TryParse(place.OpenTime, out var open) ||
+            !TimeSpan.TryParse(place.CloseTime, out var close)) return false;
+        var now = DateTime.Now.TimeOfDay;
+        return now >= open && now <= close;
+    }
+
+    private void OnBackClicked(object sender, TappedEventArgs e)
+        => Navigation.PopAsync();
+
+    private async void OnDirectionsClicked(object sender, TappedEventArgs e)
     {
         if (_place.Latitude == 0 && _place.Longitude == 0)
         {
-            await DisplayAlert("Lỗi", "Không có tọa độ địa điểm để chỉ đường.", "OK");
+            await DisplayAlert("Lỗi", "Không có tọa độ để chỉ đường.", "OK");
             return;
         }
-
         MapPage.PendingRoute = (_place.Latitude, _place.Longitude, _place.Name);
         await Shell.Current.GoToAsync("//MainTabs/MapPage");
     }
 
-    // Đánh giá yêu cầu đăng nhập
-    private async void OnReviewClicked(object sender, EventArgs e)
+    private async void OnGoogleMapsClicked(object sender, TappedEventArgs e)
     {
-        if (!_authService.IsLoggedIn)
+        // Deep link ưu tiên: tìm theo tên + tọa độ → mở Google Maps app
+        // Nếu chưa cài Google Maps thì fallback sang trình duyệt
+        var name = Uri.EscapeDataString(_place.Name ?? "");
+        var lat = _place.Latitude;
+        var lon = _place.Longitude;
+
+        // geo URI → mở Google Maps app trực tiếp (Android)
+        var geoUri = $"geo:{lat},{lon}?q={lat},{lon}({name})";
+
+        // Fallback URL cho trình duyệt
+        var webUrl = $"https://www.google.com/maps/search/?api=1&query={lat},{lon}";
+
+        try
         {
-            await DisplayAlert("Thông báo", "Vui lòng đăng nhập để đánh giá.", "OK");
-            return;
+            await Launcher.OpenAsync(new Uri(geoUri));
         }
-        // Sau này làm ReviewPage
-        await DisplayAlertAsync("Đánh giá", "Tính năng đang phát triển!", "OK");
+        catch
+        {
+            // Thiết bị không có Google Maps → mở trình duyệt
+            await Launcher.OpenAsync(new Uri(webUrl));
+        }
     }
 
+    private void OnCallClicked(object sender, TappedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_place.Phone))
+        {
+            DisplayAlert("Thông báo", "Địa điểm này chưa có số điện thoại.", "OK");
+            return;
+        }
+        try { PhoneDialer.Open(_place.Phone); }
+        catch { DisplayAlert("Lỗi", "Không thể mở ứng dụng gọi điện.", "OK"); }
+    }
+
+    private async void OnWebsiteClicked(object sender, TappedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_place.Website)) return;
+        try { await Launcher.OpenAsync(new Uri(_place.Website)); }
+        catch { await DisplayAlert("Lỗi", "Không thể mở website.", "OK"); }
+    }
 }
-
-

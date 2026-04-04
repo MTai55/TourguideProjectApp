@@ -300,7 +300,7 @@ public partial class MapPage : ContentPage
             ? $"Đây là địa điểm {_selectedPlace.Name}."
             : _selectedPlace.TtsScript;
         _lastSpokenPlaceId = _selectedPlace.PlaceId.ToString();
-        await _narrationService.SpeakAsync(script);
+        await _narrationService.SpeakAsync(script, _selectedPlace.TtsLocale);
     }
 
     private async void OnCardCall(object sender, TappedEventArgs e)
@@ -406,7 +406,7 @@ public partial class MapPage : ContentPage
                     {
                         _lastSpokenPlaceId = nearestId;
                         nearest.LastPlayedAt = DateTime.Now;
-                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name);
+                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name, nearest.TtsLocale);
                     }
                 }
                 else

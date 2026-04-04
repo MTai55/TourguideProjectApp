@@ -1,14 +1,20 @@
 using TourGuideAPP.Data.Models;
 
-
 namespace TourGuideAPP.Services;
 
 public class GeofenceEngine
 {
+    // Debounce: POI phải được detect liên tục trong khoảng thời gian này mới trigger
+    private const int DebounceMs = 2000;
+
+    // Theo dõi POI đang "chờ debounce"
+    private string? _pendingPlaceId;
+    private DateTime _pendingFirstSeenAt = DateTime.MinValue;
+
     // Tính khoảng cách giữa 2 tọa độ (Haversine)
     public double GetDistance(double lat1, double lon1, double lat2, double lon2)
     {
-        const double R = 6371000; // Bán kính Trái Đất (mét)
+        const double R = 6371000;
         var dLat = ToRad(lat2 - lat1);
         var dLon = ToRad(lon2 - lon1);
         var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
@@ -17,28 +23,51 @@ public class GeofenceEngine
         return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }
 
-    // Tìm địa điểm gần nhất trong bán kính có TtsScript
+    /// <summary>
+    /// Tìm POI ưu tiên cao nhất trong vùng, qua debounce + cooldown.
+    /// Trả về null nếu chưa đủ thời gian debounce hoặc không có POI nào.
+    /// </summary>
     public Place? FindNearestPOI(double userLat, double userLon, List<Place> places)
     {
-        Place? nearest = null;
-        double minDistance = double.MaxValue;
+        // Lọc các POI trong vùng, có TtsScript, chưa hết cooldown
+        var candidates = places
+            .Where(p =>
+                !string.IsNullOrWhiteSpace(p.TtsScript) &&
+                GetDistance(userLat, userLon, p.Latitude, p.Longitude) <= (p.Radius ?? 50) &&
+                (p.LastPlayedAt == null ||
+                 (DateTime.Now - p.LastPlayedAt.Value).TotalMinutes >= (p.CooldownMinutes ?? 10)))
+            .OrderByDescending(p => p.Priority ?? 1)   // Priority cao hơn → ưu tiên trước
+            .ThenBy(p => GetDistance(userLat, userLon, p.Latitude, p.Longitude)) // Cùng priority → gần hơn trước
+            .ToList();
 
-        foreach (var place in places)
+        if (candidates.Count == 0)
         {
-            if (string.IsNullOrWhiteSpace(place.TtsScript)) continue;
-            var distance = GetDistance(userLat, userLon, place.Latitude, place.Longitude);
-            if (distance <= place.Radius && distance < minDistance)
-            {
-                if (place.LastPlayedAt == null ||
-                    (DateTime.Now - place.LastPlayedAt.Value).TotalMinutes >= place.CooldownMinutes)
-                {
-                    minDistance = distance;
-                    nearest = place;
-                }
-            }
+            // Không còn POI nào trong vùng → reset debounce
+            _pendingPlaceId = null;
+            _pendingFirstSeenAt = DateTime.MinValue;
+            return null;
         }
-        return nearest;
+
+        var top = candidates[0];
+        var topId = top.PlaceId.ToString();
+
+        // Debounce: nếu là POI mới → bắt đầu đếm giờ
+        if (_pendingPlaceId != topId)
+        {
+            _pendingPlaceId = topId;
+            _pendingFirstSeenAt = DateTime.Now;
+            return null; // Chưa đủ debounce
+        }
+
+        // Kiểm tra đã đứng trong vùng đủ lâu chưa
+        if ((DateTime.Now - _pendingFirstSeenAt).TotalMilliseconds < DebounceMs)
+            return null; // Chưa đủ debounce
+
+        // Đủ debounce → reset và trả về POI
+        _pendingPlaceId = null;
+        _pendingFirstSeenAt = DateTime.MinValue;
+        return top;
     }
 
-    private double ToRad(double deg) => deg * Math.PI / 180;
+    private static double ToRad(double deg) => deg * Math.PI / 180;
 }

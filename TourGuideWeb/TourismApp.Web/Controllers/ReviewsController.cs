@@ -6,16 +6,60 @@ using TourismApp.Web.Models;
 namespace TourismApp.Web.Controllers;
 
 [OwnerOnly]
-public class ReviewsController(ApiService api) : Controller
+public class ReviewsController(ApiService api, ILogger<ReviewsController> logger) : Controller
 {
-    // GET /Reviews — Tất cả review của các quán owner đang quản lý
-    public async Task<IActionResult> Index(int placeId)
+    // GET /Reviews — Tất cả review của các quán owner đang quản lý (hoặc 1 quán nếu có placeId)
+    public async Task<IActionResult> Index(int? placeId = null)
     {
         if (HttpContext.Session.GetString("JwtToken") == null)
             return RedirectToAction("Login", "Auth");
-        var reviews = await api.GetReviewsAsync(placeId);
-        ViewBag.PlaceId = placeId;
-        return View(reviews ?? new List<ReviewViewModel>());  // ← đảm bảo không null
+        
+        try
+        {
+            logger.LogInformation($"📋 Fetching reviews - placeId: {placeId}");
+            
+            // Nếu có placeId, lấy reviews của quán đó; nếu không, lấy tất cả
+            List<ReviewViewModel>? reviews;
+            if (placeId.HasValue)
+            {
+                reviews = await api.GetReviewsAsync(placeId.Value);
+            }
+            else
+            {
+                // Lấy tất cả reviews của owner, sau đó có thể filter bằng place
+                var places = await api.GetMyPlacesAsync(page: 1);
+                reviews = new List<ReviewViewModel>();
+                
+                if (places?.Items != null)
+                {
+                    foreach (var place in places.Items)
+                    {
+                        var placeReviews = await api.GetReviewsAsync(place.PlaceId);
+                        if (placeReviews != null)
+                        {
+                            // Set PlaceName cho mỗi review vì API không trả về
+                            foreach (var review in placeReviews)
+                            {
+                                review.PlaceName = place.Name;
+                            }
+                            reviews.AddRange(placeReviews);
+                        }
+                    }
+                }
+                
+                // Sắp xếp theo ngày giảm dần
+                reviews = reviews.OrderByDescending(r => r.CreatedAt).ToList();
+            }
+            
+            ViewBag.PlaceId = placeId;
+            ViewBag.ShowAllPlaces = !placeId.HasValue;
+            return View(reviews ?? new List<ReviewViewModel>());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"❌ Error fetching reviews: {ex.Message}");
+            return View(new List<ReviewViewModel>());
+        }
     }
 
     // GET /Reviews/ByPlace/{placeId} — Review của 1 quán cụ thể

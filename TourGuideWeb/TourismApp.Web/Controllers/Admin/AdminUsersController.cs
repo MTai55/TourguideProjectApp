@@ -5,14 +5,23 @@ using TourismApp.Web.Models;
 
 namespace TourismApp.Web.Controllers.Admin;
 
-
+[Area("Admin")]
 [AdminOnly]
-public class AdminUsersController(ApiService api) : Controller
+public class AdminUsersController(ApiService api, ILogger<AdminUsersController> logger) : Controller
 {
     // GET /Admin/AdminUsers
     public async Task<IActionResult> Index(string? search, string? role)
     {
+        logger.LogInformation("AdminUsersController.Index called with search={search}, role={role}", search, role);
+        
         var users = await api.GetUsersAsync(search, role);
+        
+        logger.LogInformation("API returned {count} users", users?.Count ?? 0);
+        if (users == null)
+        {
+            logger.LogWarning("GetUsersAsync returned null");
+        }
+        
         ViewBag.Search = search;
         ViewBag.Role = role;
         return View(users ?? []);

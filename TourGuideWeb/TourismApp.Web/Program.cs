@@ -47,6 +47,13 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ── Area routing (Admin routes) ───────────────────────────────
+app.MapAreaControllerRoute(
+    name: "admin",
+    areaName: "Admin",
+    pattern: "Admin/{controller=Dashboard}/{action=Index}/{id?}");
+
+// ── Default routing ───────────────────────────────────────────
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Auth}/{action=Login}/{id?}");

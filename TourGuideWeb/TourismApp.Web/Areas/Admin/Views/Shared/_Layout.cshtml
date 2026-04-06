@@ -150,7 +150,7 @@
           ("Promotions",  "Index", "local_offer",  "Khuyến mãi"),
         })
         {
-          var isActive = ctrl == c && action == a;
+          var isActive = ctrl == c && (c != "Places" || action != "Map");
           <a asp-controller="@c" asp-action="@a"
              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all
                     @(isActive ? "text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/5")"

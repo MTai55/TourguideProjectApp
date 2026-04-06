@@ -1,0 +1,279 @@
+@using TourismApp.Web.Models
+@model TourismApp.Web.Models.PlaceViewModel
+@{ ViewData["Title"] = Model?.Name; }
+
+<div class="mb-6">
+  <a asp-controller="AdminPlaces" asp-action="Index"
+     class="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-low text-on-surface-variant font-bold rounded-lg hover:bg-surface-container transition-colors">
+    <span class="material-symbols-outlined">arrow_back</span> Quay lại danh sách
+  </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+  <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 font-bold">
+    @TempData["Error"]
+  </div>
+}
+
+@if (Model == null)
+{
+  <div class="text-center py-16">
+    <span class="material-symbols-outlined text-6xl text-slate-300 block mb-4">storefront</span>
+    <p class="text-lg font-bold text-on-surface">Không tìm thấy thông tin quán</p>
+  </div>
+}
+else
+{
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Hình ảnh chính -->
+    <div class="lg:col-span-1">
+      <div class="bg-surface-container-lowest rounded-xl overflow-hidden">
+        @if (!string.IsNullOrEmpty(Model.MainImageUrl))
+        {
+          <img src="@Model.MainImageUrl" alt="@Model.Name" class="w-full h-72 object-cover" />
+        }
+        else
+        {
+          <div class="w-full h-72 bg-surface-container flex items-center justify-center">
+            <span class="material-symbols-outlined text-6xl text-slate-400">image_not_supported</span>
+          </div>
+        }
+      </div>
+
+      <!-- Thông tin cơ bản -->
+      <div class="mt-6 bg-surface-container-lowest rounded-xl p-6">
+        <h2 class="text-2xl font-black mb-4">@Model.Name</h2>
+        
+        <div class="space-y-3">
+          <!-- Đánh giá -->
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Đánh giá</p>
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1">
+                @for (int i = 0; i < 5; i++)
+                {
+                  <span class="material-symbols-outlined text-lg" style="color: #fbbf24; font-variation-settings: 'FILL' @(i < Math.Round(Model.AverageRating) ? "1" : "0")">
+                    star
+                  </span>
+                }
+              </div>
+              <span class="font-black text-lg" style="color: #765600">@Model.AverageRating.ToString("0.0")</span>
+            </div>
+            <p class="text-xs text-on-surface-variant mt-1">@Model.TotalReviews bình luận</p>
+          </div>
+
+          <!-- Lượt ghé -->
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Lượt ghé</p>
+            <p class="text-2xl font-black">@Model.TotalVisits</p>
+          </div>
+
+          <!-- Trạng thái -->
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Trạng thái</p>
+            @{
+              var (dot, text, cls) = Model.Status switch
+              {
+                "Active" => ("bg-emerald-500", "Hoạt động", "text-emerald-700"),
+                "Pending" => ("bg-amber-500", "Chờ duyệt", "text-amber-700"),
+                "Suspended" => ("bg-red-500", "Tạm khóa", "text-red-700"),
+                _ => ("bg-slate-400", Model.Status ?? "—", "text-slate-600"),
+              };
+            }
+            <span class="flex items-center gap-1.5 text-sm font-bold @cls">
+              <span class="w-2.5 h-2.5 rounded-full @dot"></span> @text
+            </span>
+          </div>
+
+          <!-- Chủ quán -->
+          @if (!string.IsNullOrEmpty(Model.OwnerName))
+          {
+            <div class="pt-3 border-t border-surface-container">
+              <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Chủ quán</p>
+              <p class="font-bold text-sm">@Model.OwnerName</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Chi tiết -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Thông tin chung -->
+      <div class="bg-surface-container-lowest rounded-xl p-6">
+        <h3 class="text-lg font-black mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined">info</span> Thông tin chung
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Địa chỉ -->
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Địa chỉ</p>
+            <p class="font-bold text-sm">@Model.Address</p>
+            @if (!string.IsNullOrEmpty(Model.District))
+            {
+              <p class="text-xs text-on-surface-variant mt-1">Quận: @Model.District</p>
+            }
+          </div>
+
+          <!-- Loại ẩm thực -->
+          @if (!string.IsNullOrEmpty(Model.CategoryName))
+          {
+            <div>
+              <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Loại ẩm thực</p>
+              <span class="inline-block px-3 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-sm font-bold">
+                @Model.CategoryName
+              </span>
+            </div>
+          }
+
+          <!-- Điện thoại -->
+          @if (!string.IsNullOrEmpty(Model.Phone))
+          {
+            <div>
+              <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Điện thoại</p>
+              <a href="tel:@Model.Phone" class="text-primary font-bold text-sm hover:underline">@Model.Phone</a>
+            </div>
+          }
+
+          <!-- Tọa độ -->
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Tọa độ</p>
+            <p class="font-bold text-sm">@Model.Latitude.ToString("0.0000"), @Model.Longitude.ToString("0.0000")</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Giờ mở cửa -->
+      <div class="bg-surface-container-lowest rounded-xl p-6">
+        <h3 class="text-lg font-black mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined">schedule</span> Giờ mở cửa
+        </h3>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Mở cửa lúc</p>
+            <p class="text-2xl font-black text-primary">@(Model.OpenTime ?? "—")</p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Đóng cửa lúc</p>
+            <p class="text-2xl font-black text-red-500">@(Model.CloseTime ?? "—")</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Giá cả -->
+      <div class="bg-surface-container-lowest rounded-xl p-6">
+        <h3 class="text-lg font-black mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined">attach_money</span> Giá cả
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          @if (Model.PriceMin.HasValue || Model.PriceMax.HasValue)
+          {
+            <div>
+              <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Khoảng giá</p>
+              <p class="font-bold text-sm">
+                @(Model.PriceMin.HasValue ? Model.PriceMin.Value.ToString("N0") : "—") - @(Model.PriceMax.HasValue ? Model.PriceMax.Value.ToString("N0") : "—") ₫
+              </p>
+            </div>
+          }
+          @if (Model.PricePerPerson.HasValue)
+          {
+            <div>
+              <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Giá/người</p>
+              <p class="font-bold text-sm">@Model.PricePerPerson.Value.ToString("N0") ₫</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Tiện nghi -->
+      @if (Model.HasParking || Model.HasAircon)
+      {
+        <div class="bg-surface-container-lowest rounded-xl p-6">
+          <h3 class="text-lg font-black mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined">home_repair_service</span> Tiện nghi
+          </h3>
+          
+          <div class="flex flex-wrap gap-3">
+            @if (Model.HasParking)
+            {
+              <span class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg font-bold text-sm">
+                <span class="material-symbols-outlined">local_parking</span> Có bãi đỗ xe
+              </span>
+            }
+            @if (Model.HasAircon)
+            {
+              <span class="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-bold text-sm">
+                <span class="material-symbols-outlined">ac_unit</span> Có điều hòa
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Mô tả -->
+      @if (!string.IsNullOrEmpty(Model.Description))
+      {
+        <div class="bg-surface-container-lowest rounded-xl p-6">
+          <h3 class="text-lg font-black mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined">description</span> Mô tả
+          </h3>
+          <p class="text-sm text-on-surface-variant leading-relaxed">@Model.Description</p>
+        </div>
+      }
+
+      <!-- Chuyên môn -->
+      @if (!string.IsNullOrEmpty(Model.Specialty))
+      {
+        <div class="bg-surface-container-lowest rounded-xl p-6">
+          <h3 class="text-lg font-black mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined">star</span> Đặc sắc
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            @foreach (var specialty in Model.Specialty.Split(',').Select(s => s.Trim()))
+            {
+              <span class="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full font-bold text-xs">
+                #@specialty
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Nút hành động -->
+  <div class="mt-8 pt-6 border-t border-surface-container flex gap-3 justify-end">
+    <a asp-controller="AdminPlaces" asp-action="Index"
+       class="px-6 py-2.5 bg-surface-container-low text-on-surface font-bold rounded-lg hover:bg-surface-container-high transition-colors">
+      Đóng
+    </a>
+    @if (Model.Status == "Pending")
+    {
+      <form method="post" asp-controller="AdminPlaces" asp-action="Approve" asp-route-id="@Model.PlaceId" style="display: inline;">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="px-6 py-2.5 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined">check_circle</span> Duyệt quán
+        </button>
+      </form>
+      <form method="post" asp-controller="AdminPlaces" asp-action="Reject" asp-route-id="@Model.PlaceId" style="display: inline;" onsubmit="return confirm('Bạn chắc chắn muốn từ chối quán này?');return false;">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="px-6 py-2.5 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined">close</span> Từ chối
+        </button>
+      </form>
+    }
+    @if (Model.Status == "Active")
+    {
+      <form method="post" asp-controller="AdminPlaces" asp-action="Suspend" asp-route-id="@Model.PlaceId" style="display: inline;" onsubmit="return confirm('Tạm khóa quán @Model.Name?');">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="px-6 py-2.5 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2">
+          <span class="material-symbols-outlined">block</span> Tạm khóa
+        </button>
+      </form>
+    }
+  </div>
+}

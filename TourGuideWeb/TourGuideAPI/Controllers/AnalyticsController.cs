@@ -18,6 +18,8 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
     [HttpGet("visits/{placeId}")]
     public async Task<IActionResult> GetVisits(int placeId, [FromQuery] int days = 30)
     {
+        return BadRequest("VisitHistory table doesn't exist in Supabase. This endpoint is temporarily disabled.");
+        /*
         var isOwner = await db.Places.AnyAsync(p => p.PlaceId == placeId && p.OwnerId == OwnerId);
         if (!isOwner) return Forbid();
 
@@ -47,6 +49,27 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
             byHour,
             peakHour = byHour.MaxBy(x => x.count)?.hour
         });
+        */
+    }
+
+    // GET /api/analytics/test/admin-stats — TEST ONLY (hardcoded data)
+    [HttpGet("test/admin-stats")]
+    [AllowAnonymous]
+    public IActionResult GetAdminStatsTest()
+    {
+        return Ok(new
+        {
+            TotalUsers = 8,
+            TotalOwners = 3,
+            TotalPlaces = 14,
+            PendingPlaces = 0,
+            ActivePlaces = 14,
+            TotalReviews = 15,
+            HiddenReviews = 0,
+            PendingComplaints = 2,
+            TotalVisitsToday = 0,
+            AvgRating = 2.93
+        });
     }
 
     // GET /api/analytics/dashboard — Owner: chỉ quán của mình
@@ -54,46 +77,52 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
     [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> GetDashboard()
     {
-        var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
-        var places = await db.Places
-            .Where(p => p.OwnerId == ownerId)  // ← Chỉ quán của owner này
-            .Select(p => new {
-                p.PlaceId,
-                p.Name,
-                p.Status,
-                p.OpenStatus,
-                p.TotalVisits,
-                p.AverageRating,
-                p.TotalReviews
-            }).ToListAsync();
-
-        var placeIds = places.Select(p => p.PlaceId).ToList();
-
-        var visitsThisMonth = await db.VisitHistory
-            .Where(v => placeIds.Contains(v.PlaceId) &&
-                        v.CheckInTime >= DateTime.UtcNow.AddDays(-30))
-            .CountAsync();
-
-        var pendingReviews = await db.Reviews
-            .Where(r => placeIds.Contains(r.PlaceId) && r.OwnerReply == null)
-            .CountAsync();
-
-        var activePromos = await db.Promotions
-            .Where(pr => placeIds.Contains(pr.PlaceId) &&
-                         pr.IsActive && pr.EndDate > DateTime.UtcNow)
-            .CountAsync();
-
-        return Ok(new
+        try
         {
-            TotalPlaces = places.Count,
-            ActivePlaces = places.Count(p => p.Status == "Active"),
-            TotalVisits = visitsThisMonth,
-            PendingReviews = pendingReviews,
-            ActivePromotions = activePromos,
-            AvgRating = places.Any() ? places.Average(p => p.AverageRating) : 0,
-            Places = places
-        });
+            var ownerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var places = await db.Places
+                .Where(p => p.OwnerId == ownerId)  // ← Chỉ quán của owner này
+                .Select(p => new {
+                    p.PlaceId,
+                    p.Name,
+                    p.Status,
+                    p.OpenStatus,
+                    p.TotalVisits,
+                    p.AverageRating,
+                    p.TotalReviews
+                }).ToListAsync();
+
+            var placeIds = places.Select(p => p.PlaceId).ToList();
+
+            var visitsThisMonth = 0;  // await db.VisitHistory (table doesn't exist in Supabase)
+                // .CountAsync(v => placeIds.Contains(v.PlaceId) &&
+                //             v.CheckInTime >= DateTime.UtcNow.AddDays(-30));
+
+            var pendingReviews = await db.Reviews
+                .Where(r => placeIds.Contains(r.PlaceId) && r.OwnerReply == null)
+                .CountAsync();
+
+            var activePromos = await db.Promotions
+                .Where(pr => placeIds.Contains(pr.PlaceId) &&
+                             pr.IsActive && pr.EndDate > DateTime.UtcNow)
+                .CountAsync();
+
+            return Ok(new
+            {
+                TotalPlaces = places.Count,
+                ActivePlaces = places.Count(p => p.Status == "Active"),
+                TotalVisits = visitsThisMonth,
+                PendingReviews = pendingReviews,
+                ActivePromotions = activePromos,
+                AvgRating = places.Any() ? places.Average(p => p.AverageRating) : 0,
+                Places = places
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message, detail = ex.InnerException?.Message });
+        }
     }
 
     // GET /api/analytics/admin/stats — Admin: toàn hệ thống
@@ -101,21 +130,28 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> GetAdminStats()
     {
-        return Ok(new
+        try
         {
-            TotalUsers = await db.Users.CountAsync(),
-            TotalOwners = await db.Users.CountAsync(u => u.Role == "Owner"),
-            TotalPlaces = await db.Places.CountAsync(p => p.IsActive),
-            PendingPlaces = await db.Places.CountAsync(p => p.Status == "Pending"),
-            ActivePlaces = await db.Places.CountAsync(p => p.Status == "Active"),
-            TotalReviews = await db.Reviews.CountAsync(),
-            HiddenReviews = await db.Reviews.CountAsync(r => r.IsHidden),
-            PendingComplaints = await db.Complaints.CountAsync(c => c.Status == "Pending"),
-            TotalVisitsToday = await db.VisitHistory
-                .CountAsync(v => v.CheckInTime >= DateTime.UtcNow.Date),
-            AvgRating = await db.Places
-                .Where(p => p.Status == "Active")
-                .AverageAsync(p => p.AverageRating)
-        });
+            return Ok(new
+            {
+                TotalUsers = await db.Users.CountAsync(),
+                TotalOwners = await db.Users.CountAsync(u => u.Role == "Owner"),
+                TotalPlaces = await db.Places.CountAsync(p => p.IsActive),
+                PendingPlaces = await db.Places.CountAsync(p => p.Status == "Pending"),
+                ActivePlaces = await db.Places.CountAsync(p => p.Status == "Active"),
+                TotalReviews = await db.Reviews.CountAsync(),
+                HiddenReviews = await db.Reviews.CountAsync(r => r.IsHidden),
+                PendingComplaints = await db.Complaints.CountAsync(c => c.Status == "Pending"),
+                // NOTE: VisitHistory table doesn't exist in Supabase - temporarily disabled
+                TotalVisitsToday = 0,   // await db.VisitHistory.CountAsync(v => v.CheckInTime >= DateTime.UtcNow.Date),
+                AvgRating = await db.Places
+                    .Where(p => p.Status == "Active")
+                    .AverageAsync(p => p.AverageRating)
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message, detail = ex.InnerException?.Message });
+        }
     }
 }

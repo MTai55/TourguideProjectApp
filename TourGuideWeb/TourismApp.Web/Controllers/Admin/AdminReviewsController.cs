@@ -5,6 +5,7 @@ using TourismApp.Web.Models;
 
 namespace TourismApp.Web.Controllers.Admin;
 
+[Area("Admin")]
 [AdminOnly]
 public class AdminReviewsController(ApiService api) : Controller
 {

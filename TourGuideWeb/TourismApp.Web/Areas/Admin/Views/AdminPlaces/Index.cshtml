@@ -100,6 +100,10 @@
             </td>
             <td class="px-6 py-5">
               <div class="flex items-center gap-2">
+                <a asp-controller="AdminPlaces" asp-action="Detail" asp-route-id="@p.PlaceId"
+                   class="px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg text-xs hover:bg-blue-100 transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">info</span> Xem chi tiết
+                </a>
                 @if (p.Status == "Pending")
                 {
                   <form method="post" asp-controller="AdminPlaces" asp-action="Approve" asp-route-id="@p.PlaceId">

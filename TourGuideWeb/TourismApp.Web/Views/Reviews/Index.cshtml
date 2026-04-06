@@ -7,7 +7,14 @@
     <span class="material-symbols-outlined text-lg">arrow_back</span> Quay lại
   </a>
   <span class="text-slate-300">/</span>
-  <h2 class="text-2xl font-bold tracking-tight">Đánh giá của khách</h2>
+  @if (ViewBag.ShowAllPlaces == true)
+  {
+    <h2 class=\"text-2xl font-bold tracking-tight\">Tất cả đánh giá</h2>
+  }
+  else
+  {
+    <h2 class=\"text-2xl font-bold tracking-tight\">Đánh giá của khách</h2>
+  }
 </div>
 
 @if (!(Model?.Any() ?? false))
@@ -15,7 +22,14 @@
   <div class="flex flex-col items-center py-20 text-center">
     <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">rate_review</span>
     <h3 class="font-bold text-lg text-on-surface mb-2">Chưa có đánh giá nào</h3>
-    <p class="text-sm text-on-surface-variant">Khách hàng chưa để lại đánh giá cho quán này.</p>
+    @if (ViewBag.ShowAllPlaces == true)
+    {
+      <p class="text-sm text-on-surface-variant">Các quán của bạn chưa có đánh giá nào.</p>
+    }
+    else
+    {
+      <p class="text-sm text-on-surface-variant">Khách hàng chưa để lại đánh giá cho quán này.</p>
+    }
   </div>
 }
 
@@ -23,14 +37,23 @@
   @foreach (var r in Model ?? new List<ReviewViewModel>())
   {
     <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <!-- Place name badge (when showing all places) -->
+      @if (ViewBag.ShowAllPlaces == true && !string.IsNullOrEmpty(r.PlaceName))
+      {
+        <div class="flex items-center gap-2 mb-3 pb-3 border-b border-surface-container">
+          <span class="material-symbols-outlined text-lg text-amber-600">storefront</span>
+          <p class="font-black text-base text-amber-600">@r.PlaceName</p>
+        </div>
+      }
+      
       <!-- Header -->
       <div class="flex items-start justify-between mb-3">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 flex-1">
           <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
                style="background:linear-gradient(135deg,#954400,#fc8127)">
             @r.UserName?[0]
           </div>
-          <div>
+          <div class="flex-1">
             <p class="font-bold text-sm">@r.UserName</p>
             <p class="text-[10px] text-on-surface-variant">@r.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
           </div>

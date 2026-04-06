@@ -154,50 +154,25 @@
         <span class="material-symbols-outlined text-3xl text-blue-500 mb-2 block group-hover:scale-110 transition-transform">map</span>
         <p class="text-sm font-bold">Bản đồ</p>
       </a>
-      <a asp-controller="Complaints" asp-action="Index"
-         class="bg-surface-container-lowest p-5 rounded-xl shadow-sm hover:shadow-md transition-all text-center group">
-        <span class="material-symbols-outlined text-3xl text-amber-500 mb-2 block group-hover:scale-110 transition-transform">feedback</span>
-        <p class="text-sm font-bold">Khiếu nại</p>
-      </a>
-    </div>
-
-    <!-- Danh sách quán và trạng thái -->
-    <div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm">
-      <h3 class="font-bold text-sm mb-4 text-on-surface-variant uppercase tracking-widest">Trạng thái mở cửa</h3>
-      @foreach (var p in Model?.Places?.Take(5) ?? new List<PlaceViewModel>())
-      {
-        <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-          <span class="text-sm font-semibold truncate max-w-[140px]">@p.Name</span>
-          <form method="post" asp-controller="Places" asp-action="UpdateOpenStatus" asp-route-id="@p.PlaceId">
-            @Html.AntiForgeryToken()
-            <select name="openStatus" class="text-xs border-none bg-surface-container-low rounded-lg px-2 py-1 font-bold" onchange="this.form.submit()">
-              <option value="Open"   @Html.Raw(p.OpenStatus=="Open"  ?"selected":"")>🟢 Mở</option>
-              <option value="Busy"   @Html.Raw(p.OpenStatus=="Busy"  ?"selected":"")>🟡 Bận</option>
-              <option value="Closed" @Html.Raw(p.OpenStatus=="Closed"?"selected":"")>🔴 Đóng</option>
-            </select>
-          </form>
-        </div>
-      }
     </div>
   </div>
 </div>
 
-<!-- Promotion Banner -->
-<section class="rounded-[2rem] p-8 md:p-10 relative overflow-hidden flex flex-col md:flex-row items-center gap-8"
-         style="background-color:#0b0f10">
-  <div class="relative z-10 md:w-1/2 space-y-4">
+<!-- Promotion Section -->
+<section class="mt-12 bg-gradient-to-r from-amber-900 to-amber-800 rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
+  <div>
     <span class="px-4 py-1 text-white text-[10px] font-bold rounded-full uppercase tracking-widest inline-block"
           style="background-color:#954400">Tính năng</span>
-    <h2 class="text-3xl md:text-4xl font-black text-white leading-tight">
+    <h2 class="text-3xl md:text-4xl font-black text-white leading-tight mt-3">
       Chạy khuyến mãi<br/>Thu hút khách hàng!
     </h2>
-    <p class="text-slate-400 text-sm leading-relaxed max-w-sm">
+    <p class="text-slate-200 text-sm leading-relaxed max-w-sm mt-3">
       Tạo các chương trình ưu đãi để tăng lượt ghé thăm. Khách hàng sẽ thấy khuyến mãi trên ứng dụng di động.
     </p>
     <a asp-controller="Promotions" asp-action="Index"
-       class="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-on-surface font-black rounded-xl hover:scale-105 transition-all shadow-xl text-sm">
+       class="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-on-surface font-black rounded-xl hover:scale-105 transition-all shadow-xl text-sm mt-4">
       Tạo khuyến mãi <span class="material-symbols-outlined text-sm">arrow_forward</span>
     </a>
   </div>
-  <div class="md:w-1/2 flex justify-center text-9xl">🎁</div>
+  <div class="md:w-1/2 flex justify-center text-9xl flex-shrink-0">🎁</div>
 </section>

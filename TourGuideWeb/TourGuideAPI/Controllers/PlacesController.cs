@@ -364,10 +364,27 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
             .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
         if (place == null) return Forbid();
 
-        place.IsActive = false;
-        place.Status = "Closed";
-        place.UpdatedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            // Manually delete related records (due to Restrict constraints)
+            var reviews = await db.Reviews.Where(r => r.PlaceId == id).ToListAsync();
+            db.Reviews.RemoveRange(reviews);
+
+            var visitHistory = await db.VisitHistory.Where(v => v.PlaceId == id).ToListAsync();
+            db.VisitHistory.RemoveRange(visitHistory);
+
+            var messages = await db.Messages.Where(m => m.PlaceId == id).ToListAsync();
+            db.Messages.RemoveRange(messages);
+
+            // Delete the place (PlaceImages and Promotions auto-cascade)
+            db.Places.Remove(place);
+
+            await db.SaveChangesAsync();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Lỗi khi xóa quán", error = ex.Message });
+        }
     }
 }

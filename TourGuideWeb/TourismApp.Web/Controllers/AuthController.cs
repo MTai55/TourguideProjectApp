@@ -36,7 +36,7 @@ public class AuthController(ApiService api) : Controller
         // Redirect theo role
         return data.Role switch
         {
-            "Admin" => RedirectToAction("Index", "AdminDashboard"),
+            "Admin" => RedirectToAction("Index", "AdminDashboard", new { area = "Admin" }),
             _ => RedirectToAction("Index", "Dashboard")
         };
     }
@@ -75,7 +75,15 @@ public class AuthController(ApiService api) : Controller
     // GET /Auth/Logout
     public IActionResult Logout()
     {
-        HttpContext.Session.Clear();
-        return RedirectToAction("Login");
+        try
+        {
+            HttpContext.Session.Clear();
+        }
+        catch (Exception ex)
+        {
+            // Log but proceed with redirect anyway
+            System.Console.WriteLine($"Session clear error: {ex.Message}");
+        }
+        return RedirectToAction("Login", "Auth", new { area = "" });
     }
 }

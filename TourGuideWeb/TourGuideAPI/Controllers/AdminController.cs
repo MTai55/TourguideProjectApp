@@ -10,18 +10,67 @@ namespace TourGuideAPI.Controllers;
 [ApiController]
 [Route("api/admin")]
 [Authorize(Policy = "AdminOnly")]
-public class AdminController(AppDbContext db) : ControllerBase
+public class AdminController(AppDbContext db, ILogger<AdminController> logger) : ControllerBase
 {
     // ── Users ────────────────────────────────────────────────────
+    [HttpGet("test")]
+    [AllowAnonymous]
+    public IActionResult TestEndpoint()
+    {
+        logger.LogInformation("Test endpoint called");
+        return Ok(new { message = "API is working" });
+    }
+
     [HttpGet("users")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetUsers([FromQuery] string? search, [FromQuery] string? role)
     {
-        var q = db.Users.AsQueryable();
-        if (!string.IsNullOrEmpty(search))
-            q = q.Where(u => u.Email.Contains(search) || u.FullName.Contains(search));
-        if (!string.IsNullOrEmpty(role))
-            q = q.Where(u => u.Role == role);
-        return Ok(await q.OrderBy(u => u.CreatedAt).ToListAsync());
+        try
+        {
+            logger.LogInformation("🔍 Starting GetUsers with search={search}, role={role}", search, role);
+
+            logger.LogInformation("📦 Accessing db.Users...");
+            var q = db.Users.AsQueryable();
+            logger.LogInformation("✅ db.Users accessed");
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                logger.LogInformation("🔎 Filtering by search: {search}", search);
+                q = q.Where(u => u.Email.Contains(search) || u.FullName.Contains(search));
+            }
+            if (!string.IsNullOrEmpty(role))
+            {
+                logger.LogInformation("🏷️ Filtering by role: {role}", role);
+                q = q.Where(u => u.Role == role);
+            }
+
+            logger.LogInformation("⏳ Executing ToListAsync()...");
+            var users = await q.Select(u => new
+            {
+                u.UserId,
+                u.FullName,
+                u.Email,
+                u.Phone,
+                u.Role,
+                u.IsActive
+            }).ToListAsync();
+            logger.LogInformation("✅ Query returned {count} users", users.Count);
+
+            // Map to result (already mapped above)
+            var result = users;
+
+            logger.LogInformation("📤 Returning {count} mapped users", result.Count);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            var innerEx = ex.InnerException?.Message ?? "No inner exception";
+            logger.LogError($"❌ Exception Type: {ex.GetType().Name}");
+            logger.LogError($"❌ Error in GetUsers: {ex.Message}");
+            logger.LogError($"❌ InnerException: {innerEx}");
+            logger.LogError($"❌ StackTrace: {ex.StackTrace}");
+            return StatusCode(500, new { message = "Lỗi khi lấy danh sách tài khoản", error = ex.Message, inner = innerEx, type = ex.GetType().Name });
+        }
     }
 
     [HttpPut("users/{id}/lock")]
@@ -49,9 +98,59 @@ public class AdminController(AppDbContext db) : ControllerBase
     [HttpGet("places")]
     public async Task<IActionResult> GetPlaces([FromQuery] bool pendingOnly = false)
     {
-        var q = db.Places.Include(p => p.Owner).Include(p => p.Category).AsQueryable();
-        if (pendingOnly) q = q.Where(p => p.Status == "Pending");
-        return Ok(await q.OrderByDescending(p => p.CreatedAt).ToListAsync());
+        logger.LogInformation($"📍 GetAdminPlaces called - pendingOnly: {pendingOnly}");
+        
+        var places = await db.Places
+            .Include(p => p.Owner)
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+        
+        // Filter if needed
+        if (pendingOnly)
+        {
+            places = places.Where(p => p.Status == "Pending").ToList();
+            logger.LogInformation($"🔄 Filtered to pending only: {places.Count} places");
+        }
+        else
+        {
+            logger.LogInformation($"📊 Total places in system: {places.Count}");
+        }
+        
+        // Map to PlaceViewModel
+        var result = places.Select(p => new
+        {
+            p.PlaceId,
+            p.Name,
+            p.Description,
+            p.Address,
+            p.Latitude,
+            p.Longitude,
+            p.Phone,
+            p.OpenTime,
+            p.CloseTime,
+            p.AverageRating,
+            p.TotalReviews,
+            p.TotalVisits,
+            CategoryId = p.CategoryId,
+            CategoryName = p.Category?.Name,
+            MainImageUrl = p.Images?.FirstOrDefault(i => i.IsMain)?.ImageUrl,
+            p.IsApproved,
+            p.Specialty,
+            p.PricePerPerson,
+            p.PriceMin,
+            p.PriceMax,
+            p.District,
+            p.HasParking,
+            p.HasAircon,
+            p.Status,
+            p.OpenStatus,
+            OwnerName = p.Owner?.FullName
+        }).ToList();
+        
+        logger.LogInformation($"✅ Returning {result.Count} places");
+        return Ok(result);
     }
 
     [HttpPut("places/{id}/approve")]

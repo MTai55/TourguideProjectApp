@@ -94,6 +94,10 @@ public class Place : BaseModel
     // Không map DB — chỉ dùng trong runtime
     public DateTime? LastPlayedAt { get; set; }
 
+    // Locale TTS riêng cho địa điểm này, vd "en-US", "vi-VN"
+    // Chưa có [Column] — cần thêm cột "tts_locale" trong Supabase trước
+    public string? TtsLocale { get; set; }
+
     // ── UI helpers — không map DB ──
     public string ImageUrl { get; set; } = "https://via.placeholder.com/400x200";
     public string OpenTimeDisplay => OpenTime != null ? $"{OpenTime} - {CloseTime}" : "Chưa cập nhật";

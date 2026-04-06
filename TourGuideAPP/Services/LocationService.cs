@@ -15,17 +15,76 @@ public class LocationService
 
     public async Task StartAsync()
     {
-        _cts = new CancellationTokenSource();
-
         // Xin quyền GPS
         var status = await Permissions.RequestAsync<Permissions.LocationAlways>();
         if (status != PermissionStatus.Granted)
         {
-            Console.WriteLine("❌ Quyền GPS bị từ chối");
-            return;
+            // Thử quyền foreground thôi nếu background bị từ chối
+            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+            if (status != PermissionStatus.Granted)
+            {
+                Console.WriteLine("❌ Quyền GPS bị từ chối");
+                return;
+            }
         }
 
-        // Bắt đầu lấy vị trí liên tục
+#if ANDROID
+        StartForegroundService();
+#else
+        StartPollingLoop();
+#endif
+    }
+
+    public void Stop()
+    {
+#if ANDROID
+        StopForegroundService();
+#else
+        _cts?.Cancel();
+#endif
+    }
+
+#if ANDROID
+    private void StartForegroundService()
+    {
+        // Đăng ký nhận vị trí từ foreground service
+        TourGuideAPP.Platforms.Android.LocationForegroundService.LocationUpdated -= OnBackgroundLocationUpdated;
+        TourGuideAPP.Platforms.Android.LocationForegroundService.LocationUpdated += OnBackgroundLocationUpdated;
+
+        var context = global::Android.App.Application.Context;
+        var intent = new global::Android.Content.Intent(
+            context,
+            typeof(TourGuideAPP.Platforms.Android.LocationForegroundService));
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(26))
+            context.StartForegroundService(intent);
+        else
+            context.StartService(intent);
+
+        Console.WriteLine("✅ Background GPS foreground service đã khởi động");
+    }
+
+    private void StopForegroundService()
+    {
+        TourGuideAPP.Platforms.Android.LocationForegroundService.LocationUpdated -= OnBackgroundLocationUpdated;
+
+        var context = global::Android.App.Application.Context;
+        var intent = new global::Android.Content.Intent(
+            context,
+            typeof(TourGuideAPP.Platforms.Android.LocationForegroundService));
+        context.StopService(intent);
+    }
+
+    private void OnBackgroundLocationUpdated(double lat, double lon, double? accuracy)
+    {
+        var location = new Location(lat, lon) { Accuracy = (float?)accuracy };
+        LastKnownLocation = location;
+        LocationChanged?.Invoke(location);
+    }
+#else
+    private void StartPollingLoop()
+    {
+        _cts = new CancellationTokenSource();
         _ = Task.Run(async () =>
         {
             while (!_cts.Token.IsCancellationRequested)
@@ -34,29 +93,23 @@ public class LocationService
                 {
                     var request = new GeolocationRequest(
                         GeolocationAccuracy.Best,
-                        TimeSpan.FromSeconds(5)
-                    );
+                        TimeSpan.FromSeconds(5));
                     var location = await Geolocation.GetLocationAsync(request, _cts.Token);
                     if (location != null)
                     {
                         LastKnownLocation = location;
                         LocationChanged?.Invoke(location);
-                        Console.WriteLine($"📍 Vị trí: {location.Latitude}, {location.Longitude}");
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"GPS Error: {ex.Message}");
                 }
-                await Task.Delay(3000, _cts.Token); // Cập nhật mỗi 3 giây
+                await Task.Delay(3000, _cts.Token);
             }
         }, _cts.Token);
     }
-
-    public void Stop()
-    {
-        _cts?.Cancel();
-    }
+#endif
 
     public async Task<string> GetAddressAsync(Location location, CancellationToken cancellationToken = default)
     {

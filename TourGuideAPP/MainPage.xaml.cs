@@ -158,7 +158,7 @@ public partial class MainPage : ContentPage
                     {
                         _lastSpokenPlaceId = nearestId;
                         nearest.LastPlayedAt = DateTime.Now;
-                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name);
+                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name, nearest.TtsLocale);
                     }
                 }
                 else

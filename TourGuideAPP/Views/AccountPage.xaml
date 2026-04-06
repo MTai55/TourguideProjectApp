@@ -39,29 +39,38 @@
                         StrokeThickness="1">
                     <VerticalStackLayout>
 
-                        <!-- Ngôn ngữ -->
+                        <!-- Giọng đọc TTS -->
                         <Grid Padding="16,14" ColumnDefinitions="Auto,*,Auto">
                             <Border Grid.Column="0"
                                     BackgroundColor="#26201A"
                                     StrokeShape="RoundRectangle 10"
                                     Stroke="Transparent"
                                     WidthRequest="36" HeightRequest="36">
-                                <Label Text="🌐" FontSize="16"
+                                <Label Text="🗣️" FontSize="16"
                                        HorizontalOptions="Center"
                                        VerticalOptions="Center"/>
                             </Border>
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Ngôn ngữ"
+                                <Label Text="Giọng đọc thuyết minh"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="Tiếng Việt"
+                                <Label x:Name="TtsLocaleSubtitle"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
-                            <Label Grid.Column="2" Text="›"
-                                   FontSize="20" TextColor="#C8A96E"
-                                   VerticalOptions="Center"/>
+                            <Border Grid.Column="2"
+                                    BackgroundColor="#26201A"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="#3A2D22"
+                                    StrokeThickness="1"
+                                    Padding="4,2">
+                                <Picker x:Name="TtsLocalePicker"
+                                        TextColor="#C8A96E"
+                                        BackgroundColor="Transparent"
+                                        FontSize="12"
+                                        SelectedIndexChanged="OnTtsLocaleChanged"/>
+                            </Border>
                         </Grid>
 
                         <BoxView BackgroundColor="#2A2018" HeightRequest="1" Margin="16,0"/>

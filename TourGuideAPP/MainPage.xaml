@@ -62,19 +62,6 @@
                                        HorizontalOptions="Center"
                                        VerticalOptions="Center"/>
                             </Border>
-                            <Border BackgroundColor="#26201A"
-                                    StrokeShape="RoundRectangle 12"
-                                    Stroke="Transparent"
-                                    WidthRequest="36"
-                                    HeightRequest="36">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnQRScanClicked"/>
-                                </Border.GestureRecognizers>
-                                <Label Text="📷"
-                                       FontSize="16"
-                                       HorizontalOptions="Center"
-                                       VerticalOptions="Center"/>
-                            </Border>
                         </HorizontalStackLayout>
 
                     </Grid>

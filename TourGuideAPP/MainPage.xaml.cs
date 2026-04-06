@@ -244,13 +244,8 @@ public partial class MainPage : ContentPage
                     _profileService));
             }
 
-    private async void OnQRScanClicked(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new QRScanPage(_narrationService, _profileService, _placeService));
-    }
 
-   
- 
+
 
 private async void OnNarrationClicked(object sender, EventArgs e)
 {

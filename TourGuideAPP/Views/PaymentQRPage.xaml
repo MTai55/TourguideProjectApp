@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TourGuideAPP.Views.PaymentQRPage"
+             BackgroundColor="#0F0E0D"
+             Title="Thanh toán">
+
+    <Shell.TitleView>
+        <Label Text="Thanh toán"
+               TextColor="#F0E6D3"
+               FontSize="16"
+               FontAttributes="Bold"
+               VerticalOptions="Center"/>
+    </Shell.TitleView>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,32,24,40" Spacing="0">
+
+            <!-- Thông tin gói đã chọn -->
+            <Border BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 16"
+                    Stroke="#2A2018"
+                    Padding="20,16"
+                    Margin="0,0,0,24">
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="— GÓI ĐÃ CHỌN"
+                               TextColor="#5A4A3A"
+                               FontSize="9"
+                               CharacterSpacing="3"
+                               FontAttributes="Bold"/>
+                        <Label x:Name="PackageNameLabel"
+                               TextColor="#F0E6D3"
+                               FontSize="20"
+                               FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+                    <Label x:Name="PackagePriceLabel"
+                           Grid.Column="1"
+                           TextColor="#C8A96E"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- QR Code -->
+            <Label Text="— QUÉT ĐỂ CHUYỂN KHOẢN"
+                   TextColor="#C8A96E"
+                   FontSize="9"
+                   CharacterSpacing="3"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,14"/>
+
+            <Border BackgroundColor="#FFFFFF"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="16"
+                    HorizontalOptions="Center">
+                <Image x:Name="QRImage"
+                       WidthRequest="220"
+                       HeightRequest="220"
+                       Aspect="AspectFit"/>
+            </Border>
+
+            <!-- Mã thiết bị -->
+            <Border BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#2A2018"
+                    Padding="16,12"
+                    Margin="0,20,0,0">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="— MÃ THIẾT BỊ (NỘI DUNG CHUYỂN KHOẢN)"
+                           TextColor="#5A4A3A"
+                           FontSize="9"
+                           CharacterSpacing="2"
+                           FontAttributes="Bold"/>
+                    <Label x:Name="DeviceIdLabel"
+                           TextColor="#C8A96E"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           CharacterSpacing="4"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Ghi mã này vào nội dung chuyển khoản"
+                           TextColor="#5A4A3A"
+                           FontSize="11"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Trạng thái chờ xác nhận -->
+            <Border BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#2A2018"
+                    Padding="16,14"
+                    Margin="0,12,0,0">
+                <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <ActivityIndicator x:Name="WaitingSpinner"
+                                       IsRunning="True"
+                                       Color="#C8A96E"
+                                       WidthRequest="20"
+                                       HeightRequest="20"
+                                       VerticalOptions="Center"/>
+                    <Label x:Name="StatusLabel"
+                           Text="Đang chờ xác nhận thanh toán..."
+                           TextColor="#F0E6D3"
+                           FontSize="14"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Hướng dẫn -->
+            <Border BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 12"
+                    Stroke="#2A2018"
+                    Padding="16,14"
+                    Margin="0,12,0,32">
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="— HƯỚNG DẪN"
+                           TextColor="#5A4A3A"
+                           FontSize="9"
+                           CharacterSpacing="3"
+                           FontAttributes="Bold"
+                           Margin="0,0,0,4"/>
+                    <Label Text="1. Quét mã QR bằng app ngân hàng"
+                           TextColor="#8A7560"
+                           FontSize="13"/>
+                    <Label Text="2. Nhập MÃ THIẾT BỊ vào nội dung CK"
+                           TextColor="#8A7560"
+                           FontSize="13"/>
+                    <Label Text="3. Chuyển khoản đúng số tiền"
+                           TextColor="#8A7560"
+                           FontSize="13"/>
+                    <Label Text="4. App tự động mở khóa sau xác nhận"
+                           TextColor="#8A7560"
+                           FontSize="13"/>
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

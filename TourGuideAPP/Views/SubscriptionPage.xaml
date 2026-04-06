@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TourGuideAPP.Views.SubscriptionPage"
+             BackgroundColor="#0F0E0D"
+             NavigationPage.HasNavigationBar="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,60,24,40" Spacing="0">
+
+            <!-- Logo + tên app -->
+            <Label Text="🗺"
+                   FontSize="52"
+                   HorizontalOptions="Center"
+                   Margin="0,0,0,8"/>
+            <Label Text="TourGuide"
+                   TextColor="#C8A96E"
+                   FontSize="30"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   CharacterSpacing="1"/>
+            <Label Text="TP. HỒ CHÍ MINH"
+                   TextColor="#5A4A3A"
+                   FontSize="10"
+                   CharacterSpacing="4"
+                   HorizontalOptions="Center"
+                   Margin="0,4,0,0"/>
+
+            <!-- Divider -->
+            <BoxView HeightRequest="1"
+                     Color="#2A2018"
+                     Margin="0,32,0,28"/>
+
+            <!-- Section header -->
+            <Label Text="— CHỌN GÓI SỬ DỤNG"
+                   TextColor="#C8A96E"
+                   FontSize="9"
+                   CharacterSpacing="3"
+                   FontAttributes="Bold"
+                   Margin="0,0,0,16"/>
+
+            <!-- Gói 1 Tiếng -->
+            <Border x:Name="Card1h"
+                    BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 16"
+                    Stroke="#2A2018"
+                    StrokeThickness="1"
+                    Padding="20,18"
+                    Margin="0,0,0,12">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPackage1hTapped"/>
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Text="1 TIẾNG"
+                           TextColor="#5A4A3A"
+                           FontSize="9"
+                           CharacterSpacing="3"
+                           FontAttributes="Bold"/>
+                    <Label Grid.Row="1" Grid.Column="0"
+                           Text="Trải nghiệm cơ bản"
+                           TextColor="#F0E6D3"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           Margin="0,4,0,2"/>
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Text="Khám phá 1 khu vực"
+                           TextColor="#5A4A3A"
+                           FontSize="13"/>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="1"
+                                         Grid.RowSpan="3"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="End"
+                                         Spacing="8">
+                        <Label Text="10.000đ"
+                               TextColor="#C8A96E"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="End"/>
+                        <Border BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="#3A2D22"
+                                Padding="16,8">
+                            <Label Text="Chọn →"
+                                   TextColor="#C8A96E"
+                                   FontSize="13"
+                                   FontAttributes="Bold"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Gói 2 Tiếng (nổi bật) -->
+            <Border x:Name="Card2h"
+                    BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 16"
+                    Stroke="#C8A96E"
+                    StrokeThickness="1.5"
+                    Padding="20,18"
+                    Margin="0,0,0,12">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPackage2hTapped"/>
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                    <!-- Badge "Phổ biến" -->
+                    <Border Grid.Row="0" Grid.Column="0"
+                            BackgroundColor="#C8A96E"
+                            StrokeShape="RoundRectangle 6"
+                            Padding="8,3"
+                            HorizontalOptions="Start"
+                            Margin="0,0,0,6">
+                        <Label Text="PHỔ BIẾN"
+                               TextColor="#0F0E0D"
+                               FontSize="8"
+                               FontAttributes="Bold"
+                               CharacterSpacing="2"/>
+                    </Border>
+
+                    <Label Grid.Row="1" Grid.Column="0"
+                           Text="2 TIẾNG"
+                           TextColor="#C8A96E"
+                           FontSize="9"
+                           CharacterSpacing="3"
+                           FontAttributes="Bold"/>
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Text="Khám phá rộng hơn"
+                           TextColor="#F0E6D3"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           Margin="0,4,0,2"/>
+                    <Label Grid.Row="3" Grid.Column="0"
+                           Text="Tour 2 khu vực liền kề"
+                           TextColor="#5A4A3A"
+                           FontSize="13"/>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="1"
+                                         Grid.RowSpan="4"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="End"
+                                         Spacing="8">
+                        <Label Text="18.000đ"
+                               TextColor="#C8A96E"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="End"/>
+                        <Border BackgroundColor="#C8A96E"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="16,8">
+                            <Label Text="Chọn →"
+                                   TextColor="#0F0E0D"
+                                   FontSize="13"
+                                   FontAttributes="Bold"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Gói 1 Ngày -->
+            <Border x:Name="Card1day"
+                    BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 16"
+                    Stroke="#2A2018"
+                    StrokeThickness="1"
+                    Padding="20,18"
+                    Margin="0,0,0,12">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPackage1dayTapped"/>
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Text="1 NGÀY"
+                           TextColor="#5A4A3A"
+                           FontSize="9"
+                           CharacterSpacing="3"
+                           FontAttributes="Bold"/>
+                    <Label Grid.Row="1" Grid.Column="0"
+                           Text="Tour trọn ngày"
+                           TextColor="#F0E6D3"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           Margin="0,4,0,2"/>
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Text="Khám phá tất cả địa điểm"
+                           TextColor="#5A4A3A"
+                           FontSize="13"/>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="1"
+                                         Grid.RowSpan="3"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="End"
+                                         Spacing="8">
+                        <Label Text="50.000đ"
+                               TextColor="#C8A96E"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="End"/>
+                        <Border BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="#3A2D22"
+                                Padding="16,8">
+                            <Label Text="Chọn →"
+                                   TextColor="#C8A96E"
+                                   FontSize="13"
+                                   FontAttributes="Bold"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Gói 3 Ngày -->
+            <Border x:Name="Card3day"
+                    BackgroundColor="#1A1410"
+                    StrokeShape="RoundRectangle 16"
+                    Stroke="#2A2018"
+                    StrokeThickness="1"
+                    Padding="20,18"
+                    Margin="0,0,0,32">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPackage3dayTapped"/>
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                    <Label Grid.Row="0" Grid.Column="0"
+                           Text="3 NGÀY"
+                           TextColor="#5A4A3A"
+                           FontSize="9"
+                           CharacterSpacing="3"
+                           FontAttributes="Bold"/>
+                    <Label Grid.Row="1" Grid.Column="0"
+                           Text="Du lịch dài ngày"
+                           TextColor="#F0E6D3"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           Margin="0,4,0,2"/>
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Text="Trải nghiệm đầy đủ nhất"
+                           TextColor="#5A4A3A"
+                           FontSize="13"/>
+
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="1"
+                                         Grid.RowSpan="3"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="End"
+                                         Spacing="8">
+                        <Label Text="120.000đ"
+                               TextColor="#C8A96E"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               HorizontalOptions="End"/>
+                        <Border BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="#3A2D22"
+                                Padding="16,8">
+                            <Label Text="Chọn →"
+                                   TextColor="#C8A96E"
+                                   FontSize="13"
+                                   FontAttributes="Bold"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Footer -->
+            <Label Text="Thanh toán qua chuyển khoản ngân hàng"
+                   TextColor="#5A4A3A"
+                   FontSize="12"
+                   HorizontalOptions="Center"/>
+            <Label Text="Tự động mở khóa sau khi xác nhận"
+                   TextColor="#3A2D22"
+                   FontSize="11"
+                   HorizontalOptions="Center"
+                   Margin="0,4,0,0"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

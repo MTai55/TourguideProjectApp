@@ -34,7 +34,8 @@ public static class MauiProgram
         builder.Services.AddTransient<AccountPage>();
         builder.Services.AddTransient<MapPage>();
         builder.Services.AddTransient<QRScanPage>();
- 
+        builder.Services.AddTransient<SubscriptionPage>();
+
         // Services
         builder.Services.AddSingleton<LocationService>();
         builder.Services.AddSingleton<GeofenceEngine>();
@@ -45,6 +46,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<PlaceService>();
         builder.Services.AddSingleton<FavoriteService>();
         builder.Services.AddSingleton<WishlistService>();
+        builder.Services.AddSingleton<AccessSessionService>();
  
         // App
         builder.Services.AddSingleton<App>();

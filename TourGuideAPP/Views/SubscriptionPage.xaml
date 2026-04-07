@@ -271,6 +271,17 @@
                    HorizontalOptions="Center"
                    Margin="0,4,0,0"/>
 
+            <!-- DEV ONLY: xóa trước khi release -->
+            <Label Text="[DEV] Bỏ qua thanh toán"
+                   TextColor="#3A2D22"
+                   FontSize="11"
+                   HorizontalOptions="Center"
+                   Margin="0,24,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDevBypassTapped"/>
+                </Label.GestureRecognizers>
+            </Label>
+
         </VerticalStackLayout>
     </ScrollView>
 

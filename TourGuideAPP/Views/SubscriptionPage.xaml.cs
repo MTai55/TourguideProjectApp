@@ -38,4 +38,14 @@ public partial class SubscriptionPage : ContentPage
     {
         await Navigation.PushAsync(new PaymentQRPage(package, _accessService));
     }
+
+    // DEV ONLY: xóa trước khi release
+    private void OnDevBypassTapped(object sender, TappedEventArgs e)
+    {
+        // Set session giả 999 giờ không cần Supabase
+        var expiresAt = DateTime.UtcNow.AddHours(999);
+        Preferences.Set("access_expires_at", expiresAt.ToString("O"));
+        _accessService.StartExpiryTimer();
+        Application.Current!.MainPage = new AppShell();
+    }
 }

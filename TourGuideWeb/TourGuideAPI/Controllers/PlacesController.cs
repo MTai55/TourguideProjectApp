@@ -387,4 +387,17 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
             return StatusCode(500, new { message = "Lỗi khi xóa quán", error = ex.Message });
         }
     }
+
+    // TODO: Uncomment after database migration is complete
+    // [HttpPut("{id}/tts")]
+    // [Authorize(Policy = "OwnerOnly")]
+    // public async Task<IActionResult> UpdateTtsScript(int id, [FromBody] string? ttsScript)
+    // {
+    //     var place = await db.Places.FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
+    //     if (place == null) return Forbid();
+    //     place.TtsScript = ttsScript;
+    //     place.UpdatedAt = DateTime.UtcNow;
+    //     await db.SaveChangesAsync();
+    //     return Ok(new { ttsScript });
+    // }
 }

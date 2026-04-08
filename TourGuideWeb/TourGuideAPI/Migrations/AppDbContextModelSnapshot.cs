@@ -42,7 +42,7 @@ namespace TourGuideAPI.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -167,7 +167,7 @@ namespace TourGuideAPI.Migrations
 
                     b.HasIndex("Latitude", "Longitude");
 
-                    b.ToTable("Places");
+                    b.ToTable("Places", (string)null);
                 });
 
             modelBuilder.Entity("TourGuideAPI.Models.PlaceImage", b =>
@@ -195,7 +195,7 @@ namespace TourGuideAPI.Migrations
 
                     b.HasIndex("PlaceId");
 
-                    b.ToTable("PlaceImages");
+                    b.ToTable("PlaceImages", (string)null);
                 });
 
             modelBuilder.Entity("TourGuideAPI.Models.Review", b =>
@@ -231,7 +231,7 @@ namespace TourGuideAPI.Migrations
                     b.HasIndex("UserId", "PlaceId")
                         .IsUnique();
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("TourGuideAPI.Models.User", b =>
@@ -281,7 +281,7 @@ namespace TourGuideAPI.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("TourGuideAPI.Models.UserTracking", b =>
@@ -311,7 +311,7 @@ namespace TourGuideAPI.Migrations
 
                     b.HasIndex("UserId", "RecordedAt");
 
-                    b.ToTable("UserTracking");
+                    b.ToTable("UserTracking", (string)null);
                 });
 
             modelBuilder.Entity("TourGuideAPI.Models.VisitHistory", b =>
@@ -349,7 +349,7 @@ namespace TourGuideAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("VisitHistory");
+                    b.ToTable("VisitHistory", (string)null);
                 });
 
             modelBuilder.Entity("TourGuideAPI.Models.Place", b =>

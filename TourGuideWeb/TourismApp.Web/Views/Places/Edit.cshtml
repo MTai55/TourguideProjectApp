@@ -12,11 +12,12 @@
 </div>
 
 <!-- Tabs -->
-<div class="flex gap-1 mb-6 bg-surface-container-low p-1 rounded-xl w-fit">
+<div class="flex gap-1 mb-6 bg-surface-container-low p-1 rounded-xl w-fit flex-wrap">
   @foreach (var (tab, label, icon) in new (string, string, string)[] {
-    ("info",    "Thông tin",   "edit_note"),
-    ("images",  "Hình ảnh",   "photo_library"),
-    ("danger",  "Xóa quán",   "delete_forever"),
+    ("info",    "Thông tin",    "edit_note"),
+    ("tts",     "TTS Script",  "record_voice_over"),
+    ("images",  "Hình ảnh",    "photo_library"),
+    ("danger",  "Xóa quán",    "delete_forever"),
   })
   {
     <button onclick="switchTab('@tab')" id="tab-btn-@tab"
@@ -119,16 +120,14 @@
           <input asp-for="PricePerPerson" type="number" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
                  placeholder="50000" />
         </div>
-        <div>
+        <div class="flex flex-col gap-3 justify-center">
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" asp-for="HasParking" class="w-4 h-4 rounded" />
-            <span class="text-sm font-semibold">Có bãi đỗ xe</span>
+            <span class="text-sm font-semibold">🅿️ Có bãi đỗ xe</span>
           </label>
-        </div>
-        <div>
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" asp-for="HasAircon" class="w-4 h-4 rounded" />
-            <span class="text-sm font-semibold">Có điều hòa</span>
+            <span class="text-sm font-semibold">❄️ Có điều hòa</span>
           </label>
         </div>
         <div class="md:col-span-2">
@@ -153,6 +152,117 @@
   </div>
 </div>
 
+<!-- ══ Tab: TTS Script ════════════════════════════════════════════ -->
+<div id="tab-tts" class="tab-panel hidden">
+  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-surface-container">
+      <div class="flex items-start gap-3">
+        <div class="p-2.5 bg-violet-100 text-violet-600 rounded-xl">
+          <span class="material-symbols-outlined">record_voice_over</span>
+        </div>
+        <div>
+          <h3 class="font-bold text-base">TTS Narration Script</h3>
+          <p class="text-xs text-on-surface-variant mt-0.5">
+            Đoạn văn bản sẽ được đọc tự động khi khách du lịch đến gần quán của bạn.
+            Hệ thống dùng Text-to-Speech để phát âm thanh giới thiệu qua ứng dụng di động.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 space-y-5">
+      <!-- Tips box -->
+      <div class="p-4 bg-violet-50 border border-violet-100 rounded-xl space-y-2">
+        <p class="text-xs font-bold text-violet-700 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">lightbulb</span>
+          Gợi ý viết script hiệu quả
+        </p>
+        <ul class="text-xs text-violet-600 space-y-1 ml-5 list-disc">
+          <li>Ngắn gọn, súc tích — tối đa 200 từ</li>
+          <li>Bắt đầu bằng tên quán và điểm nổi bật nhất</li>
+          <li>Nêu món đặc trưng, giờ mở cửa, hoặc ưu đãi hiện tại</li>
+          <li>Dùng ngôn ngữ thân thiện, mời gọi khách ghé thăm</li>
+          <li>Tránh dùng ký tự đặc biệt như &#33;, &#64;, &#35;, &amp;</li>
+        </ul>
+      </div>
+
+      <!-- Script textarea -->
+      <form asp-action="UpdateTtsScript" asp-route-id="@ViewBag.PlaceId" method="post">
+        @Html.AntiForgeryToken()
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="block text-sm font-semibold">Nội dung script</label>
+            <span id="char-count" class="text-xs text-on-surface-variant font-medium">0 / 1000 ký tự</span>
+          </div>
+          <textarea id="tts-textarea" name="ttsScript" rows="8"
+                    class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-400/30 resize-none leading-relaxed"
+                    maxlength="1000"
+                    placeholder="Ví dụ: Chào mừng bạn đến với Nhà Hàng Ngon tại 160 Pasteur, Quận 3. Chúng tôi tự hào phục vụ hơn 40 món ăn Nam Bộ truyền thống. Đặc biệt hôm nay có bánh xèo giòn tan và gỏi cuốn tươi mát. Mở cửa từ 7 giờ sáng đến 10 giờ tối. Hẹn gặp bạn tại đây!">@ViewBag.TtsScript</textarea>
+
+          <!-- Preview -->
+          <div id="preview-box" class="hidden p-4 bg-slate-900 rounded-xl">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm text-violet-400">volume_up</span>
+              Preview — Âm thanh sẽ phát
+            </p>
+            <p id="preview-text" class="text-sm text-white leading-relaxed"></p>
+            <button type="button" onclick="stopPreview()"
+                    class="mt-3 text-xs text-slate-400 hover:text-white font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">stop_circle</span> Dừng
+            </button>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <!-- Preview button -->
+            <button type="button" onclick="previewTts()"
+                    class="flex items-center gap-2 px-5 py-3 bg-violet-50 text-violet-700 font-bold rounded-xl text-sm hover:bg-violet-100 transition-colors">
+              <span class="material-symbols-outlined text-sm">play_circle</span> Nghe thử
+            </button>
+
+            <!-- Clear button -->
+            <button type="button" onclick="clearScript()"
+                    class="flex items-center gap-2 px-5 py-3 bg-surface-container-low text-on-surface-variant font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined text-sm">clear</span> Xóa script
+            </button>
+
+            <!-- Save button -->
+            <button type="submit"
+                    class="flex items-center gap-2 px-7 py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all ml-auto"
+                    style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
+              <span class="material-symbols-outlined text-sm">save</span> Lưu script
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Current script info -->
+      @if (!string.IsNullOrEmpty(ViewBag.TtsScript as string))
+      {
+        <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
+          <span class="material-symbols-outlined text-emerald-600 mt-0.5">check_circle</span>
+          <div>
+            <p class="text-sm font-bold text-emerald-700">Script đang hoạt động</p>
+            <p class="text-xs text-emerald-600 mt-0.5">
+              Script của bạn sẽ được phát khi khách đến trong bán kính
+              <strong>@(ViewBag.Radius ?? 100)m</strong> quanh quán.
+            </p>
+          </div>
+        </div>
+      }
+      else
+      {
+        <div class="p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
+          <span class="material-symbols-outlined text-amber-600 mt-0.5">info</span>
+          <div>
+            <p class="text-sm font-bold text-amber-700">Chưa có script</p>
+            <p class="text-xs text-amber-600 mt-0.5">Nhập script ở trên để kích hoạt tính năng narration cho quán của bạn.</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
 <!-- Tab: Hình ảnh -->
 <div id="tab-images" class="tab-panel hidden">
   <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
@@ -161,7 +271,6 @@
       <p class="text-xs text-on-surface-variant mt-0.5">Thêm URL hình ảnh để giới thiệu quán với khách hàng.</p>
     </div>
     <div class="p-6">
-      <!-- Add image form -->
       <form method="post" asp-action="AddImage" asp-route-id="@ViewBag.PlaceId" class="mb-6">
         @Html.AntiForgeryToken()
         <div class="flex flex-col sm:flex-row gap-3">
@@ -181,8 +290,6 @@
           </div>
         </div>
       </form>
-
-      <!-- Images grid -->
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         @foreach (var img in (ViewBag.Images as List<TourismApp.Web.Models.PlaceImageViewModel>) ?? new List<TourismApp.Web.Models.PlaceImageViewModel>())
         {
@@ -198,9 +305,7 @@
             </div>
             @if (img.IsMain)
             {
-              <span class="absolute top-2 left-2 px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-lg">
-                Ảnh chính
-              </span>
+              <span class="absolute top-2 left-2 px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-lg">Ảnh chính</span>
             }
           </div>
         }
@@ -230,7 +335,7 @@
           <p class="text-sm text-red-600 mt-1">Quán sẽ bị ẩn khỏi hệ thống. Dữ liệu vẫn được lưu trữ nhưng khách không thể tìm thấy.</p>
         </div>
         <form method="post" asp-controller="Places" asp-action="Delete" asp-route-id="@ViewBag.PlaceId"
-              onsubmit="return confirm('Bạn chắc chắn muốn xóa quán này? Thao tác này không thể hoàn tác.')">
+              onsubmit="return confirm('Bạn chắc chắn muốn xóa quán này?')">
           @Html.AntiForgeryToken()
           <button type="submit"
                   class="px-6 py-3 bg-red-600 text-white font-bold rounded-xl text-sm hover:bg-red-700 transition-colors flex items-center gap-2 shrink-0">
@@ -244,16 +349,66 @@
 
 @section Scripts {
 <script>
+  // ── Tab switching ─────────────────────────────────────────────
   function switchTab(tab) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
     document.getElementById('tab-' + tab).classList.remove('hidden');
     document.querySelectorAll('[id^="tab-btn-"]').forEach(b => {
-      b.className = b.className.replace('bg-white shadow-sm text-on-surface', '');
+      b.classList.remove('bg-white', 'shadow-sm', 'text-on-surface');
       b.classList.add('text-on-surface-variant', 'hover:text-on-surface');
     });
     const btn = document.getElementById('tab-btn-' + tab);
     btn.classList.remove('text-on-surface-variant', 'hover:text-on-surface');
     btn.classList.add('bg-white', 'shadow-sm', 'text-on-surface');
+    // Invalidate mini map if exists
+    if (tab === 'tts') setTimeout(() => updateCharCount(), 50);
   }
+
+  // ── Char counter ──────────────────────────────────────────────
+  const ta = document.getElementById('tts-textarea');
+  function updateCharCount() {
+    const len = ta?.value?.length ?? 0;
+    const el  = document.getElementById('char-count');
+    if (el) {
+      el.textContent = `${len} / 1000 ký tự`;
+      el.className   = `text-xs font-medium ${len > 900 ? 'text-red-500' : len > 700 ? 'text-amber-600' : 'text-on-surface-variant'}`;
+    }
+  }
+  ta?.addEventListener('input', updateCharCount);
+  updateCharCount();
+
+  // ── TTS Preview (Web Speech API) ─────────────────────────────
+  let utterance = null;
+  function previewTts() {
+    const text = ta?.value?.trim();
+    if (!text) { alert('Chưa có nội dung script!'); return; }
+    if (!window.speechSynthesis) { alert('Trình duyệt không hỗ trợ TTS.'); return; }
+    stopPreview();
+    utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'vi-VN';
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+
+    // Show preview box
+    document.getElementById('preview-text').textContent = text;
+    document.getElementById('preview-box').classList.remove('hidden');
+
+    utterance.onend = () => document.getElementById('preview-box').classList.add('hidden');
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function stopPreview() {
+    window.speechSynthesis?.cancel();
+    document.getElementById('preview-box')?.classList.add('hidden');
+  }
+
+  function clearScript() {
+    if (!confirm('Xóa toàn bộ nội dung script?')) return;
+    if (ta) { ta.value = ''; updateCharCount(); }
+    stopPreview();
+  }
+
+  // ── Open TTS tab if hash ──────────────────────────────────────
+  if (window.location.hash === '#tts') switchTab('tts');
 </script>
 }

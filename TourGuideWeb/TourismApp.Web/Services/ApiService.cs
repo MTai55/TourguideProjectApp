@@ -179,6 +179,11 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         var (success, error) = await PutAsync($"/api/places/{id}", body);
         return (success, error);    
     }
+    public async Task<(bool, string)> UpdateTtsScriptAsync(int id, string? script)
+    {
+        var (ok, err) = await PutAsync($"/api/places/{id}/tts", script);
+        return (ok, err);
+    }
     // ══════════════════════════════════════════════════════════════
     // REVIEWS
     // ══════════════════════════════════════════════════════════════

@@ -26,29 +26,36 @@ public record PlaceDto(
 );
 
 public record CreatePlaceDto(
-    string Name,
-    string? Description,
-    string Address,
-    double Latitude,
-    double Longitude,
-    string? Phone,
+    string   Name,
+    string?  Description,
+    string   Address,
+    double   Latitude,
+    double   Longitude,
+    string?  Phone,
     int?     CategoryId,
     decimal? PriceMin,
     decimal? PriceMax,
-    string? Specialty,
-    int? PricePerPerson,
-    string? District,
-    string? OpenTime,
-    string? CloseTime,
-    bool HasParking = false,
-    bool HasAircon = false
+    string?  Specialty,
+    int?     PricePerPerson,
+    string?  District,
+    string?  OpenTime,
+    string?  CloseTime,
+    bool     HasParking = false,
+    bool     HasAircon  = false
+);
+
+public record UpdateTtsDto(string? TtsScript);
+
+public record AddImageDto(
+    string ImageUrl,
+    bool   IsMain = false
 );
 
 public record NearbyQueryDto(
     double Lat,
     double Lng,
-    double RadiusKm = 5.0,
-    int? CategoryId = null,
-    int Page = 1,
-    int PageSize = 20
+    double RadiusKm    = 5.0,
+    int?   CategoryId  = null,
+    int    Page        = 1,
+    int    PageSize    = 20
 );

@@ -30,6 +30,9 @@ public class Place
     public int OwnerId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
+    // TODO: Uncomment after database migration is complete
+    // public string? TtsScript { get; set; }
+    // public double? Radius { get; set; } = 100;
 
     // Navigation
     public User? Owner { get; set; }

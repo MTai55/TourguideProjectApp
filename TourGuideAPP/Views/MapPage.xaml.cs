@@ -1,6 +1,9 @@
 using Mapsui;
 using Mapsui.Projections;
 using Mapsui.Tiling;
+using Mapsui.Tiling.Layers;
+using BruTile.Web;
+using BruTile.Predefined;
 using Mapsui.Layers;
 using Mapsui.UI.Maui;
 using System.Net.Http.Json;
@@ -19,7 +22,6 @@ public partial class MapPage : ContentPage
     private readonly PlaceService _placeService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
-    private readonly UserProfileService _profileService;
     private readonly AuthService _authService;
     private string? _lastSpokenPlaceId;
     private bool _mapInfoHooked;
@@ -34,22 +36,21 @@ public partial class MapPage : ContentPage
 
     public MapPage(LocationService locationService, PlaceService placeService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
-                   UserProfileService profileService, AuthService authService)
+                   AuthService authService)
     {
         InitializeComponent();
         _locationService = locationService;
         _placeService = placeService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
-        _profileService = profileService;
         _authService = authService;
     }
 
     public MapPage(LocationService locationService, PlaceService placeService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
-                   UserProfileService profileService, AuthService authService,
+                   AuthService authService,
                    double destinationLat, double destinationLon, string? destinationName = null)
-        : this(locationService, placeService, geofenceEngine, narrationService, profileService, authService)
+        : this(locationService, placeService, geofenceEngine, narrationService, authService)
     {
         _destination = (destinationLat, destinationLon, destinationName);
     }
@@ -84,8 +85,12 @@ public partial class MapPage : ContentPage
 
         if (!MyMap.Map.Layers.Any(l => l.Name == "BaseMap"))
         {
-            var baseLayer = OpenStreetMap.CreateTileLayer();
-            baseLayer.Name = "BaseMap";
+            var tileSource = new HttpTileSource(
+                new GlobalSphericalMercator(),
+                "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+                new[] { "a", "b", "c" },
+                name: "CartoDB Voyager");
+            var baseLayer = new TileLayer(tileSource) { Name = "BaseMap" };
             MyMap.Map.Layers.Add(baseLayer);
         }
 
@@ -324,7 +329,7 @@ public partial class MapPage : ContentPage
         PlaceCard.IsVisible = false;
         _selectedPlace = null;
         var detailPage = new PlaceDetailPage(place, _authService, _locationService,
-                                             _geofenceEngine, _narrationService, _profileService);
+                                             _geofenceEngine, _narrationService);
         await Navigation.PushAsync(detailPage);
     }
 

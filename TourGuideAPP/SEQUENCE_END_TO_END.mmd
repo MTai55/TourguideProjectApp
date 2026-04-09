@@ -1,0 +1,38 @@
+sequenceDiagram
+    autonumber
+    title END-TO-END - Từ mở app đến nghe audio
+
+    actor User
+    participant App as MAUI App
+    participant Pref as Preferences
+    participant DB as Supabase
+    participant Loc as LocationService
+    participant Geo as GeofenceEngine
+    participant Audio as NarrationService
+
+    User->>App: Mở app
+    App->>Pref: Đọc DeviceId / SessionId / ExpiresAt
+    Pref-->>App: Session data
+
+    alt Session hợp lệ
+        App->>DB: GET /places
+        DB-->>App: Danh sách địa điểm
+        App->>App: Cache địa điểm
+        User->>App: Mở MapPage
+        App->>Loc: Start GPS tracking
+
+        loop Mỗi GPS update
+            Loc->>Geo: Kiểm tra POI gần nhất
+            Geo->>Geo: Lọc theo radius / cooldown / priority
+            Geo-->>Loc: POI phù hợp hoặc không có
+
+            alt Có POI phù hợp
+                Loc->>Audio: SpeakAsync(tts_script, tts_locale)
+                Audio-->>User: Phát audio guide
+            else Không có POI
+                Loc->>Loc: Tiếp tục tracking
+            end
+        end
+    else Session hết hạn hoặc chưa có
+        App->>App: Mở SubscriptionPage
+    end

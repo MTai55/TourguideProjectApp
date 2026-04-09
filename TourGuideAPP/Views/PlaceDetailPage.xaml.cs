@@ -11,15 +11,12 @@ public partial class PlaceDetailPage : ContentPage
     private readonly LocationService _locationService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
-    private readonly UserProfileService _profileService;
-
     public PlaceDetailPage(
         Place place,
         AuthService authService,
         LocationService locationService,
         GeofenceEngine geofenceEngine,
-        NarrationService narrationService,
-        UserProfileService profileService)
+        NarrationService narrationService)
     {
         InitializeComponent();
         _place = place;
@@ -27,7 +24,6 @@ public partial class PlaceDetailPage : ContentPage
         _locationService = locationService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
-        _profileService = profileService;
 
         LoadPlaceDetail();
     }

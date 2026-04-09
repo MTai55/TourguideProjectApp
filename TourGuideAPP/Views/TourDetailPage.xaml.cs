@@ -10,7 +10,6 @@ public partial class TourDetailPage : ContentPage
     private readonly POIService _poiService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
-    private readonly UserProfileService _profileService;
     private readonly AuthService _authService;
 
     public TourDetailPage(
@@ -19,7 +18,6 @@ public partial class TourDetailPage : ContentPage
         POIService poiService,
         GeofenceEngine geofenceEngine,
         NarrationService narrationService,
-        UserProfileService profileService,
         AuthService authService)
     {
         InitializeComponent();
@@ -28,7 +26,6 @@ public partial class TourDetailPage : ContentPage
         _poiService = poiService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
-        _profileService = profileService;
         _authService = authService;
 
         TitleLabel.Text = tour.Title;

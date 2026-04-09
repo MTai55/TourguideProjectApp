@@ -1,0 +1,223 @@
+@using TourismApp.Web.Models
+@model TourismApp.Web.Models.PlaceViewModel
+@{ ViewData["Title"] = "Chi tiết quán"; }
+
+<div class="flex items-center gap-3 mb-6 pt-2">
+  <a asp-controller="AdminPlaces" asp-action="Index"
+     class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-sm font-semibold">
+    <span class="material-symbols-outlined text-lg">arrow_back</span> Quay lại
+  </a>
+  <span class="text-slate-300">/</span>
+  <h2 class="text-2xl font-bold tracking-tight">Chi tiết quán</h2>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Left: Main info -->
+  <div class="lg:col-span-2 space-y-5">
+
+    <!-- Header card -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+      @if (!string.IsNullOrEmpty(Model.MainImageUrl))
+      {
+        <img src="@Model.MainImageUrl" alt="@Model.Name" class="w-full h-56 object-cover" />
+      }
+      else
+      {
+        <div class="w-full h-32 flex items-center justify-center text-6xl"
+             style="background:linear-gradient(135deg,#954400,#fc8127)">🍜</div>
+      }
+      <div class="p-6">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h2 class="text-2xl font-extrabold text-on-surface">@Model.Name</h2>
+          @{
+            var (dot, txt, cls) = Model.Status switch {
+              "Active"    => ("bg-emerald-500","Hoạt động","text-emerald-700 bg-emerald-50"),
+              "Suspended" => ("bg-red-500","Tạm khóa","text-red-700 bg-red-50"),
+              _           => ("bg-slate-400", Model.Status,"text-slate-600 bg-slate-100"),
+            };
+          }
+          <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold @cls shrink-0">
+            <span class="w-2 h-2 rounded-full @dot"></span>@txt
+          </span>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.OwnerName))
+        {
+          <p class="text-sm font-semibold text-primary mb-2">👤 Chủ quán: @Model.OwnerName</p>
+        }
+        <p class="text-sm text-on-surface-variant">@Model.Address</p>
+      </div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6">
+      <h3 class="font-bold text-base mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">info</span> Thông tin chi tiết
+      </h3>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        @{
+          var infos = new (string icon, string label, string? val)[] {
+            ("category",     "Loại hình",    Model.CategoryName),
+            ("location_on",  "Quận",         Model.District),
+            ("restaurant",   "Món đặc trưng",Model.Specialty),
+            ("schedule",     "Giờ mở cửa",   Model.OpenTime),
+            ("schedule",     "Giờ đóng cửa", Model.CloseTime),
+            ("payments",     "Giá/người",     Model.PricePerPerson.HasValue ? $"~{Model.PricePerPerson.Value:N0}đ" : null),
+            ("call",         "Điện thoại",   Model.Phone),
+            ("local_parking","Bãi đỗ xe",     Model.HasParking ? "Có" : "Không"),
+            ("ac_unit",      "Điều hòa",      Model.HasAircon  ? "Có" : "Không"),
+          };
+        }
+        @foreach (var (icon, label, val) in infos)
+        {
+          <div class="p-3 bg-surface-container-low rounded-xl">
+            <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
+              <span class="material-symbols-outlined text-sm">@icon</span>@label
+            </p>
+            <p class="text-sm font-semibold text-on-surface">@(string.IsNullOrEmpty(val) ? "—" : val)</p>
+          </div>
+        }
+      </div>
+      @if (!string.IsNullOrEmpty(Model.Description))
+      {
+        <div class="mt-4 pt-4 border-t border-surface-container">
+          <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-2">Mô tả</p>
+          <p class="text-sm text-on-surface leading-relaxed">@Model.Description</p>
+        </div>
+      }
+    </div>
+
+    <!-- ── TTS Script card ──────────────────────────────────── -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-violet-100 text-violet-600 rounded-xl">
+            <span class="material-symbols-outlined">record_voice_over</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">TTS Narration Script</h3>
+            <p class="text-xs text-on-surface-variant mt-0.5">Đoạn text phát âm khi khách đến gần quán</p>
+          </div>
+        </div>
+        @if (!string.IsNullOrEmpty(ViewBag.TtsScript as string))
+        {
+          <span class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Đang hoạt động
+          </span>
+        }
+        else
+        {
+          <span class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-xl text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Chưa có script
+          </span>
+        }
+      </div>
+      <div class="p-6">
+        @if (!string.IsNullOrEmpty(ViewBag.TtsScript as string))
+        {
+          <div class="bg-slate-900 rounded-xl p-5 relative">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm text-violet-400">volume_up</span>
+              Nội dung script
+            </p>
+            <p class="text-sm text-white leading-relaxed">@ViewBag.TtsScript</p>
+            <div class="mt-4 flex items-center justify-between">
+              <span class="text-[10px] text-slate-500">
+                @((ViewBag.TtsScript as string)?.Length ?? 0) ký tự •
+                Bán kính kích hoạt: @(ViewBag.Radius ?? 100)m
+              </span>
+              <button onclick="previewAdminTts()" type="button"
+                      class="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white font-bold rounded-lg text-xs hover:bg-violet-700 transition-colors">
+                <span class="material-symbols-outlined text-sm">play_circle</span> Nghe thử
+              </button>
+            </div>
+          </div>
+        }
+        else
+        {
+          <div class="flex flex-col items-center py-10 text-center">
+            <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">record_voice_over</span>
+            <p class="font-bold text-on-surface-variant">Chủ quán chưa thiết lập script</p>
+            <p class="text-xs text-on-surface-variant mt-1">Script sẽ được phát khi khách đến gần quán này.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Stats + Actions -->
+  <div class="space-y-5">
+
+    <!-- Stats -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5">
+      <h3 class="font-bold text-sm mb-4 text-on-surface-variant uppercase tracking-wider">Thống kê</h3>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-on-surface-variant">⭐ Đánh giá TB</span>
+          <span class="font-black text-amber-600">@Model.AverageRating.ToString("F1")</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-on-surface-variant">💬 Tổng reviews</span>
+          <span class="font-black">@Model.TotalReviews</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-on-surface-variant">📍 Lượt ghé</span>
+          <span class="font-black">@Model.TotalVisits</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-on-surface-variant">📍 Vị trí</span>
+          <span class="font-mono text-xs text-on-surface-variant">@Model.Latitude.ToString("F4"), @Model.Longitude.ToString("F4")</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin actions -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5">
+      <h3 class="font-bold text-sm mb-4 text-on-surface-variant uppercase tracking-wider">Thao tác Admin</h3>
+      <div class="space-y-2">
+        @if (Model.Status == "Active")
+        {
+          <form method="post" asp-controller="AdminPlaces" asp-action="Suspend" asp-route-id="@Model.PlaceId"
+                onsubmit="return confirm('Tạm khóa quán @Model.Name?')">
+            @Html.AntiForgeryToken()
+            <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-700 font-bold rounded-xl text-sm hover:bg-red-100 transition-colors">
+              <span class="material-symbols-outlined text-sm">block</span> Tạm khóa quán
+            </button>
+          </form>
+        }
+        @if (Model.Status == "Suspended")
+        {
+          <form method="post" asp-controller="AdminPlaces" asp-action="Approve" asp-route-id="@Model.PlaceId">
+            @Html.AntiForgeryToken()
+            <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl text-sm hover:bg-emerald-100 transition-colors">
+              <span class="material-symbols-outlined text-sm">lock_open</span> Mở lại quán
+            </button>
+          </form>
+        }
+        <a asp-controller="AdminReviews" asp-action="Index" asp-route-placeId="@Model.PlaceId"
+           class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-container-low text-on-surface font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+          <span class="material-symbols-outlined text-sm">rate_review</span> Xem Reviews
+        </a>
+        <a asp-controller="AdminDashboard" asp-action="Map"
+           class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-container-low text-on-surface font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+          <span class="material-symbols-outlined text-sm">map</span> Xem trên bản đồ
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  function previewAdminTts() {
+    const text = '@Html.Raw((ViewBag.TtsScript as string)?.Replace("'", "\\'") ?? "")';
+    if (!text || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'vi-VN'; u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  }
+</script>
+}

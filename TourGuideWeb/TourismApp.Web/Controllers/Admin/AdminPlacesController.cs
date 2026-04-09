@@ -59,7 +59,6 @@ public class AdminPlacesController(ApiService api, ILogger<AdminPlacesController
         return RedirectToAction("Index");
     }
 
-    // Tạm khóa quán
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Suspend(int id)

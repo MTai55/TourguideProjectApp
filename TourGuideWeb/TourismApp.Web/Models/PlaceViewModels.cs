@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Newtonsoft.Json;
 
 namespace TourismApp.Web.Models;
 
@@ -30,6 +31,12 @@ public class PlaceViewModel
     public string Status { get; set; } = "Pending";
     public string OpenStatus { get; set; } = "Closed";
     public string? OwnerName { get; set; }
+
+    [JsonProperty("ttsScript")]
+    public string? TtsScript { get; set; }
+
+    [JsonProperty("radius")]
+    public double? Radius { get; set; }
 }
 
 public class CreatePlaceViewModel

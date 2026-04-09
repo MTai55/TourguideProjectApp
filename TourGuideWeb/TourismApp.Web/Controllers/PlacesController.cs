@@ -177,4 +177,12 @@ public class PlacesController(ApiService api, ILogger<PlacesController> logger) 
         ViewBag.IsAdmin = role == "Admin";
         return View(places);
     }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateTtsScript(int id, string? ttsScript)
+    {
+        var (ok, err) = await api.UpdateTtsScriptAsync(id, ttsScript);
+        TempData[ok ? "Success" : "Error"] = ok ? "Đã lưu TTS script!" : $"Lỗi: {err}";
+        return RedirectToAction("Edit", new { id });
+    }
 }

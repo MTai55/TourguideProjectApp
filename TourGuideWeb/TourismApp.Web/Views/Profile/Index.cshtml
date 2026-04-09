@@ -1,0 +1,101 @@
+@model TourismApp.Web.Models.ProfileViewModel
+@{ ViewData["Title"] = "Tài khoản của tôi"; }
+
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pt-2">
+  <div>
+    <h2 class="text-4xl font-extrabold tracking-tight">Tài khoản của tôi</h2>
+    <p class="text-on-surface-variant text-sm font-medium mt-1">Quản lý thông tin cá nhân và bảo mật.</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Avatar & quick info -->
+  <div class="space-y-5">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6 text-center">
+      <div class="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-black text-white mx-auto mb-4"
+           style="background:linear-gradient(135deg,#954400,#fc8127)">
+        @Model.FullName[0].ToString().ToUpper()
+      </div>
+      <h3 class="font-extrabold text-lg">@Model.FullName</h3>
+      <p class="text-sm text-on-surface-variant mt-1">@Model.Email</p>
+      <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold
+                   @(Model.Role == "Admin" ? "bg-red-50 text-red-700" : "bg-primary/10 text-primary")">
+        @Model.Role
+      </span>
+      <div class="mt-4 pt-4 border-t border-surface-container text-xs text-on-surface-variant">
+        Thành viên từ @Model.CreatedAt.ToString("dd/MM/yyyy")
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-4 space-y-2">
+      <a asp-action="Edit"
+         class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors">
+        <span class="material-symbols-outlined text-primary">edit</span> Chỉnh sửa thông tin
+      </a>
+      <a asp-action="ChangePassword"
+         class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors">
+        <span class="material-symbols-outlined text-amber-600">lock</span> Đổi mật khẩu
+      </a>
+      <a asp-controller="Auth" asp-action="Logout"
+         class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold hover:bg-red-50 text-red-600 transition-colors">
+        <span class="material-symbols-outlined">logout</span> Đăng xuất
+      </a>
+    </div>
+  </div>
+
+  <!-- Detail info -->
+  <div class="lg:col-span-2 space-y-5">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center justify-between">
+        <h3 class="font-bold text-base">Thông tin cá nhân</h3>
+        <a asp-action="Edit"
+           class="flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-primary hover:bg-primary/10 rounded-xl transition-colors">
+          <span class="material-symbols-outlined text-sm">edit</span> Chỉnh sửa
+        </a>
+      </div>
+      <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+        @foreach (var (icon, label, val) in new (string,string,string?)[] {
+          ("person",     "Họ và tên",     Model.FullName),
+          ("email",      "Email",          Model.Email),
+          ("call",       "Số điện thoại", string.IsNullOrEmpty(Model.Phone) ? "Chưa cập nhật" : Model.Phone),
+          ("badge",      "Vai trò",        Model.Role),
+          ("calendar_today","Ngày tham gia",Model.CreatedAt.ToString("dd/MM/yyyy")),
+          ("tag",        "ID tài khoản",   $"#{Model.UserId}"),
+        })
+        {
+          <div class="flex items-start gap-3 p-4 bg-surface-container-low rounded-xl">
+            <span class="material-symbols-outlined text-primary mt-0.5">@icon</span>
+            <div>
+              <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">@label</p>
+              <p class="text-sm font-semibold text-on-surface mt-0.5">@val</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Security section -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-surface-container">
+        <h3 class="font-bold text-base">Bảo mật</h3>
+      </div>
+      <div class="p-6">
+        <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-amber-600">lock</span>
+            <div>
+              <p class="text-sm font-bold">Mật khẩu</p>
+              <p class="text-xs text-on-surface-variant mt-0.5">Thay đổi mật khẩu định kỳ để bảo vệ tài khoản</p>
+            </div>
+          </div>
+          <a asp-action="ChangePassword"
+             class="px-4 py-2 bg-amber-50 text-amber-700 font-bold rounded-xl text-sm hover:bg-amber-100 transition-colors">
+            Đổi mật khẩu
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

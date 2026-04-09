@@ -35,8 +35,12 @@ public class AdminController(AppDbContext db, ILogger<AdminController> logger) :
 
             if (!string.IsNullOrEmpty(search))
             {
-                logger.LogInformation("🔎 Filtering by search: {search}", search);
-                q = q.Where(u => u.Email.Contains(search) || u.FullName.Contains(search));
+                var keyword = search.ToLower();
+
+                q = q.Where(u =>
+                    (u.FullName ?? "").ToLower().Contains(keyword) ||
+                    (u.Email ?? "").ToLower().Contains(keyword)
+                );
             }
             if (!string.IsNullOrEmpty(role))
             {
@@ -96,71 +100,58 @@ public class AdminController(AppDbContext db, ILogger<AdminController> logger) :
 
     // ── Places (Admin duyệt) ──────────────────────────────────────
     [HttpGet("places")]
-    public async Task<IActionResult> GetPlaces([FromQuery] bool pendingOnly = false)
+    public async Task<IActionResult> GetPlaces([FromQuery] bool pendingOnly = false, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        logger.LogInformation($"📍 GetAdminPlaces called - pendingOnly: {pendingOnly}");
+        logger.LogInformation($"📍 GetAdminPlaces called - pendingOnly: {pendingOnly}, page: {page}");
         
-        var places = await db.Places
+        // FIX: Build entire query chain without intermediate reassignments
+        var query = db.Places
             .Include(p => p.Owner)
             .Include(p => p.Category)
             .Include(p => p.Images)
-            .OrderByDescending(p => p.CreatedAt)
+            .Where(p => !pendingOnly || p.Status == "Pending")  // Use || instead of separate if
+            .OrderByDescending(p => p.CreatedAt);
+        
+        if (pendingOnly)
+            logger.LogInformation($"🔄 Filtering to pending only");
+        
+        var total = await query.CountAsync();
+        
+        var result = await query
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(p => new
+            {
+                p.PlaceId,
+                p.Name,
+                p.Description,
+                p.Address,
+                p.Latitude,
+                p.Longitude,
+                p.Phone,
+                p.OpenTime,
+                p.CloseTime,
+                p.AverageRating,
+                p.TotalReviews,
+                p.TotalVisits,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category!.Name,
+                MainImageUrl = p.Images.Where(i => i.IsMain).FirstOrDefault()!.ImageUrl,
+                p.IsApproved,
+                p.Specialty,
+                p.PricePerPerson,
+                p.PriceMin,
+                p.PriceMax,
+                p.District,
+                p.HasParking,
+                p.HasAircon,
+                p.Status,
+                p.OpenStatus,
+                OwnerName = p.Owner!.FullName
+            })
             .ToListAsync();
         
-        // Filter if needed
-        if (pendingOnly)
-        {
-            places = places.Where(p => p.Status == "Pending").ToList();
-            logger.LogInformation($"🔄 Filtered to pending only: {places.Count} places");
-        }
-        else
-        {
-            logger.LogInformation($"📊 Total places in system: {places.Count}");
-        }
-        
-        // Map to PlaceViewModel
-        var result = places.Select(p => new
-        {
-            p.PlaceId,
-            p.Name,
-            p.Description,
-            p.Address,
-            p.Latitude,
-            p.Longitude,
-            p.Phone,
-            p.OpenTime,
-            p.CloseTime,
-            p.AverageRating,
-            p.TotalReviews,
-            p.TotalVisits,
-            CategoryId = p.CategoryId,
-            CategoryName = p.Category?.Name,
-            MainImageUrl = p.Images?.FirstOrDefault(i => i.IsMain)?.ImageUrl,
-            p.IsApproved,
-            p.Specialty,
-            p.PricePerPerson,
-            p.PriceMin,
-            p.PriceMax,
-            p.District,
-            p.HasParking,
-            p.HasAircon,
-            p.Status,
-            p.OpenStatus,
-            OwnerName = p.Owner?.FullName
-        }).ToList();
-        
-        logger.LogInformation($"✅ Returning {result.Count} places");
-        return Ok(result);
-    }
-
-    [HttpPut("places/{id}/approve")]
-    public async Task<IActionResult> Approve(int id)
-    {
-        await db.Places.Where(p => p.PlaceId == id)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(p => p.Status, "Active")
-                .SetProperty(p => p.IsApproved, true));
-        return Ok(new { approved = true });
+        logger.LogInformation($"✅ Returning {result.Count} of {total} places");
+        return Ok(new { total, page, pageSize, items = result });
     }
 
     [HttpPut("places/{id}/suspend")]
@@ -173,11 +164,35 @@ public class AdminController(AppDbContext db, ILogger<AdminController> logger) :
 
     // ── Reviews (Admin ẩn/hiện) ───────────────────────────────────
     [HttpGet("reviews")]
-    public async Task<IActionResult> GetReviews([FromQuery] bool hiddenOnly = false)
+    public async Task<IActionResult> GetReviews([FromQuery] bool hiddenOnly = false, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var q = db.Reviews.Include(r => r.User).Include(r => r.Place).AsQueryable();
-        if (hiddenOnly) q = q.Where(r => r.IsHidden);
-        return Ok(await q.OrderByDescending(r => r.CreatedAt).Take(100).ToListAsync());
+        // FIX: Apply filter BEFORE ToList() and use pagination to avoid loading all data
+        var query = db.Reviews.AsQueryable();
+        
+        if (hiddenOnly)
+            query = query.Where(r => r.IsHidden);
+        
+        var total = await query.CountAsync();
+        
+        var reviews = await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(r => new
+            {
+                r.ReviewId,
+                r.Rating,
+                r.Comment,
+                r.IsHidden,
+                r.HiddenNote,
+                r.CreatedAt,
+                UserName = r.User!.FullName,
+                PlaceName = r.Place!.Name,
+                PlaceId = r.Place!.PlaceId,
+                UserId = r.User!.UserId
+            })
+            .ToListAsync();
+        
+        return Ok(new { total, page, pageSize, items = reviews });
     }
 
     [HttpPut("reviews/{id}/hide")]

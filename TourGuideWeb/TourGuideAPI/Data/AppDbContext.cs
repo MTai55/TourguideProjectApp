@@ -14,7 +14,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Review> Reviews { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Message> Messages { get; set; }
-    public DbSet<Complaint> Complaints { get; set; }
     public DbSet<Promotion> Promotions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder mb)
@@ -119,16 +118,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
              .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Thêm cấu hình cho Complaint
-        mb.Entity<Complaint>(e => {
-            e.ToTable("Complaints");
-            e.HasKey(c => c.ComplaintId);
-            e.HasOne(c => c.User)
-             .WithMany()
-             .HasForeignKey(c => c.UserId)
-             .OnDelete(DeleteBehavior.Restrict);
-        });
-
         // Seed dữ liệu cho Category
         mb.Entity<Category>().HasData(
             new Category { CategoryId = 1, Name = "Nhà hàng", Icon = "🍽️", ColorHex = "#ef4444" },
@@ -139,7 +128,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         );
 
         mb.Entity<Message>().ToTable("Messages").HasKey(m => m.MessageId);
-        mb.Entity<Complaint>().ToTable("Complaints").HasKey(c => c.ComplaintId);
         mb.Entity<Promotion>().ToTable("Promotions").HasKey(p => p.PromoId);
     }
 }

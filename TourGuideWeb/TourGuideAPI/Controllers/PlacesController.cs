@@ -90,7 +90,8 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
     public async Task<IActionResult> GetNearby([FromQuery] NearbyQueryDto query)
         => Ok(await geo.GetNearbyAsync(query));
 
-    // ── DEBUG ENDPOINT ─────────────────────────────────────────────
+    // ── DEBUG ENDPOINT (Development Only) ─────────────────────────────────────────────
+#if DEBUG
     [HttpGet("debug/info")]
     public async Task<IActionResult> DebugInfo()
     {
@@ -105,7 +106,7 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
         
         return Ok(new
         {
-            message = "🐛 DEBUG INFO",
+            message = "🐛 DEBUG INFO (Development Only)",
             database = new
             {
                 totalPlaces,
@@ -122,6 +123,7 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
             }
         });
     }
+#endif
 
     // ── GET /api/places/mine ──────────────────────────────────────
     [HttpGet("mine")]

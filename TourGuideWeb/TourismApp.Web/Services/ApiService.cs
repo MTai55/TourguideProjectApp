@@ -181,7 +181,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     }
     public async Task<(bool, string)> UpdateTtsScriptAsync(int id, string? script)
     {
-        var (ok, err) = await PutAsync($"/api/places/{id}/tts", script);
+        var (ok, err) = await PutAsync($"/api/places/{id}/tts", (object?)script ?? string.Empty);
         return (ok, err);
     }
     // ══════════════════════════════════════════════════════════════
@@ -193,19 +193,33 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     public Task<(bool, string)> ReplyReviewAsync(int reviewId, string reply)
         => PutAsync($"/api/reviews/{reviewId}/reply", reply);
 
-    public Task<List<ReviewViewModel>?> GetAllReviewsAsync(bool hiddenOnly = false)
-        => GetAsync<List<ReviewViewModel>>($"/api/admin/reviews?hiddenOnly={hiddenOnly}");
+    public async Task<List<ReviewViewModel>?> GetAllReviewsAsync(bool hiddenOnly = false)
+    {
+        var response = await GetAsync<AdminReviewsResponse>($"/api/admin/reviews?hiddenOnly={hiddenOnly}");
+        return response?.Items ?? new List<ReviewViewModel>();
+    }
+    
+    // Response wrapper cho admin reviews endpoint
+    private class AdminReviewsResponse
+    {
+        [JsonProperty("total")]
+        public int Total { get; set; }
+        
+        [JsonProperty("page")]
+        public int Page { get; set; }
+        
+        [JsonProperty("pageSize")]
+        public int PageSize { get; set; }
+        
+        [JsonProperty("items")]
+        public List<ReviewViewModel> Items { get; set; } = new();
+    }
 
     public Task<(bool, string)> HideReviewAsync(int id, string note)
         => PutAsync($"/api/admin/reviews/{id}/hide", new { note });
 
     public Task<(bool, string)> ShowReviewAsync(int id)
         => PutAsync($"/api/admin/reviews/{id}/show", new { });
-    public async Task<(bool, string)> CreateComplaintAsync(CreateComplaintViewModel vm)
-    {
-        var (success, _, error) = await PostAsync<object>("/api/complaints", vm);
-        return (success, error);
-    }
 
     // ══════════════════════════════════════════════════════════════
     // PROMOTIONS
@@ -248,14 +262,27 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     public Task<(bool, string)> ChangeUserRoleAsync(int id, string role)
         => PutAsync($"/api/admin/users/{id}/role", new { role });
 
-    public Task<List<PlaceViewModel>?> GetAdminPlacesAsync(bool pendingOnly = false)
-        => GetAsync<List<PlaceViewModel>>($"/api/admin/places?pendingOnly={pendingOnly}");
-
-    public Task<(bool, string)> ApprovePlaceAsync(int id)
-        => PutAsync($"/api/admin/places/{id}/approve", new { });
-
-    public Task<(bool, string)> RejectPlaceAsync(int id)
-        => PutAsync($"/api/admin/places/{id}/reject", new { });
+    public async Task<List<PlaceViewModel>?> GetAdminPlacesAsync(bool pendingOnly = false)
+    {
+        var response = await GetAsync<AdminPlacesResponse>($"/api/admin/places?pendingOnly={pendingOnly}");
+        return response?.Items ?? new List<PlaceViewModel>();
+    }
+    
+    // Response wrapper cho admin places endpoint
+    private class AdminPlacesResponse
+    {
+        [JsonProperty("total")]
+        public int Total { get; set; }
+        
+        [JsonProperty("page")]
+        public int Page { get; set; }
+        
+        [JsonProperty("pageSize")]
+        public int PageSize { get; set; }
+        
+        [JsonProperty("items")]
+        public List<PlaceViewModel> Items { get; set; } = new();
+    }
 
     public Task<(bool, string)> SuspendPlaceAsync(int id)
         => PutAsync($"/api/admin/places/{id}/suspend", new { });

@@ -78,21 +78,4 @@ public class ReviewsController(ApiService api, ILogger<ReviewsController> logger
         TempData["Success"] = "Đã phản hồi đánh giá!";
         return RedirectToAction("ByPlace", new { placeId });
     }
-
-    // POST Khiếu nại review giả
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ComplainReview(int reviewId, int placeId, string reason)
-    {
-        await api.CreateComplaintAsync(new CreateComplaintViewModel
-        {
-            PlaceId = placeId,
-            ReviewId = reviewId,
-            Type = "fake_review",
-            Title = "Review không trung thực",
-            Content = reason
-        });
-        TempData["Success"] = "Đã gửi khiếu nại tới Admin!";
-        return RedirectToAction("ByPlace", new { placeId });
-    }
 }

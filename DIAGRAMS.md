@@ -692,7 +692,7 @@ sequenceDiagram
     User->>MapPage: Bấm "Chỉ đường" trên card
     MapPage->>LocationService: Lấy vị trí hiện tại
     LocationService-->>MapPage: (lat, lon) origin
-    MapPage->>OSRM: GET /route/v1/driving/{origin};{dest}
+    MapPage->>OSRM: GET /route/v1/driving/origin_coords to dest_coords
     OSRM-->>MapPage: GeoJSON polyline
     MapPage->>MapPage: Vẽ polyline + zoom vào route
     MapPage->>MapPage: Hiện CancelRoutePanel

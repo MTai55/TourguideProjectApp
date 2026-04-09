@@ -18,14 +18,13 @@ public class NarrationService
     // Danh sách locale hỗ trợ để hiển thị trong UI
     public static readonly IReadOnlyList<(string Display, string Locale)> SupportedLocales =
     [
-        ("Tiếng Việt",    "vi-VN"),
-        ("English (US)",  "en-US"),
-        ("English (UK)",  "en-GB"),
-        ("中文 (普通话)",   "zh-CN"),
-        ("日本語",         "ja-JP"),
-        ("한국어",         "ko-KR"),
-        ("Français",      "fr-FR"),
-        ("Español",       "es-ES"),
+        ("Tiếng Việt",   "vi-VN"),
+        ("English",      "en-US"),
+        ("中文",          "zh-CN"),
+        ("한국어",        "ko-KR"),
+        ("日本語",        "ja-JP"),
+        ("Français",     "fr-FR"),
+        ("ภาษาไทย",      "th-TH"),
     ];
 
     /// <summary>

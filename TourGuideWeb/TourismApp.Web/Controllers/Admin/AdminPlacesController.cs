@@ -39,26 +39,6 @@ public class AdminPlacesController(ApiService api, ILogger<AdminPlacesController
         }
     }
 
-    // Duyệt quán
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Approve(int id)
-    {
-        await api.ApprovePlaceAsync(id);
-        TempData["Success"] = "Đã duyệt quán!";
-        return RedirectToAction("Index");
-    }
-
-    // Từ chối quán
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Reject(int id)
-    {
-        await api.RejectPlaceAsync(id);
-        TempData["Success"] = "Đã từ chối quán!";
-        return RedirectToAction("Index");
-    }
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Suspend(int id)

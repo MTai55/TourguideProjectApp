@@ -54,13 +54,24 @@ public class ReviewsController(AppDbContext db) : ControllerBase
         db.Reviews.Add(review);
         await db.SaveChangesAsync();
 
-        // Cập nhật AverageRating
-        var avg = await db.Reviews.Where(r => r.PlaceId == dto.PlaceId).AverageAsync(r => (double)r.Rating);
-        var cnt = await db.Reviews.CountAsync(r => r.PlaceId == dto.PlaceId);
-        await db.Places.Where(p => p.PlaceId == dto.PlaceId)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(p => p.AverageRating, avg)
-                .SetProperty(p => p.TotalReviews, cnt));
+        // FIX: Single query instead of 2 separate queries (Count + Average)
+        var stats = await db.Reviews
+            .Where(r => r.PlaceId == dto.PlaceId)
+            .GroupBy(r => r.PlaceId)
+            .Select(g => new
+            {
+                AvgRating = g.Average(r => (double)r.Rating),
+                Count = g.Count()
+            })
+            .FirstOrDefaultAsync();
+
+        if (stats != null)
+        {
+            await db.Places.Where(p => p.PlaceId == dto.PlaceId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.AverageRating, (float)stats.AvgRating)
+                    .SetProperty(p => p.TotalReviews, stats.Count));
+        }
         return Ok(review);
     }
 

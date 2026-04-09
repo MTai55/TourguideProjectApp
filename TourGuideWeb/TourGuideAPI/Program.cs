@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using TourGuideAPI;
 using TourGuideAPI.Data;
 using TourGuideAPI.Extensions;
 using TourGuideAPI.Hubs;
@@ -68,4 +69,16 @@ app.MapOpenApi();
 app.MapScalarApiReference();
 app.MapControllers();
 app.MapHub<NotificationHub>("/hubs/notifications");
+
+// 🔧 Test database connection on startup
+try
+{
+    await DbConnectionTest.TestConnectionAsync(app.Services);
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"⚠️ Database test failed: {ex.Message}");
+    // Continue anyway - app will fail when accessing DB
+}
+
 app.Run();

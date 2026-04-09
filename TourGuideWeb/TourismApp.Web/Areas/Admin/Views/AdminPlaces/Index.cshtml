@@ -14,12 +14,6 @@
        style="@(ViewBag.PendingOnly != true ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
       Tất cả (@(Model?.Count ?? 0))
     </a>
-    <a asp-controller="AdminPlaces" asp-action="Index" asp-route-pendingOnly="true"
-       class="px-5 py-2.5 font-bold rounded-xl text-sm transition-all flex items-center gap-2
-              @(ViewBag.PendingOnly == true ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-700 hover:bg-amber-100")">
-      <span class="material-symbols-outlined text-sm">schedule</span>
-      Chờ duyệt (@(Model?.Count(p => p.Status == "Pending") ?? 0))
-    </a>
   </div>
 </div>
 
@@ -89,7 +83,6 @@
               @{
                 var (dot, text, cls) = p.Status switch {
                   "Active"    => ("bg-emerald-500", "Hoạt động", "text-emerald-700"),
-                  "Pending"   => ("bg-amber-500",   "Chờ duyệt", "text-amber-700"),
                   "Suspended" => ("bg-red-500",      "Tạm khóa",  "text-red-700"),
                   _           => ("bg-slate-400",    p.Status ?? "—", "text-slate-600"),
                 };
@@ -104,15 +97,6 @@
                    class="px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg text-xs hover:bg-blue-100 transition-colors flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">info</span> Xem chi tiết
                 </a>
-                @if (p.Status == "Pending")
-                {
-                  <form method="post" asp-controller="AdminPlaces" asp-action="Approve" asp-route-id="@p.PlaceId">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="px-3 py-1.5 bg-emerald-50 text-emerald-700 font-bold rounded-lg text-xs hover:bg-emerald-100 transition-colors flex items-center gap-1">
-                      <span class="material-symbols-outlined text-sm">check_circle</span> Duyệt
-                    </button>
-                  </form>
-                }
                 @if (p.Status == "Active")
                 {
                   <form method="post" asp-controller="AdminPlaces" asp-action="Suspend" asp-route-id="@p.PlaceId"
@@ -123,15 +107,7 @@
                     </button>
                   </form>
                 }
-                @if (p.Status == "Suspended")
-                {
-                  <form method="post" asp-controller="AdminPlaces" asp-action="Approve" asp-route-id="@p.PlaceId">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg text-xs hover:bg-blue-100 transition-colors flex items-center gap-1">
-                      <span class="material-symbols-outlined text-sm">lock_open</span> Mở lại
-                    </button>
-                  </form>
-                }
+
               </div>
             </td>
           </tr>

@@ -14,7 +14,6 @@ public partial class AppShell : Shell
     private void RegisterRoutes()
     {
         Routing.RegisterRoute("MapPage", typeof(MapPage));
-        Routing.RegisterRoute("QRScanPage", typeof(QRScanPage));
         Routing.RegisterRoute("PlaceDetailPage", typeof(PlaceDetailPage));
         Routing.RegisterRoute("SubscriptionPage", typeof(SubscriptionPage));
         Routing.RegisterRoute("PaymentQRPage", typeof(PaymentQRPage));

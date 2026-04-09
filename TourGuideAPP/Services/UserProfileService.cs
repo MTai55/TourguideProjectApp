@@ -6,22 +6,10 @@ namespace TourGuideAPP.Services;
 
 public class UserProfileService
 {
-    private const string FavoritesKey = "user_profile_favorites";
-    private const string WishlistKey = "user_profile_wishlist";
     private const string HistoryKey = "user_profile_history";
     private const string NotesKey = "user_profile_notes";
     private readonly AuthService _authService;
     private readonly Supabase.Client _supabase;
-
-    public async Task<List<FavoritePlace>> GetFavoritesAsync()
-    {
-        return LoadList<FavoritePlace>(FavoritesKey);
-    }
-
-    public async Task<List<WishlistPlace>> GetWishlistAsync()
-    {
-        return LoadList<WishlistPlace>(WishlistKey);
-    }
 
     public async Task<List<TripHistoryItem>> GetTripHistoryAsync()
     {
@@ -31,54 +19,6 @@ public class UserProfileService
     public async Task<List<PlaceNote>> GetNotesAsync()
     {
         return LoadList<PlaceNote>(NotesKey);
-    }
-
-    public async Task AddFavoriteAsync(Place place)
-    {
-        var list = await GetFavoritesAsync();
-        if (list.Any(x => x.PlaceId == place.PlaceId))
-            return;
-
-        list.Add(new FavoritePlace
-        {
-            PlaceId = place.PlaceId,
-            Name = place.Name,
-            Address = place.Address,
-            ImageUrl = place.ImageUrl,
-            AddedAt = DateTime.Now
-        });
-        SaveList(FavoritesKey, list);
-    }
-
-    public async Task RemoveFavoriteAsync(int placeId)
-    {
-        var list = await GetFavoritesAsync();
-        list.RemoveAll(x => x.PlaceId == placeId);
-        SaveList(FavoritesKey, list);
-    }
-
-    public async Task AddWishlistAsync(Place place)
-    {
-        var list = await GetWishlistAsync();
-        if (list.Any(x => x.PlaceId == place.PlaceId))
-            return;
-
-        list.Add(new WishlistPlace
-        {
-            PlaceId = place.PlaceId,
-            Name = place.Name,
-            Address = place.Address,
-            ImageUrl = place.ImageUrl,
-            AddedAt = DateTime.Now
-        });
-        SaveList(WishlistKey, list);
-    }
-
-    public async Task RemoveWishlistAsync(int placeId)
-    {
-        var list = await GetWishlistAsync();
-        list.RemoveAll(x => x.PlaceId == placeId);
-        SaveList(WishlistKey, list);
     }
 
     public async Task AddHistoryAsync(Place place, string visitMethod = "Manual")
@@ -162,8 +102,6 @@ public class UserProfileService
 
     public async Task ClearAllAsync()
     {
-        Preferences.Remove(FavoritesKey);
-        Preferences.Remove(WishlistKey);
         Preferences.Remove(HistoryKey);
         Preferences.Remove(NotesKey);
     }

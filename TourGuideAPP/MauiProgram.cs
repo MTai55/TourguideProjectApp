@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Supabase;
 using TourGuideAPP.Services;
-using ZXing.Net.Maui.Controls;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using TourGuideAPP.Views;
  
@@ -14,7 +13,6 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseSkiaSharp()
-            .UseBarcodeReader()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -33,7 +31,6 @@ public static class MauiProgram
         builder.Services.AddTransient<ToursPage>();
         builder.Services.AddTransient<AccountPage>();
         builder.Services.AddTransient<MapPage>();
-        builder.Services.AddTransient<QRScanPage>();
         builder.Services.AddTransient<SubscriptionPage>();
 
         // Services
@@ -42,10 +39,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<POIService>();
         builder.Services.AddSingleton<NarrationService>();
         builder.Services.AddSingleton<AuthService>();
-        builder.Services.AddSingleton<UserProfileService>();
         builder.Services.AddSingleton<PlaceService>();
-        builder.Services.AddSingleton<FavoriteService>();
-        builder.Services.AddSingleton<WishlistService>();
         builder.Services.AddSingleton<AccessSessionService>();
  
         // App

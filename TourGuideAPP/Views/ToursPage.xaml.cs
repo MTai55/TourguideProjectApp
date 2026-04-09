@@ -111,11 +111,10 @@ public partial class ToursPage : ContentPage
         var poiService = sp?.GetService<POIService>();
         var geofenceEngine = sp?.GetService<GeofenceEngine>();
         var narrationService = sp?.GetService<NarrationService>();
-        var profileService = sp?.GetService<UserProfileService>();
         var authService = sp?.GetService<AuthService>();
 
         if (locationService is null || poiService is null || geofenceEngine is null ||
-            narrationService is null || profileService is null || authService is null)
+            narrationService is null || authService is null)
         {
             await DisplayAlertAsync("Lỗi", "Không khởi tạo được các dịch vụ.", "OK");
             return;
@@ -123,7 +122,7 @@ public partial class ToursPage : ContentPage
 
         await Navigation.PushAsync(new TourDetailPage(selected, locationService, poiService,
                                                        geofenceEngine, narrationService,
-                                                       profileService, authService));
+                                                       authService));
     }
 
     private void RebuildTours()

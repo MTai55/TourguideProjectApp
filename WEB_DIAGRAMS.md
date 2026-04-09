@@ -292,40 +292,6 @@ flowchart TD
     Q -->|No| Q
 ```
 
----
-
-### 8️⃣ Activity - Submit Review Process
-
-```mermaid
-flowchart TD
-    A([User on Place Detail]) --> B[User Click Write Review]
-    B --> C[Show Review Form]
-    C --> D[User Fill Rating & Comment]
-    D --> E[User Submit]
-    E --> F{Validate Form}
-    F -->|Invalid| G[Show Validation Errors]
-    G --> H[User Can Retry]
-    H --> D
-    F -->|Valid| I[Create ReviewDTO]
-    I --> J[Get JWT from Session]
-    J --> K[Send to API with Token]
-    K --> L[API Verify JWT]
-    L --> M{Token Valid?}
-    M -->|No| N[Return 401 Unauthorized]
-    N --> O[Redirect to Login]
-    O --> P([Need Login])
-    M -->|Yes| Q[Insert Review to DB]
-    Q --> R{Success?}
-    R -->|No| S[DB Error]
-    S --> T[Return Error Message]
-    T --> H
-    R -->|Yes| U[Return Success]
-    U --> V[Refresh Review List]
-    V --> W[Show Notification: Review Posted]
-    W --> X([Success])
-```
-
----
 
 ### 9️⃣ Activity - API Request Processing Pipeline
 
@@ -432,10 +398,3 @@ TourGuideWeb/
 
 ---
 
-✅ **Bây giờ bạn đã có:**
-- 5 sơ đồ **Sequence** (tương tác từng bước)
-- 5 sơ đồ **Activity** (luồng quy trình với quyết định)
-- Kiến trúc tổng thể
-- Ghi chú quan trọng
-
-🎯 Sử dụng [Mermaid Live Editor](https://mermaid.live) để xem trực tiếp!

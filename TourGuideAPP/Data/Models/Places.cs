@@ -103,4 +103,20 @@ public class Place : BaseModel
     public string OpenTimeDisplay => OpenTime != null ? $"{OpenTime} - {CloseTime}" : "Chưa cập nhật";
     public string RatingDisplay   => AverageRating.HasValue ? $"⭐ {AverageRating:F1}" : "Chưa có đánh giá";
     public string PriceDisplay    => PriceMin.HasValue ? $"{PriceMin:N0}đ - {PriceMax:N0}đ" : "Liên hệ";
+
+    // Runtime: script đa ngôn ngữ, load từ bảng PlaceTtsContents
+    public Dictionary<string, string> TtsContents { get; set; } = [];
+
+    /// <summary>
+    /// Trả về script TTS theo locale ưu tiên.
+    /// Fallback: vi-VN → TtsScript field → tên địa điểm
+    /// </summary>
+    public string GetScriptForLocale(string locale)
+    {
+        if (TtsContents.TryGetValue(locale, out var script))
+            return script;
+        if (TtsContents.TryGetValue("vi-VN", out var viScript))
+            return viScript;
+        return TtsScript ?? $"Đây là địa điểm {Name}.";
+    }
 }

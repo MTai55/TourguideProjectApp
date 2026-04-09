@@ -301,11 +301,8 @@ public partial class MapPage : ContentPage
     {
         if (_selectedPlace is null) return;
         await FlashButton(BtnNarrate, isPrimary: false);
-        var script = string.IsNullOrWhiteSpace(_selectedPlace.TtsScript)
-            ? $"Đây là địa điểm {_selectedPlace.Name}."
-            : _selectedPlace.TtsScript;
         _lastSpokenPlaceId = _selectedPlace.PlaceId.ToString();
-        await _narrationService.SpeakAsync(script, _selectedPlace.TtsLocale);
+        await _narrationService.SpeakAsync(_selectedPlace.GetScriptForLocale(_narrationService.PreferredLocale));
     }
 
     private async void OnCardCall(object sender, TappedEventArgs e)
@@ -411,7 +408,7 @@ public partial class MapPage : ContentPage
                     {
                         _lastSpokenPlaceId = nearestId;
                         nearest.LastPlayedAt = DateTime.Now;
-                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name, nearest.TtsLocale);
+                        await _narrationService.SpeakAsync(nearest.GetScriptForLocale(_narrationService.PreferredLocale));
                     }
                 }
                 else

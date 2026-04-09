@@ -51,8 +51,30 @@ public class PlaceService
         }
         catch (Exception ex)
         {
-            // Ảnh lỗi thì dùng placeholder — Places vẫn hiện bình thường
             System.Diagnostics.Debug.WriteLine($"⚠️ Lỗi lấy PlaceImages: {ex.Message}");
+        }
+
+        // Bước 3: Load TTS đa ngôn ngữ — lỗi thì vẫn dùng TtsScript cũ
+        try
+        {
+            var ttsResult = await _supabase
+                .From<PlaceTtsContent>()
+                .Get();
+
+            var ttsContents = ttsResult.Models;
+
+            foreach (var place in _cachedPlaces)
+            {
+                place.TtsContents = ttsContents
+                    .Where(t => t.PlaceId == place.PlaceId)
+                    .ToDictionary(t => t.Locale, t => t.Script);
+            }
+
+            System.Diagnostics.Debug.WriteLine($"✅ Load được {ttsContents.Count} TtsContents");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"⚠️ Lỗi lấy TtsContents: {ex.Message}");
         }
 
         return _cachedPlaces;

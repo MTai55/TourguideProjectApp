@@ -408,33 +408,70 @@ MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
 
 ---
 
-## 12. Lộ trình phát triển
+## 12. Hằng số kỹ thuật (Key Constants)
+
+| Hằng số | Giá trị | Vị trí trong code |
+|---|---|---|
+| Geofence Radius | 50m (mặc định, per-place) | `GeofenceEngine.cs` |
+| Geofence Cooldown | 10 phút | `GeofenceEngine.cs` |
+| Geofence Debounce | 2 giây | `GeofenceEngine.cs` |
+| Geofence Priority | 1 (mặc định) | `Places.Priority` |
+| Polling kích hoạt | 5 giây | `AccessSessionService.cs` |
+| Timer hết hạn | 60 giây | `AccessSessionService.cs` |
+| Reverse geocode cache | 20 giây | `MainPage.cs` |
+| OSRM Endpoint | `router.project-osrm.org` | `MapPage.xaml.cs` |
+| Map Center | 10.7615, 106.7033 (TP.HCM) | `MapPage.xaml.cs` |
+| Map Tile | CartoDB Voyager | `MapPage.xaml.cs` |
+| TTS Locale mặc định | `vi-VN` | `NarrationService.cs` |
+| TTS Locales hỗ trợ | vi-VN, en-US, zh-CN, ko-KR, ja-JP, fr-FR, th-TH | `NarrationService.cs` |
+| Supabase Region | ap-southeast-1 (Singapore) | `MauiProgram.cs` |
+| Session DeviceId | GUID 10 ký tự | `AccessSessionService.cs` |
+| Gói ngắn nhất | 1 tiếng — 10.000đ | `SubscriptionPage.xaml` |
+| Gói dài nhất | 3 ngày — 120.000đ | `SubscriptionPage.xaml` |
+| Bank VietQR | MB Bank | `Constants.cs` |
+
+---
+
+## 13. Lộ trình phát triển
 
 ### Giai đoạn 1 — MVP (Q2 2026) ✅ Hoàn thành
 - ✅ Kiểm soát truy cập theo gói thời gian (VietQR + polling)
 - ✅ GPS Foreground Service (Android) + định vị realtime
 - ✅ Geofence + TTS tự động (debounce, cooldown, priority)
-- ✅ Bản đồ Mapsui + marker POI tùy chỉnh SkiaSharp
+- ✅ Bản đồ Mapsui CartoDB Voyager + marker POI tùy chỉnh SkiaSharp
 - ✅ Chỉ đường OSRM + polyline
 - ✅ Danh sách địa điểm + tìm kiếm/lọc theo danh mục
 - ✅ Chi tiết địa điểm + gallery ảnh
 - ✅ Tour có sẵn + chi tiết điểm dừng
+- ✅ TTS đa ngôn ngữ 7 ngôn ngữ (bảng PlaceTtsContents)
 
 ### Giai đoạn 2 — Dữ liệu thật & Admin (Q3 2026)
 - [ ] Script enrich dữ liệu từ Google Places API (ảnh, rating, giờ mở cửa thật)
-- [ ] Giao diện admin web đơn giản để kích hoạt session (thay vì SQL thủ công)
-- [ ] Nội dung TTS cho tất cả địa điểm (50–100 chữ/địa điểm)
+- [ ] Giao diện admin web kích hoạt session (thay vì SQL thủ công)
+- [ ] Nội dung TTS cho tất cả địa điểm, đủ 7 ngôn ngữ
 - [ ] Hỗ trợ audio file MP3 thật thay vì TTS tổng hợp
 
-### Giai đoạn 3 — Hoàn thiện (Q4 2026)
-- [ ] Chế độ offline: cache dữ liệu Places khi mất mạng
-- [ ] Hệ thống đánh giá địa điểm đơn giản (1–5 sao)
-- [ ] Tối ưu pin: giảm tần suất GPS khi không di chuyển
+### Giai đoạn 3 — Bảo mật & Offline (Q4 2026)
+
+**Bảo mật:**
 - [ ] Xác thực session bằng server time (chống chỉnh giờ máy)
+- [ ] Rate limiting trên Supabase RLS
+- [ ] API key rotation cho Supabase Anon Key
+
+**Offline:**
+- [ ] Cache map tiles Mapsui khi còn mạng để dùng offline
+- [ ] Cache Places in-memory persist khi tắt app (local JSON)
+- [ ] Background sync khi có mạng trở lại
+
+**Tính năng mở rộng:**
+- [ ] Hệ thống đánh giá địa điểm (1–5 sao) tích hợp web
+- [ ] Tối ưu pin: giảm tần suất GPS khi không di chuyển
+- [ ] Mở rộng khu vực: Quận 1, Quận 7, Thủ Đức
+- [ ] Push notification khi gần POI mới chưa từng ghé
 
 ---
 
-## 13. UML Diagrams
+## 14. UML Diagrams
 
 ### 13.1 ER Diagram — Toàn bộ Database
 
@@ -1125,7 +1162,7 @@ sequenceDiagram
     User->>MapPage: Bấm "Chỉ đường" trên card
     MapPage->>LocationService: Lấy vị trí hiện tại
     LocationService-->>MapPage: (lat, lon) origin
-    MapPage->>OSRM: GET /route/v1/driving/{origin};{dest}
+    MapPage->>OSRM: GET /route/v1/driving/origin_coords to dest_coords
     OSRM-->>MapPage: GeoJSON polyline
     MapPage->>MapPage: Vẽ polyline + zoom vào route
     MapPage->>MapPage: Hiện CancelRoutePanel

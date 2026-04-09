@@ -393,20 +393,6 @@ sequenceDiagram
     App-->>User: Hiển thị giải thích và hướng dẫn mở Settings
 ```
 
-## 20. Từ chối quyền camera
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant QRScanPage
-    participant OS as Hệ điều hành
-
-    QRScanPage->>OS: Yêu cầu quyền camera
-    User->>OS: Từ chối
-    OS-->>QRScanPage: Permission denied
-    QRScanPage-->>User: Thông báo không thể quét QR nếu chưa cấp quyền
-```
-
 ## Gợi ý dùng cho báo cáo
 
 - Nếu báo cáo cần ngắn gọn, nên chọn 8 biểu đồ chính:

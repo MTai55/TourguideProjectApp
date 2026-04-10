@@ -54,18 +54,26 @@ Tự động phát thuyết minh đúng lúc — khi người dùng đi đến g
 
 | Actor | Use Case |
 |---|---|
-| **Khách (User)** | Chọn & thanh toán gói sử dụng |
-| | Xem bản đồ địa điểm |
-| | Nghe thuyết minh tự động khi đến gần POI |
+| **Khách du lịch** | Chọn & thanh toán gói sử dụng |
+| | Xem bản đồ & marker địa điểm |
+| | Tìm kiếm & lọc địa điểm |
 | | Xem chi tiết địa điểm |
-| | Tìm kiếm & lọc địa điểm theo danh mục |
-| | Xem & theo tour có sẵn |
 | | Chỉ đường đến địa điểm |
+| | Nghe thuyết minh tự động khi đến gần POI |
+| | Chọn ngôn ngữ thuyết minh |
+| | Xem & theo tour có sẵn |
+| **Owner** | Đăng ký / Đăng nhập |
+| | Quản lý địa điểm (thêm, sửa, xoá) |
+| | Cập nhật trạng thái mở/đóng cửa |
+| | Cập nhật nội dung TTS script |
+| | Quản lý khuyến mãi |
+| | Xem & trả lời đánh giá |
+| | Xem thống kê địa điểm |
 | **Admin** | Kích hoạt gói sử dụng cho khách |
-| | Quản lý nội dung địa điểm (qua Supabase) |
-| **Hệ thống** | Tự động phát thuyết minh theo GPS |
-| | Tự động khóa app khi hết hạn gói |
-| | Polling xác nhận thanh toán |
+| | Duyệt / từ chối địa điểm |
+| | Ẩn / hiện đánh giá vi phạm |
+| | Khoá / mở tài khoản người dùng |
+| | Xem thống kê toàn hệ thống |
 
 ### Use Case Diagram
 
@@ -1253,6 +1261,60 @@ sequenceDiagram
     MapPage->>OSRM: Tính route đến điểm đầu
     OSRM-->>MapPage: Polyline
     MapPage-->>User: Hiện đường đi đến điểm 1
+```
+
+#### 13.4.11 Chọn ngôn ngữ giọng đọc TTS
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant AccountPage
+    participant NarrationService
+    participant Preferences
+    participant GeofenceEngine
+
+    User->>AccountPage: Mở tab Cài đặt
+    AccountPage->>NarrationService: SupportedLocales (7 ngôn ngữ)
+    NarrationService-->>AccountPage: [(Tiếng Việt, vi-VN), (English, en-US), ...]
+    AccountPage->>Preferences: Get("tts_preferred_locale")
+    Preferences-->>AccountPage: locale hiện tại (vd: vi-VN)
+    AccountPage-->>User: Hiện Picker, highlight ngôn ngữ đang chọn
+
+    User->>AccountPage: Chọn ngôn ngữ mới (vd: en-US)
+    AccountPage->>NarrationService: PreferredLocale = "en-US"
+    NarrationService->>Preferences: Set("tts_preferred_locale", "en-US")
+    AccountPage-->>User: Cập nhật subtitle hiển thị "English"
+
+    Note over GeofenceEngine,NarrationService: Lần sau khi Geofence kích hoạt
+    GeofenceEngine->>NarrationService: SpeakAsync(place.GetScriptForLocale("en-US"))
+    NarrationService->>NarrationService: Tìm locale "en-US" trên thiết bị
+    NarrationService-->>User: Đọc thuyết minh bằng tiếng Anh
+```
+
+#### 13.4.12 Tìm kiếm & lọc địa điểm
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant MainPage
+    participant PlaceService
+
+    User->>MainPage: Mở tab Khám phá
+    MainPage->>PlaceService: GetCachedPlaces()
+    PlaceService-->>MainPage: Places[]
+    MainPage-->>User: Hiện danh sách địa điểm
+
+    User->>MainPage: Nhập từ khoá vào SearchBar
+    MainPage->>MainPage: Lọc Places theo Name.Contains(keyword)
+    MainPage-->>User: Cập nhật danh sách kết quả
+
+    User->>MainPage: Chọn chip lọc (loại / khu vực)
+    MainPage->>MainPage: Lọc thêm theo CategoryId / District
+    MainPage-->>User: Cập nhật danh sách kết quả
+
+    User->>MainPage: Tap vào địa điểm
+    MainPage->>MainPage: Navigation.PushAsync(PlaceDetailPage)
+    MainPage-->>User: Hiện chi tiết địa điểm
 ```
 
 ---

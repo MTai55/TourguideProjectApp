@@ -311,6 +311,17 @@
 
             </VerticalStackLayout>
 
+            <!-- DEV ONLY: huỷ kích hoạt để test luồng thanh toán -->
+            <Label Text="[DEV] Huỷ kích hoạt phiên"
+                   TextColor="#5A4A3A"
+                   FontSize="12"
+                   HorizontalOptions="Center"
+                   Margin="0,16,0,32">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDevDeactivateTapped"/>
+                </Label.GestureRecognizers>
+            </Label>
+
         </VerticalStackLayout>
     </ScrollView>
 

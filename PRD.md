@@ -67,6 +67,57 @@ Tự động phát thuyết minh đúng lúc — khi người dùng đi đến g
 | | Tự động khóa app khi hết hạn gói |
 | | Polling xác nhận thanh toán |
 
+### Use Case Diagram
+
+```mermaid
+graph LR
+    Tourist(["👤 Khách du lịch"])
+    Admin(["👤 Admin"])
+    System(["⚙️ Hệ thống"])
+
+    subgraph APP["  TourGuideAPP  "]
+        UC1(["Chọn gói truy cập"])
+        UC2(["Thanh toán VietQR"])
+        UC3(["Xem bản đồ & POI"])
+        UC4(["Tìm kiếm & lọc địa điểm"])
+        UC5(["Xem chi tiết địa điểm"])
+        UC6(["Chỉ đường đến địa điểm"])
+        UC7(["Nghe thuyết minh tự động"])
+        UC8(["Chọn ngôn ngữ thuyết minh"])
+        UC9(["Xem & theo tour"])
+        UC10(["Gọi điện / mở website"])
+        UC11(["Kích hoạt phiên truy cập"])
+        UC12(["Quản lý nội dung địa điểm"])
+        UC13(["Polling xác nhận thanh toán"])
+        UC14(["Tự động khóa khi hết hạn"])
+        UC15(["Phát thuyết minh theo GPS"])
+    end
+
+    Tourist --> UC1
+    Tourist --> UC2
+    Tourist --> UC3
+    Tourist --> UC4
+    Tourist --> UC5
+    Tourist --> UC6
+    Tourist --> UC7
+    Tourist --> UC8
+    Tourist --> UC9
+    Tourist --> UC10
+
+    Admin --> UC11
+    Admin --> UC12
+
+    System --> UC13
+    System --> UC14
+    System --> UC15
+
+    UC1 -. include .-> UC2
+    UC6 -. include .-> UC3
+    UC7 -. include .-> UC15
+    UC2 -. include .-> UC13
+    UC13 -. include .-> UC11
+```
+
 ---
 
 ## 4. Kiến trúc hệ thống
@@ -1350,30 +1401,6 @@ sequenceDiagram
     TrackingController-->>User: 200
 ```
 
-#### 13.5.6 Khiếu nại và xử lý
-
-```mermaid
-sequenceDiagram
-    actor Owner
-    participant ComplaintsController
-    participant AppDbContext
-    actor Admin
-
-    Owner->>ComplaintsController: POST /api/complaints {reviewId, type, title, content}
-    ComplaintsController->>AppDbContext: INSERT Complaints (Status="Pending")
-    AppDbContext-->>ComplaintsController: Complaint
-    ComplaintsController-->>Owner: 201
-
-    Admin->>ComplaintsController: GET /api/complaints
-    ComplaintsController->>AppDbContext: SELECT Complaints (Admin: tất cả, Owner: của mình)
-    AppDbContext-->>ComplaintsController: Complaints[]
-    ComplaintsController-->>Admin: Danh sách khiếu nại
-
-    Admin->>ComplaintsController: PUT /api/complaints/{id}/resolve
-    ComplaintsController->>AppDbContext: UPDATE Status="Resolved", AdminReply, ResolvedAt
-    AppDbContext-->>ComplaintsController: OK
-    ComplaintsController-->>Admin: 200
-```
 
 ---
 

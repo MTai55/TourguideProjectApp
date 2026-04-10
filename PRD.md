@@ -1344,34 +1344,8 @@ sequenceDiagram
     AdminController-->>Admin: 200 "Đã duyệt"
 ```
 
-#### 13.5.4 Viết review và thông báo SignalR
 
-```mermaid
-sequenceDiagram
-    actor User
-    participant ReviewsController
-    participant AppDbContext
-    participant INotificationService
-    participant NotificationHub
-    actor Owner
-
-    User->>ReviewsController: POST /api/reviews {placeId, rating, comment}
-    ReviewsController->>AppDbContext: Kiểm tra chưa review place này
-    AppDbContext-->>ReviewsController: Chưa có
-    ReviewsController->>AppDbContext: INSERT Reviews
-    ReviewsController->>AppDbContext: Tính lại AverageRating + TotalReviews
-    ReviewsController->>AppDbContext: UPDATE Places SET AverageRating, TotalReviews
-    ReviewsController->>INotificationService: SendNewReview(ownerId, placeName, rating)
-    INotificationService->>NotificationHub: Clients.Group("owner_{ownerId}").SendAsync("NewReview")
-    NotificationHub-->>Owner: Real-time notification
-
-    Owner->>ReviewsController: PUT /api/reviews/{id}/reply
-    ReviewsController->>AppDbContext: UPDATE Reviews SET OwnerReply
-    AppDbContext-->>ReviewsController: OK
-    ReviewsController-->>Owner: 200
-```
-
-#### 13.5.5 Theo dõi vị trí và auto check-in
+#### 13.5.4 Theo dõi vị trí và auto check-in
 
 ```mermaid
 sequenceDiagram

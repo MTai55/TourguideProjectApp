@@ -1493,6 +1493,62 @@ flowchart TD
 
 ---
 
+### 13.7 BFD Bậc 1 — TourGuideAPP
+
+> **BFD (Biểu đồ phân rã chức năng)** — thể hiện toàn bộ chức năng hệ thống phân theo cấp bậc.
+
+```mermaid
+graph TD
+    ROOT["Hệ thống TourGuideAPP"]
+
+    ROOT --> F1["1. Quản lý\nphiên truy cập"]
+    ROOT --> F2["2. Khám phá\nđịa điểm"]
+    ROOT --> F3["3. Bản đồ\nvà Định vị"]
+    ROOT --> F4["4. Chỉ đường"]
+    ROOT --> F5["5. Thuyết minh\ntự động"]
+    ROOT --> F6["6. Quản lý Tour"]
+
+    F1 --> F1_1["1.1 Kiểm tra\nphiên còn hạn"]
+    F1 --> F1_2["1.2 Chọn gói\ntruy cập"]
+    F1 --> F1_3["1.3 Tạo QR\nthanh toán VietQR"]
+    F1 --> F1_4["1.4 Kích hoạt\nphiên sau thanh toán"]
+    F1 --> F1_5["1.5 Thông báo\nhết hạn phiên"]
+
+    F2 --> F2_1["2.1 Tải danh sách\nđịa điểm"]
+    F2 --> F2_2["2.2 Tìm kiếm\ntheo tên"]
+    F2 --> F2_3["2.3 Lọc theo\nloại / khu vực"]
+    F2 --> F2_4["2.4 Xem chi tiết\nđịa điểm"]
+    F2 --> F2_5["2.5 Gọi điện\nvà mở website"]
+
+    F3 --> F3_1["3.1 Hiển thị\nbản đồ OSM"]
+    F3 --> F3_2["3.2 Theo dõi\nvị trí GPS"]
+    F3 --> F3_3["3.3 Hiển thị\nmarker POI"]
+    F3 --> F3_4["3.4 Tap marker\nxem thẻ thông tin"]
+    F3 --> F3_5["3.5 Tìm kiếm\ntrên bản đồ"]
+
+    F4 --> F4_1["4.1 Tính tuyến đường\nqua OSRM"]
+    F4 --> F4_2["4.2 Vẽ tuyến\nlên bản đồ"]
+    F4 --> F4_3["4.3 Hiển thị\nkhoảng cách và ETA"]
+    F4 --> F4_4["4.4 Huỷ chỉ đường"]
+
+    F5 --> F5_1["5.1 Phát hiện POI\ngần vị trí Geofence"]
+    F5 --> F5_2["5.2 Lấy script TTS\ntheo ngôn ngữ"]
+    F5 --> F5_3["5.3 Đọc thuyết minh\nbằng giọng nói"]
+    F5 --> F5_4["5.4 Chọn ngôn ngữ\nthuyết minh"]
+    F5 --> F5_5["5.5 Cooldown\ntránh đọc lại"]
+
+    F6 --> F6_1["6.1 Xem danh sách\ntour gợi ý"]
+    F6 --> F6_2["6.2 Xem chi tiết\ntour và điểm dừng"]
+    F6 --> F6_3["6.3 Chỉ đường\ntheo tour"]
+    F6 --> F6_4["6.4 Thuyết minh\ntừng điểm dừng"]
+```
+
+---
+
+**Tổng:** 1 ER + 2 Class + 16 Sequence + 5 Activity + 1 BFD = **25 diagrams**
+
+---
+
 ## Phụ lục: Thuật ngữ
 
 | Thuật ngữ | Giải thích |

@@ -4,13 +4,16 @@ using System.Security.Claims;
 using TourGuideAPI.DTOs.Auth;
 using TourGuideAPI.Services;
 using Microsoft.AspNetCore.RateLimiting;
+using TourGuideAPI.Data;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace TourGuideAPI.Controllers;
 
 [ApiController]
 [Route("api/auth")]
 [EnableRateLimiting("auth")]
-public class AuthController(IAuthService auth) : ControllerBase
+public class AuthController(IAuthService auth, AppDbContext db) : ControllerBase
 {
     // POST /api/auth/register
     [HttpPost("register")]
@@ -83,5 +86,64 @@ public class AuthController(IAuthService auth) : ControllerBase
         var role = User.FindFirstValue(ClaimTypes.Role);
         var fullName = User.FindFirstValue("fullName");
         return Ok(new { userId, email, role, fullName });
+    }
+    // GET /api/auth/profile
+    [HttpGet("profile")]
+    [Authorize]
+    public async Task<IActionResult> GetProfile()
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user = await db.Users
+            .Where(u => u.UserId == userId)
+            .Select(u => new {
+                u.UserId, u.FullName, u.Email, u.Phone,
+                u.Role, u.CreatedAt, u.AvatarUrl
+            })
+            .FirstOrDefaultAsync();
+
+        return user == null ? NotFound() : Ok(user);
+    }
+
+    // PUT /api/auth/profile
+    [HttpPut("profile")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user   = await db.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+
+        // Kiểm tra email trùng (nếu đổi email)
+        if (user.Email != dto.Email)
+        {
+            var exists = await db.Users.AnyAsync(u => u.Email == dto.Email && u.UserId != userId);
+            if (exists) return BadRequest(new { message = "Email này đã được sử dụng bởi tài khoản khác." });
+        }
+
+        user.FullName = dto.FullName;
+        user.Email    = dto.Email;
+        user.Phone    = dto.Phone;
+        await db.SaveChangesAsync();
+
+        return Ok(new { user.UserId, user.FullName, user.Email, user.Phone, user.Role });
+    }
+
+    // PUT /api/auth/change-password
+    [HttpPut("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var user   = await db.Users.FindAsync(userId);
+        if (user == null) return NotFound();
+
+        // Verify mật khẩu hiện tại
+        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+            return BadRequest(new { message = "Mật khẩu hiện tại không đúng." });
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+        await db.SaveChangesAsync();
+
+        return Ok(new { message = "Đổi mật khẩu thành công." });
     }
 }

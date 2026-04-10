@@ -1,0 +1,63 @@
+@model TourismApp.Web.Models.UpdateProfileViewModel
+@{ ViewData["Title"] = "Chỉnh sửa tài khoản"; }
+
+<div class="flex items-center gap-3 mb-6 pt-2">
+  <a asp-action="Index"
+     class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-sm font-semibold">
+    <span class="material-symbols-outlined text-lg">arrow_back</span> Quay lại
+  </a>
+  <span class="text-slate-300">/</span>
+  <h2 class="text-2xl font-bold tracking-tight">Chỉnh sửa tài khoản</h2>
+</div>
+
+<div class="max-w-xl">
+  <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-surface-container flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">edit</span>
+      <h3 class="font-bold text-base">Thông tin cá nhân</h3>
+    </div>
+    <form asp-action="Edit" method="post" class="p-6 space-y-5">
+      @Html.AntiForgeryToken()
+
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">
+          Họ và tên <span class="text-red-500">*</span>
+        </label>
+        <input asp-for="FullName"
+               class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+               placeholder="Nguyễn Văn A" />
+        <span asp-validation-for="FullName" class="text-red-500 text-xs mt-1 block"></span>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">
+          Email <span class="text-red-500">*</span>
+        </label>
+        <input asp-for="Email" type="email"
+               class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+               placeholder="example@email.com" />
+        <span asp-validation-for="Email" class="text-red-500 text-xs mt-1 block"></span>
+        <p class="text-xs text-on-surface-variant mt-1">Thay đổi email sẽ yêu cầu đăng nhập lại.</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">Số điện thoại</label>
+        <input asp-for="Phone" type="tel"
+               class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+               placeholder="0901234567" />
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="flex items-center gap-2 px-8 py-3.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+                style="background:linear-gradient(135deg,#954400,#fc8127)">
+          <span class="material-symbols-outlined text-sm">save</span> Lưu thay đổi
+        </button>
+        <a asp-action="Index"
+           class="px-6 py-3.5 bg-surface-container-low text-on-surface font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+          Hủy
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

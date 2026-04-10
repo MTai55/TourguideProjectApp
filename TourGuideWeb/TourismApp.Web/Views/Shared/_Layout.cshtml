@@ -185,10 +185,10 @@
              style="background:linear-gradient(135deg,#954400,#fc8127)">
           @(userName?.Length > 0 ? userName[0].ToString().ToUpper() : "U")
         </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-bold text-white truncate">@userName</p>
+        <a asp-controller="Profile" asp-action="Index" class="flex-1 min-w-0 group">
+          <p class="text-sm font-bold text-white truncate group-hover:text-primary-container transition-colors">@userName</p>
           <p class="text-[10px] text-slate-500 uppercase tracking-wider">@userRole</p>
-        </div>
+        </a>
         <a asp-controller="Auth" asp-action="Logout" asp-area=""
            class="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-red-400/10"
            title="Đăng xuất">
@@ -252,7 +252,7 @@
     <!-- Footer -->
     <footer class="px-8 py-5 border-t border-slate-100 bg-white">
       <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-        <p class="text-slate-400 text-xs">© 2025 Phố Ẩm Thực HCM</p>
+        <p class="text-slate-400 text-xs">© Phố Ẩm Thực HCM</p>
         <div class="flex gap-6 text-xs font-bold text-slate-400">
           <a href="#" class="hover:text-primary transition-colors">Chính sách</a>
           <a href="#" class="hover:text-primary transition-colors">Hỗ trợ</a>

@@ -295,4 +295,24 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         public int PageSize { get; set; }
         public List<PlaceViewModel> Items { get; set; } = new List<PlaceViewModel>();
     }
+
+    // Lấy thông tin profile của user đang đăng nhập
+    public Task<ProfileViewModel?> GetProfileAsync()
+        => GetAsync<ProfileViewModel>("/api/auth/profile");
+
+    // Cập nhật profile
+    public async Task<(bool, string)> UpdateProfileAsync(UpdateProfileViewModel vm)
+    {
+        var body = new { fullName = vm.FullName, email = vm.Email, phone = vm.Phone };
+        var (ok, err) = await PutAsync("/api/auth/profile", body);
+        return (ok, err);
+    }
+
+    // Đổi mật khẩu
+    public async Task<(bool, string)> ChangePasswordAsync(ChangePasswordViewModel vm)
+    {
+        var body = new { currentPassword = vm.CurrentPassword, newPassword = vm.NewPassword };
+        var (ok, err) = await PutAsync("/api/auth/change-password", body);
+        return (ok, err);
+    }
 }

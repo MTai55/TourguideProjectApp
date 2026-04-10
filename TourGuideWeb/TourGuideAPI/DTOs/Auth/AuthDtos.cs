@@ -22,3 +22,14 @@ public record AuthResponseDto(
     string RefreshToken,
     DateTime ExpiresAt
 );
+
+public record UpdateProfileDto(
+    string  FullName,
+    string  Email,
+    string? Phone
+);
+
+public record ChangePasswordDto(
+    string CurrentPassword,
+    string NewPassword
+);

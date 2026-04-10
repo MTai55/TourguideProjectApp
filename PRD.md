@@ -564,29 +564,11 @@ erDiagram
         string DeviceInfo
     }
 
-    Messages {
-        int MessageId PK
+    PlaceTtsContents {
+        int Id PK
         int PlaceId FK
-        int UserId FK
-        string Content
-        bool IsFromOwner
-        int ParentId FK
-        bool IsPublic
-        datetime CreatedAt
-    }
-
-    Complaints {
-        int ComplaintId PK
-        int UserId FK
-        int PlaceId FK
-        int ReviewId FK
-        string Type
-        string Title
-        string Content
-        string Status
-        string AdminReply
-        datetime CreatedAt
-        datetime ResolvedAt
+        string Locale
+        string Script
     }
 
     Promotions {
@@ -611,28 +593,6 @@ erDiagram
         datetime RecordedAt
     }
 
-    VisitHistory {
-        int VisitId PK
-        int UserId FK
-        int PlaceId FK
-        datetime CheckInTime
-        datetime CheckOutTime
-        int DurationMins
-        bool AutoDetected
-        string Notes
-    }
-
-    Staff {
-        int StaffId PK
-        int PlaceId FK
-        int UserId
-        string FullName
-        string Phone
-        string Role
-        bool IsActive
-        datetime JoinedAt
-    }
-
     AccessSessions {
         string SessionId PK
         string DeviceId
@@ -649,19 +609,11 @@ erDiagram
     Users ||--o{ Reviews : "writes"
     Users ||--o{ RefreshTokens : "has"
     Users ||--o{ UserTracking : "generates"
-    Users ||--o{ VisitHistory : "has"
-    Users ||--o{ Messages : "sends"
-    Users ||--o{ Complaints : "files"
     Categories ||--o{ Places : "classifies"
     Places ||--o{ PlaceImages : "has (Cascade)"
     Places ||--o{ Reviews : "receives"
-    Places ||--o{ VisitHistory : "tracks"
-    Places ||--o{ Messages : "receives"
     Places ||--o{ Promotions : "has (Cascade)"
-    Places ||--o{ Staff : "employs (Cascade)"
-    Places ||--o{ Complaints : "involved in"
-    Messages ||--o{ Messages : "parent-reply"
-    Reviews ||--o{ Complaints : "reported in"
+    Places ||--o{ PlaceTtsContents : "has scripts"
 ```
 
 ---

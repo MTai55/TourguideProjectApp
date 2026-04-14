@@ -80,10 +80,11 @@ Tự động phát thuyết minh đúng lúc — khi người dùng đi đến g
 ```mermaid
 graph LR
     Tourist(["👤 Khách du lịch"])
+    Owner(["👤 Owner"])
     Admin(["👤 Admin"])
     System(["⚙️ Hệ thống"])
 
-    subgraph APP["  TourGuideAPP  "]
+    subgraph APP["  TourGuideAPP (Mobile)  "]
         UC1(["Chọn gói truy cập"])
         UC2(["Thanh toán VietQR"])
         UC3(["Xem bản đồ & POI"])
@@ -94,11 +95,17 @@ graph LR
         UC8(["Chọn ngôn ngữ thuyết minh"])
         UC9(["Xem & theo tour"])
         UC10(["Gọi điện / mở website"])
-        UC11(["Kích hoạt phiên truy cập"])
-        UC12(["Quản lý nội dung địa điểm"])
         UC13(["Polling xác nhận thanh toán"])
         UC14(["Tự động khóa khi hết hạn"])
         UC15(["Phát thuyết minh theo GPS"])
+    end
+
+    subgraph WEB["  TourGuideAPI (Web)  "]
+        UC11(["Kích hoạt phiên truy cập"])
+        UC12(["Quản lý địa điểm & TTS"])
+        UC16(["Duyệt / từ chối địa điểm"])
+        UC17(["Quản lý tài khoản người dùng"])
+        UC18(["Xem thống kê hệ thống"])
     end
 
     Tourist --> UC1
@@ -112,8 +119,12 @@ graph LR
     Tourist --> UC9
     Tourist --> UC10
 
+    Owner --> UC12
+
     Admin --> UC11
-    Admin --> UC12
+    Admin --> UC16
+    Admin --> UC17
+    Admin --> UC18
 
     System --> UC13
     System --> UC14
@@ -704,6 +715,7 @@ classDiagram
         +int Priority
         +string ImageUrl
         +DateTime LastPlayedAt
+        +GetScriptForLocale(locale) string
     }
 
     class PlaceImage {
@@ -746,7 +758,9 @@ classDiagram
     }
 
     class NarrationService {
-        +SpeakAsync(text, locale) Task
+        +static List SupportedLocales
+        +string PreferredLocale
+        +SpeakAsync(text) Task
         +StopAsync() Task
     }
 
@@ -894,10 +908,6 @@ classDiagram
     class TrackingController {
         -ITrackingService _tracking
         +LogLocation(LocationDto) Task~ActionResult~
-        +CheckIn(CheckInDto) Task~ActionResult~
-        +CheckOut(visitId) Task~ActionResult~
-        +GetHistory(page) Task~ActionResult~
-        +GetStats() Task~ActionResult~
     }
 
     class AdminController {
@@ -949,10 +959,6 @@ classDiagram
     class ITrackingService {
         <<interface>>
         +LogLocationAsync(userId, dto) Task
-        +CheckInAsync(userId, dto) Task~VisitHistory~
-        +CheckOutAsync(userId, visitId) Task
-        +GetTripStatsAsync(userId) Task~TripStatsDto~
-        +GetVisitHistoryAsync(userId, page) Task~List~VisitSummaryDto~~
     }
 
     class TrackingService {
@@ -979,12 +985,9 @@ classDiagram
         +DbSet~Category~ Categories
         +DbSet~Review~ Reviews
         +DbSet~RefreshToken~ RefreshTokens
-        +DbSet~Message~ Messages
-        +DbSet~Complaint~ Complaints
         +DbSet~Promotion~ Promotions
         +DbSet~UserTracking~ UserTracking
-        +DbSet~VisitHistory~ VisitHistory
-        +DbSet~Staff~ Staff
+        +DbSet~PlaceTtsContent~ PlaceTtsContents
         +OnModelCreating(builder) void
     }
 
@@ -1008,134 +1011,110 @@ classDiagram
 
 ### 13.4 Sequence Diagrams — Mobile App
 
-#### 13.4.1 Mở app và kiểm tra session
+#### 13.4.1 Chọn & thanh toán gói sử dụng
 
 ```mermaid
 sequenceDiagram
     actor User
+    actor Admin
     participant App
-    participant Preferences
-    participant Timer
     participant SubscriptionPage
+    participant PaymentQRPage
+    participant AccessSessionService
+    participant Supabase
+    participant Preferences
     participant AppShell as Main App
 
+    Note over User,App: Bước 1 — Mở app, kiểm tra session
     User->>App: Mở ứng dụng
-    App->>Preferences: Đọc ExpiresAt, SessionId
-    Preferences-->>App: Trả dữ liệu
-
+    App->>AccessSessionService: IsAccessValid()
+    AccessSessionService->>Preferences: Đọc ExpiresAt
+    Preferences-->>AccessSessionService: DateTime
     alt Session còn hạn
-        App->>AppShell: Hiện giao diện chính
-        App->>Timer: Khởi động timer 60s
+        AccessSessionService-->>App: true
+        App->>AppShell: Vào giao diện chính
+        App->>AccessSessionService: StartExpiryTimer()
     else Hết hạn hoặc chưa có
+        AccessSessionService-->>App: false
         App->>SubscriptionPage: Hiện trang chọn gói
     end
-```
 
-#### 13.4.2 Chọn gói và tạo session
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant SubscriptionPage
-    participant AccessSessionService
-    participant Supabase
-    participant Preferences
-    participant PaymentQRPage
-
-    User->>SubscriptionPage: Chọn gói (1h/2h/1day/3day)
-    SubscriptionPage->>Preferences: Lấy DeviceId
-    alt Chưa có DeviceId
-        Preferences-->>SubscriptionPage: null
-        SubscriptionPage->>Preferences: Tạo + lưu DeviceId mới
-    end
-    SubscriptionPage->>AccessSessionService: CreatePendingSessionAsync(package)
+    Note over User,PaymentQRPage: Bước 2 — Chọn gói & tạo QR
+    User->>SubscriptionPage: Chọn gói (1h / 2h / 1day / 3day)
+    SubscriptionPage->>PaymentQRPage: Navigate(package)
+    PaymentQRPage->>AccessSessionService: CreatePendingSessionAsync(package)
+    AccessSessionService->>Preferences: Lấy hoặc tạo DeviceId
+    Preferences-->>AccessSessionService: DeviceId
     AccessSessionService->>Supabase: INSERT AccessSessions (IsActive=false)
     Supabase-->>AccessSessionService: SessionId
-    AccessSessionService-->>SubscriptionPage: AccessSession
-    SubscriptionPage->>PaymentQRPage: Navigate(session)
-```
+    AccessSessionService-->>PaymentQRPage: AccessSession (SessionId, DeviceId)
+    PaymentQRPage-->>User: Hiện mã QR VietQR
 
-#### 13.4.3 Polling kích hoạt và vào app
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant PaymentQRPage
-    participant AccessSessionService
-    participant Supabase
-    actor Admin
-    participant Preferences
-    participant AppShell as Main App
-
-    User->>PaymentQRPage: Quét QR VietQR + chuyển khoản
-    loop Poll mỗi 5 giây
-        PaymentQRPage->>AccessSessionService: IsAccessValid?
-        AccessSessionService->>Supabase: SELECT AccessSessions WHERE SessionId
-        Supabase-->>AccessSessionService: IsActive = false
-        AccessSessionService-->>PaymentQRPage: Chưa kích hoạt
-    end
-
-    Admin->>Supabase: SELECT activate_session('DeviceId')
-    Supabase->>Supabase: UPDATE IsActive=true, ExpiresAt=NOW+duration
-
-    PaymentQRPage->>AccessSessionService: Poll lần kế
-    AccessSessionService->>Supabase: SELECT session
+    Note over User,AppShell: Bước 3 — Polling & kích hoạt
+    User->>PaymentQRPage: Chuyển khoản theo mã QR
+    PaymentQRPage->>AccessSessionService: StartPollingForActivation(sessionId)
+    Note over AccessSessionService,Supabase: Nội bộ — poll mỗi 5 giây
+    Admin->>Supabase: UPDATE IsActive=true, ExpiresAt=NOW+duration
+    AccessSessionService->>Supabase: SELECT session (internal poll)
     Supabase-->>AccessSessionService: IsActive=true, ExpiresAt
-    AccessSessionService-->>PaymentQRPage: Đã kích hoạt
-    PaymentQRPage->>Preferences: Lưu ExpiresAt, SessionId
+    AccessSessionService->>Preferences: Lưu ExpiresAt, SessionId
+    AccessSessionService-->>PaymentQRPage: OnActivated callback
+    PaymentQRPage->>AccessSessionService: StartExpiryTimer()
     PaymentQRPage->>AppShell: Application.MainPage = new AppShell()
-```
+    AppShell-->>User: Vào giao diện chính
 
-#### 13.4.4 Timer hết hạn gói
-
-```mermaid
-sequenceDiagram
-    participant Timer
-    participant Preferences
-    participant App
-    participant SubscriptionPage
-    actor User
-
-    loop Mỗi 60 giây
-        Timer->>Preferences: Đọc ExpiresAt
-        Preferences-->>Timer: DateTime
-        alt Còn hạn
-            Timer-->>Timer: Tiếp tục
-        else Hết hạn
-            Timer->>App: AccessExpired event
-            App->>User: Alert "Gói sử dụng đã hết hạn"
-            App->>SubscriptionPage: Application.MainPage = NavigationPage(SubscriptionPage)
+    Note over App,AppShell: Bước 4 — Timer tự động khóa khi hết hạn
+    Note over AccessSessionService: StartExpiryTimer() chạy ngầm sau khi kích hoạt
+    loop Nội bộ — mỗi 60 giây
+        AccessSessionService->>Preferences: Đọc ExpiresAt
+        AccessSessionService->>AccessSessionService: IsAccessValid()
+        alt Hết hạn
+            AccessSessionService->>App: AccessExpired event
+            App->>User: Alert "Gói đã hết hạn"
+            App->>SubscriptionPage: Quay về trang chọn gói
         end
     end
 ```
 
-#### 13.4.5 Tải Places và cache
+---
+
+#### 13.4.2 Tìm kiếm & lọc địa điểm
 
 ```mermaid
 sequenceDiagram
+    actor User
     participant MainPage
     participant PlaceService
     participant Cache as In-memory Cache
     participant Supabase
 
+    Note over MainPage,Supabase: Bước 1 — Tải dữ liệu vào cache
     MainPage->>PlaceService: GetAllPlacesAsync()
     PlaceService->>Cache: Kiểm tra _cache.Count > 0
-
-    alt Cache có dữ liệu
-        Cache-->>PlaceService: Trả list
-        PlaceService-->>MainPage: Trả dữ liệu cache
-    else Cache trống
+    alt Cache trống
         PlaceService->>Supabase: SELECT Places (IsActive, IsApproved)
         Supabase-->>PlaceService: Places[]
         PlaceService->>Supabase: SELECT PlaceImages
         Supabase-->>PlaceService: PlaceImages[]
-        PlaceService->>PlaceService: Gán ImageUrl vào Place
         PlaceService->>Cache: Lưu vào _cache
-        PlaceService-->>MainPage: Trả dữ liệu mới
     end
+    PlaceService-->>MainPage: Places[]
+    MainPage-->>User: Hiện danh sách đầy đủ
+
+    Note over User,MainPage: Bước 2 — Tìm kiếm theo tên
+    User->>MainPage: Nhập từ khoá vào SearchBar
+    MainPage->>MainPage: Lọc theo Name.Contains(keyword)
+    MainPage-->>User: Cập nhật danh sách
+
+    Note over User,MainPage: Bước 3 — Lọc theo loại / khu vực
+    User->>MainPage: Chọn chip lọc
+    MainPage->>MainPage: Lọc thêm theo CategoryId / District
+    MainPage-->>User: Cập nhật danh sách
 ```
 
-#### 13.4.6 Bản đồ — hiển thị và tap marker
+---
+
+#### 13.4.3 Xem bản đồ & marker địa điểm
 
 ```mermaid
 sequenceDiagram
@@ -1145,98 +1124,107 @@ sequenceDiagram
     participant LocationService
     participant Mapsui
 
+    Note over User,Mapsui: Bước 1 — Hiển thị bản đồ
     User->>MapPage: Mở tab Bản đồ
     MapPage->>PlaceService: GetCachedPlaces()
     PlaceService-->>MapPage: Places[]
     MapPage->>LocationService: Lấy vị trí hiện tại
-    LocationService-->>MapPage: Location
-    MapPage->>Mapsui: Vẽ POI markers (đỏ) + user marker (xanh)
-    Mapsui-->>User: Hiển thị bản đồ
+    LocationService-->>MapPage: (lat, lon)
+    MapPage->>Mapsui: Vẽ marker POI đỏ + marker user xanh
+    Mapsui-->>User: Hiển thị bản đồ + vị trí
 
+    Note over User,MapPage: Bước 2 — Tap marker xem thông tin
     User->>Mapsui: Tap marker POI
     Mapsui->>MapPage: OnMapInfo(e)
-    MapPage->>MapPage: Lấy PlaceId từ feature["id"]
-    MapPage->>PlaceService: GetCachedPlaces().Find(id)
+    MapPage->>PlaceService: GetCachedPlaces().Find(PlaceId)
     PlaceService-->>MapPage: Place
-    MapPage-->>User: Hiện bottom card (Google Maps style)
+    MapPage-->>User: Hiện bottom card (tên, ảnh, giờ, nút chỉ đường)
 ```
 
-#### 13.4.7 Chỉ đường OSRM
+---
+
+#### 13.4.4 Chỉ đường đến địa điểm
 
 ```mermaid
 sequenceDiagram
     actor User
     participant MapPage
+    participant PlaceDetailPage
     participant LocationService
     participant OSRM
 
+    Note over User,OSRM: Luồng 1 — Chỉ đường từ bottom card bản đồ
     User->>MapPage: Bấm "Chỉ đường" trên card
     MapPage->>LocationService: Lấy vị trí hiện tại
     LocationService-->>MapPage: (lat, lon) origin
-    MapPage->>OSRM: GET /route/v1/driving/origin_coords to dest_coords
+    MapPage->>OSRM: GET /route origin → destination
     OSRM-->>MapPage: GeoJSON polyline
     MapPage->>MapPage: Vẽ polyline + zoom vào route
-    MapPage->>MapPage: Hiện CancelRoutePanel
-    MapPage-->>User: Đường đi trên bản đồ
+    MapPage-->>User: Hiển thị đường đi + nút Hủy
 
     User->>MapPage: Bấm "Hủy route"
-    MapPage->>MapPage: Xóa polyline layer
-    MapPage->>MapPage: Ẩn CancelRoutePanel
-```
+    MapPage->>MapPage: Xóa polyline, ẩn CancelRoutePanel
 
-#### 13.4.8 Chỉ đường từ PlaceDetailPage
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant PlaceDetailPage
-    participant MapPage
-    participant OSRM
-
+    Note over User,OSRM: Luồng 2 — Chỉ đường từ PlaceDetailPage
     User->>PlaceDetailPage: Bấm "Chỉ đường"
     PlaceDetailPage->>MapPage: PendingRoute = (lat, lon, name)
     PlaceDetailPage->>PlaceDetailPage: Shell.GoToAsync("//MainTabs/MapPage")
     MapPage->>MapPage: OnAppearing() — đọc PendingRoute
-    MapPage->>OSRM: Tính route đến destination
+    MapPage->>LocationService: Lấy vị trí hiện tại
+    LocationService-->>MapPage: (lat, lon) origin
+    MapPage->>OSRM: GET /route origin → destination
     OSRM-->>MapPage: Polyline
     MapPage-->>User: Hiển thị đường đi
 ```
 
-#### 13.4.9 GPS + Geofence + TTS tự động
+---
+
+#### 13.4.5 Nghe thuyết minh tự động (Geofence + TTS)
 
 ```mermaid
 sequenceDiagram
+    actor User
     participant OS as Hệ điều hành
     participant LocationService
     participant MapPage
     participant GeofenceEngine
     participant NarrationService
-    actor User
+    participant Preferences
+    participant AccountPage
 
+    Note over OS,NarrationService: Bước 1 — Phát hiện POI gần vị trí
     OS->>LocationService: Vị trí GPS mới
     LocationService->>MapPage: LocationChanged event
     MapPage->>GeofenceEngine: FindNearestPOI(lat, lon, places)
-    GeofenceEngine->>GeofenceEngine: Lọc POI có TtsScript + trong radius
-    GeofenceEngine->>GeofenceEngine: Loại bỏ POI trong cooldown
+    GeofenceEngine->>GeofenceEngine: Lọc POI trong radius + cooldown
     GeofenceEngine->>GeofenceEngine: Sắp xếp Priority ↓, Distance ↑
     GeofenceEngine->>GeofenceEngine: Debounce 2 giây
-
     alt Tìm được POI phù hợp
         GeofenceEngine-->>MapPage: Place (nearest)
-        MapPage->>MapPage: Kiểm tra _lastSpokenPlaceId
-        alt POI chưa đọc
-            MapPage->>NarrationService: SpeakAsync(TtsScript, TtsLocale)
-            NarrationService-->>User: Phát thuyết minh tự động
-            MapPage->>MapPage: _lastSpokenPlaceId = place.PlaceId
-            MapPage->>MapPage: place.LastPlayedAt = now
-        end
+        MapPage->>NarrationService: SpeakAsync(place.GetScriptForLocale(locale))
+        NarrationService-->>User: Phát thuyết minh tự động
+        MapPage->>MapPage: Ghi _lastSpokenPlaceId, LastPlayedAt
     else Không có POI
         GeofenceEngine-->>MapPage: null
-        MapPage->>MapPage: _lastSpokenPlaceId = null
     end
+
+    Note over User,Preferences: Bước 2 — Chọn ngôn ngữ thuyết minh
+    User->>AccountPage: Mở tab Cài đặt
+    AccountPage->>NarrationService: SupportedLocales
+    NarrationService-->>AccountPage: 7 ngôn ngữ
+    AccountPage->>Preferences: Get tts_preferred_locale
+    Preferences-->>AccountPage: locale hiện tại
+    AccountPage-->>User: Hiện Picker ngôn ngữ
+
+    User->>AccountPage: Chọn ngôn ngữ mới (vd: en-US)
+    AccountPage->>NarrationService: PreferredLocale = "en-US"
+    NarrationService->>Preferences: Set tts_preferred_locale = "en-US"
+    AccountPage-->>User: Cập nhật hiển thị
 ```
 
-#### 13.4.10 Tour — duyệt và theo tour
+---
+
+#### 13.4.6 Xem & theo tour có sẵn
 
 ```mermaid
 sequenceDiagram
@@ -1244,77 +1232,69 @@ sequenceDiagram
     participant ToursPage
     participant TourDetailPage
     participant MapPage
+    participant LocationService
     participant OSRM
 
+    Note over User,ToursPage: Bước 1 — Xem danh sách tour
     User->>ToursPage: Mở tab Tour
     ToursPage->>ToursPage: EnsurePlacesLoadedAsync()
     ToursPage->>ToursPage: RebuildTours() — tạo 3 tour từ Places
-    ToursPage-->>User: Hiện danh sách tour (Quick/Balanced/Full)
+    ToursPage-->>User: Hiện danh sách (Quick / Balanced / Full)
 
+    Note over User,TourDetailPage: Bước 2 — Xem chi tiết tour
     User->>ToursPage: Chọn tour
     ToursPage->>TourDetailPage: Navigate(TourCard)
-    TourDetailPage-->>User: Danh sách điểm dừng
+    TourDetailPage-->>User: Danh sách điểm dừng theo thứ tự
 
+    Note over User,OSRM: Bước 3 — Bắt đầu theo tour
     User->>TourDetailPage: Bấm "Bắt đầu tour"
     TourDetailPage->>MapPage: PendingRoute = điểm dừng đầu tiên
-    TourDetailPage->>MapPage: Shell.GoToAsync("//MainTabs/MapPage")
-    MapPage->>OSRM: Tính route đến điểm đầu
+    TourDetailPage->>TourDetailPage: Shell.GoToAsync("//MainTabs/MapPage")
+    MapPage->>MapPage: OnAppearing() — đọc PendingRoute
+    MapPage->>LocationService: Lấy vị trí hiện tại
+    LocationService-->>MapPage: (lat, lon) origin
+    MapPage->>OSRM: GET /route origin → điểm dừng 1
     OSRM-->>MapPage: Polyline
-    MapPage-->>User: Hiện đường đi đến điểm 1
+    MapPage-->>User: Hiển thị đường đi đến điểm dừng 1
 ```
 
-#### 13.4.11 Chọn ngôn ngữ giọng đọc TTS
+---
 
-```mermaid
-sequenceDiagram
-    actor User
-    participant AccountPage
-    participant NarrationService
-    participant Preferences
-    participant GeofenceEngine
-
-    User->>AccountPage: Mở tab Cài đặt
-    AccountPage->>NarrationService: SupportedLocales (7 ngôn ngữ)
-    NarrationService-->>AccountPage: [(Tiếng Việt, vi-VN), (English, en-US), ...]
-    AccountPage->>Preferences: Get("tts_preferred_locale")
-    Preferences-->>AccountPage: locale hiện tại (vd: vi-VN)
-    AccountPage-->>User: Hiện Picker, highlight ngôn ngữ đang chọn
-
-    User->>AccountPage: Chọn ngôn ngữ mới (vd: en-US)
-    AccountPage->>NarrationService: PreferredLocale = "en-US"
-    NarrationService->>Preferences: Set("tts_preferred_locale", "en-US")
-    AccountPage-->>User: Cập nhật subtitle hiển thị "English"
-
-    Note over GeofenceEngine,NarrationService: Lần sau khi Geofence kích hoạt
-    GeofenceEngine->>NarrationService: SpeakAsync(place.GetScriptForLocale("en-US"))
-    NarrationService->>NarrationService: Tìm locale "en-US" trên thiết bị
-    NarrationService-->>User: Đọc thuyết minh bằng tiếng Anh
-```
-
-#### 13.4.12 Tìm kiếm & lọc địa điểm
+#### 13.4.7 Xem chi tiết địa điểm
 
 ```mermaid
 sequenceDiagram
     actor User
     participant MainPage
+    participant MapPage
+    participant PlaceDetailPage
     participant PlaceService
+    participant NarrationService
+    participant LocationService
+    participant OSRM
 
-    User->>MainPage: Mở tab Khám phá
-    MainPage->>PlaceService: GetCachedPlaces()
-    PlaceService-->>MainPage: Places[]
-    MainPage-->>User: Hiện danh sách địa điểm
+    Note over User,PlaceService: Bước 1 — Mở chi tiết
+    User->>MainPage: Tap địa điểm trong danh sách
+    MainPage->>PlaceDetailPage: Navigation.PushAsync(PlaceDetailPage)
+    PlaceDetailPage->>PlaceService: GetCachedPlaces().Find(PlaceId)
+    PlaceService-->>PlaceDetailPage: Place + PlaceImages
+    PlaceDetailPage-->>User: Hiện tên, ảnh, giờ mở cửa, giá, đánh giá
 
-    User->>MainPage: Nhập từ khoá vào SearchBar
-    MainPage->>MainPage: Lọc Places theo Name.Contains(keyword)
-    MainPage-->>User: Cập nhật danh sách kết quả
+    Note over User,NarrationService: Bước 2 — Nghe thuyết minh
+    User->>PlaceDetailPage: Bấm "Thuyết minh"
+    PlaceDetailPage->>NarrationService: SpeakAsync(GetScriptForLocale(locale))
+    NarrationService-->>User: Đọc thuyết minh theo ngôn ngữ đã chọn
 
-    User->>MainPage: Chọn chip lọc (loại / khu vực)
-    MainPage->>MainPage: Lọc thêm theo CategoryId / District
-    MainPage-->>User: Cập nhật danh sách kết quả
-
-    User->>MainPage: Tap vào địa điểm
-    MainPage->>MainPage: Navigation.PushAsync(PlaceDetailPage)
-    MainPage-->>User: Hiện chi tiết địa điểm
+    Note over User,MapPage: Bước 3 — Chỉ đường từ chi tiết
+    User->>PlaceDetailPage: Bấm "Chỉ đường"
+    PlaceDetailPage->>MapPage: PendingRoute = (lat, lon, name)
+    PlaceDetailPage->>PlaceDetailPage: Shell.GoToAsync("//MainTabs/MapPage")
+    MapPage->>MapPage: OnAppearing() — đọc PendingRoute
+    MapPage->>LocationService: Lấy vị trí hiện tại
+    LocationService-->>MapPage: (lat, lon) origin
+    MapPage->>OSRM: GET /route origin → destination
+    OSRM-->>MapPage: Polyline
+    MapPage-->>User: Hiển thị đường đi
 ```
 
 ---
@@ -1334,24 +1314,42 @@ sequenceDiagram
     Client->>AuthController: POST /api/auth/register
     AuthController->>AuthService: RegisterAsync(dto)
     AuthService->>AppDbContext: Kiểm tra email tồn tại
-    AppDbContext-->>AuthService: Không tồn tại
-    AuthService->>AuthService: BCrypt hash password
-    AuthService->>AppDbContext: INSERT Users
-    AuthService->>JWT: GenerateJwt(user, 15min)
-    JWT-->>AuthService: AccessToken
-    AuthService->>AppDbContext: INSERT RefreshToken (7 ngày)
-    AuthService-->>AuthController: AuthResponseDto
-    AuthController-->>Client: 201 {accessToken, refreshToken}
+    alt Email đã tồn tại
+        AppDbContext-->>AuthService: Đã tồn tại
+        AuthService-->>AuthController: Lỗi
+        AuthController-->>Client: 409 "Email đã được sử dụng"
+    else Email chưa tồn tại
+        AppDbContext-->>AuthService: Không tồn tại
+        AuthService->>AuthService: BCrypt hash password
+        AuthService->>AppDbContext: INSERT Users
+        AuthService->>JWT: GenerateJwt(user, 15min)
+        JWT-->>AuthService: AccessToken
+        AuthService->>AppDbContext: INSERT RefreshToken (7 ngày)
+        AuthService-->>AuthController: AuthResponseDto
+        AuthController-->>Client: 201 {accessToken, refreshToken}
+    end
 
     Client->>AuthController: POST /api/auth/login
     AuthController->>AuthService: LoginAsync(dto)
     AuthService->>AppDbContext: SELECT User WHERE Email
-    AppDbContext-->>AuthService: User
-    AuthService->>AuthService: BCrypt.Verify(password, hash)
-    AuthService->>JWT: GenerateJwt(user)
-    AuthService->>AppDbContext: INSERT RefreshToken
-    AuthService-->>AuthController: AuthResponseDto
-    AuthController-->>Client: 200 {accessToken, refreshToken}
+    alt Email không tồn tại
+        AppDbContext-->>AuthService: null
+        AuthService-->>AuthController: Lỗi
+        AuthController-->>Client: 401 Unauthorized
+    else Email tồn tại
+        AppDbContext-->>AuthService: User
+        AuthService->>AuthService: BCrypt.Verify(password, hash)
+        alt Sai mật khẩu
+            AuthService-->>AuthController: Lỗi xác thực
+            AuthController-->>Client: 401 Unauthorized
+        else Đúng mật khẩu
+            AuthService->>JWT: GenerateJwt(user)
+            JWT-->>AuthService: AccessToken
+            AuthService->>AppDbContext: INSERT RefreshToken
+            AuthService-->>AuthController: AuthResponseDto
+            AuthController-->>Client: 200 {accessToken, refreshToken}
+        end
+    end
 ```
 
 #### 13.5.2 Refresh token và rotation
@@ -1362,6 +1360,7 @@ sequenceDiagram
     participant AuthController
     participant AuthService
     participant AppDbContext
+    participant JWT
 
     Client->>AuthController: POST /api/auth/refresh {refreshToken}
     AuthController->>AuthService: RefreshAsync(token)
@@ -1371,7 +1370,8 @@ sequenceDiagram
     alt Token hợp lệ và chưa hết hạn
         AuthService->>AppDbContext: UPDATE IsRevoked=true (token cũ)
         AuthService->>AppDbContext: INSERT RefreshToken mới (rotation)
-        AuthService->>AuthService: GenerateJwt(user)
+        AuthService->>JWT: GenerateJwt(user)
+        JWT-->>AuthService: AccessToken
         AuthService-->>AuthController: AuthResponseDto mới
         AuthController-->>Client: 200 {accessToken mới, refreshToken mới}
     else Token không hợp lệ
@@ -1411,14 +1411,14 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    actor User
+    actor Client
     participant TrackingController
     participant TrackingService
     participant GeoLocationService
     participant AppDbContext
     participant INotificationService
 
-    User->>TrackingController: POST /api/tracking/location {lat, lng}
+    Client->>TrackingController: POST /api/tracking/location {lat, lng}
     TrackingController->>TrackingService: LogLocationAsync(userId, dto)
     TrackingService->>AppDbContext: INSERT UserTracking
     TrackingService->>GeoLocationService: DetectNearestPlaceAsync(lat, lng, 100m)
@@ -1427,14 +1427,12 @@ sequenceDiagram
     GeoLocationService-->>TrackingService: Place gần nhất (nếu có)
 
     alt Trong bán kính 100m
-        TrackingService->>AppDbContext: INSERT VisitHistory (AutoDetected=true)
-        TrackingService->>AppDbContext: UPDATE Places.TotalVisits++
         TrackingService->>INotificationService: SendNewCheckIn(ownerId, placeName, userName)
         INotificationService->>INotificationService: SignalR → owner group
     end
 
     TrackingService-->>TrackingController: OK
-    TrackingController-->>User: 200
+    TrackingController-->>Client: 200
 ```
 
 
@@ -1504,7 +1502,8 @@ flowchart TD
     I --> J[Supabase: IsActive=true, ExpiresAt=Now+duration]
     J --> K[App poll nhận IsActive=true]
     K --> L[Lưu ExpiresAt vào Preferences]
-    L --> M[Application.MainPage = AppShell]
+    L --> LA[StartExpiryTimer]
+    LA --> M[Application.MainPage = AppShell]
     M --> N([Dùng app bình thường])
     N --> O{Timer 60s kiểm tra}
     O -->|Còn hạn| O
@@ -1547,12 +1546,11 @@ flowchart TD
     K --> L{Role?}
     L -->|Admin| M[Redirect /Admin]
     L -->|Owner| N[Redirect /Dashboard]
-    L -->|User| O[Redirect /Dashboard]
 ```
 
 ---
 
-**Tổng:** 1 ER + 2 Class + 16 Sequence + 5 Activity = **24 diagrams**
+**Tổng:** 1 ER + 2 Class + 11 Sequence + 5 Activity + 1 BFD + 1 Use Case = **21 diagrams**
 
 ---
 
@@ -1608,7 +1606,7 @@ graph LR
 
 ---
 
-**Tổng:** 1 ER + 2 Class + 16 Sequence + 5 Activity + 1 BFD = **25 diagrams**
+**Tổng:** 1 ER + 2 Class + 11 Sequence + 5 Activity + 1 BFD + 1 Use Case = **21 diagrams**
 
 ---
 

@@ -1,0 +1,44 @@
+@{ ViewData["Title"] = "Thanh toán thành công"; }
+
+<div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+  <div class="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mb-6 animate-bounce">
+    <span class="material-symbols-outlined text-5xl text-emerald-600">check_circle</span>
+  </div>
+  <h2 class="text-3xl font-extrabold text-on-surface mb-2">Thanh toán thành công!</h2>
+  <p class="text-on-surface-variant mb-2">Gói dịch vụ của bạn đã được kích hoạt.</p>
+
+  @if (ViewBag.Sub != null)
+  {
+    var sub = ViewBag.Sub as TourismApp.Web.Models.SubscriptionDto;
+    <div class="mt-6 p-5 bg-emerald-50 border border-emerald-100 rounded-2xl text-sm space-y-2 text-left min-w-[280px]">
+      <div class="flex justify-between">
+        <span class="text-on-surface-variant">Gói</span>
+        <span class="font-bold text-primary">@sub!.PlanName</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-on-surface-variant">Hiệu lực đến</span>
+        <span class="font-bold">@sub.EndDate?.ToString("dd/MM/yyyy")</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-on-surface-variant">Số tiền</span>
+        <span class="font-bold">@sub.Amount.ToString("N0")đ</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-on-surface-variant">Phương thức</span>
+        <span class="font-bold uppercase">@sub.PaymentMethod</span>
+      </div>
+    </div>
+  }
+
+  <div class="flex gap-3 mt-8">
+    <a asp-controller="Dashboard" asp-action="Index"
+       class="flex items-center gap-2 px-7 py-3.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+       style="background:linear-gradient(135deg,#954400,#fc8127)">
+      <span class="material-symbols-outlined text-sm">dashboard</span> Về Dashboard
+    </a>
+    <a asp-controller="Subscription" asp-action="History"
+       class="flex items-center gap-2 px-6 py-3.5 bg-surface-container-low font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+      Lịch sử thanh toán
+    </a>
+  </div>
+</div>

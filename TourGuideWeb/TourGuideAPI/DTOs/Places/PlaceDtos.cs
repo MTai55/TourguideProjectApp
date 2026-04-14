@@ -46,6 +46,8 @@ public record CreatePlaceDto(
 
 public record UpdateTtsDto(string? TtsScript);
 
+public record TranslateScriptRequest(string? Script);
+
 public record AddImageDto(
     string ImageUrl,
     bool   IsMain = false

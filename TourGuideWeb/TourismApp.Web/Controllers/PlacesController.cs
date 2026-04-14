@@ -127,7 +127,42 @@ public class PlacesController(ApiService api, ILogger<PlacesController> logger) 
             HasAircon = place.HasAircon,
             PricePerPerson = place.PricePerPerson
         };
+        
+        // Load dữ liệu cũ từ Session (từ lần edit trước)
+        var sessionKey = $"place_{id}_edit_history";
+        var sessionData = HttpContext.Session.GetString(sessionKey);
+        if (!string.IsNullOrEmpty(sessionData))
+        {
+            try
+            {
+                var editHistory = System.Text.Json.JsonSerializer.Deserialize<
+                    System.Collections.Generic.Dictionary<string, object>>(sessionData);
+                if (editHistory != null)
+                {
+                    if (editHistory.TryGetValue("PreviousOpenTime", out var prevOpenTime))
+                        vm.PreviousOpenTime = prevOpenTime?.ToString();
+                    if (editHistory.TryGetValue("PreviousCloseTime", out var prevCloseTime))
+                        vm.PreviousCloseTime = prevCloseTime?.ToString();
+                    if (editHistory.TryGetValue("PreviousPriceMin", out var prevPriceMin) && 
+                        decimal.TryParse(prevPriceMin?.ToString() ?? "", out var priceMin))
+                        vm.PreviousPriceMin = priceMin;
+                    if (editHistory.TryGetValue("PreviousPriceMax", out var prevPriceMax) && 
+                        decimal.TryParse(prevPriceMax?.ToString() ?? "", out var priceMax))
+                        vm.PreviousPriceMax = priceMax;
+                    if (editHistory.TryGetValue("PreviousTtsScript", out var prevTtsScript))
+                        vm.PreviousTtsScript = prevTtsScript?.ToString();
+                    if (editHistory.TryGetValue("LastModifiedAt", out var lastMod) && 
+                        DateTime.TryParse(lastMod?.ToString() ?? "", out var modDate))
+                        vm.LastModifiedAt = modDate;
+                }
+            }
+            catch { /* Ignore deserialization errors */ }
+        }
+        
         ViewBag.PlaceId = id;
+        ViewBag.TtsScript = place.TtsScript;
+        ViewBag.Radius = place.Radius ?? 100;
+        
         return View(vm);
     }
 
@@ -136,6 +171,23 @@ public class PlacesController(ApiService api, ILogger<PlacesController> logger) 
     public async Task<IActionResult> Edit(int id, CreatePlaceViewModel vm)
     {
         if (!ModelState.IsValid) { ViewBag.PlaceId = id; return View(vm); }
+        
+        // Load dữ liệu cũ để so sánh
+        var oldPlace = await api.GetPlaceAsync(id);
+        
+        // Lưu các giá trị cũ vào Session để hiển thị lần edit tới
+        var sessionKey = $"place_{id}_edit_history";
+        var editHistory = new
+        {
+            PreviousOpenTime = oldPlace?.OpenTime,
+            PreviousCloseTime = oldPlace?.CloseTime,
+            PreviousPriceMin = oldPlace?.PriceMin,
+            PreviousPriceMax = oldPlace?.PriceMax,
+            PreviousTtsScript = oldPlace?.TtsScript,
+            LastModifiedAt = DateTime.Now
+        };
+        HttpContext.Session.SetString(sessionKey, System.Text.Json.JsonSerializer.Serialize(editHistory));
+        
         var (success, error) = await api.UpdatePlaceAsync(id, vm);
         if (!success)
         {

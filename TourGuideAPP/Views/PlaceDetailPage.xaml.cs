@@ -11,12 +11,16 @@ public partial class PlaceDetailPage : ContentPage
     private readonly LocationService _locationService;
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
+    private readonly UserProfileService _userProfileService;
+    private List<PlaceNote> _placeNotes = new();
+
     public PlaceDetailPage(
         Place place,
         AuthService authService,
         LocationService locationService,
         GeofenceEngine geofenceEngine,
-        NarrationService narrationService)
+        NarrationService narrationService,
+        UserProfileService userProfileService)
     {
         InitializeComponent();
         _place = place;
@@ -24,6 +28,7 @@ public partial class PlaceDetailPage : ContentPage
         _locationService = locationService;
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
+        _userProfileService = userProfileService;
 
         LoadPlaceDetail();
     }
@@ -59,6 +64,12 @@ public partial class PlaceDetailPage : ContentPage
             WebsiteLabel.Text = _place.Website;
         else
             WebsiteRow.IsVisible = false;
+
+        // Load TTS Script
+        if (!string.IsNullOrWhiteSpace(_place.TtsScript))
+            TtsScriptLabel.Text = _place.TtsScript;
+        else
+            TtsScriptLabel.Text = "Chưa có cẩu chuyện hướng dẫn";
     }
 
     private static bool IsPlaceOpen(Place place)
@@ -125,5 +136,142 @@ public partial class PlaceDetailPage : ContentPage
         if (string.IsNullOrWhiteSpace(_place.Website)) return;
         try { await Launcher.OpenAsync(new Uri(_place.Website)); }
         catch { await DisplayAlert("Lỗi", "Không thể mở website.", "OK"); }
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        // Load ghi chú lịch sử của quán này
+        var allNotes = await _userProfileService.GetNotesAsync();
+        _placeNotes = allNotes.Where(n => n.PlaceId == _place.PlaceId).ToList();
+        RefreshNotesDisplay();
+    }
+
+    private void RefreshNotesDisplay()
+    {
+        NotesHistoryStack.Children.Clear();
+        if (_placeNotes.Count == 0)
+        {
+            var emptyLabel = new Label
+            {
+                Text = "Chưa có ghi chú nào",
+                TextColor = Color.FromArgb("#5A4A3A"),
+                FontSize = 12,
+                HorizontalOptions = LayoutOptions.Center
+            };
+            NotesHistoryStack.Children.Add(emptyLabel);
+        }
+        else
+        {
+            // Sắp xếp theo ngày mới nhất trước
+            foreach (var note in _placeNotes.OrderByDescending(n => n.CreatedAt))
+            {
+                var noteCard = CreateNoteCard(note);
+                NotesHistoryStack.Children.Add(noteCard);
+            }
+        }
+    }
+
+    private Border CreateNoteCard(PlaceNote note)
+    {
+        var card = new Border
+        {
+            BackgroundColor = Color.FromArgb("#1A1410"),
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(10) },
+            Stroke = Color.FromArgb("#2A2018"),
+            StrokeThickness = 1,
+            Padding = new Thickness(12, 10),
+            Margin = new Thickness(0, 0, 0, 8)
+        };
+
+        var grid = new Grid { ColumnDefinitions = "*,Auto", ColumnSpacing = 8 };
+
+        var contentStack = new VerticalStackLayout { Spacing = 2 };
+        contentStack.Children.Add(new Label
+        {
+            Text = note.Content,
+            TextColor = Color.FromArgb("#F0E6D3"),
+            FontSize = 13,
+            LineBreakMode = LineBreakMode.WordWrap
+        });
+        contentStack.Children.Add(new Label
+        {
+            Text = note.CreatedAt.ToString("dd/MM/yyyy HH:mm"),
+            TextColor = Color.FromArgb("#8A7560"),
+            FontSize = 10
+        });
+
+        grid.Add(contentStack, 0);
+
+        var deleteBtn = new Label
+        {
+            Text = "✕",
+            TextColor = Color.FromArgb("#E94560"),
+            FontSize = 18,
+            VerticalOptions = LayoutOptions.Start
+        };
+        deleteBtn.GestureRecognizers.Add(new TapGestureRecognizer
+        {
+            Command = new Command(async () => await OnDeleteNoteClicked(note))
+        });
+        grid.Add(deleteBtn, 1);
+        Grid.SetColumn(deleteBtn, 1);
+
+        card.Content = grid;
+        return card;
+    }
+
+    private async Task OnDeleteNoteClicked(PlaceNote note)
+    {
+        var confirm = await DisplayAlert("Xóa ghi chú", "Bạn chắc muốn xóa ghi chú này?", "Xóa", "Hủy");
+        if (confirm)
+        {
+            await _userProfileService.RemoveNoteAsync(note);
+            _placeNotes.Remove(note);
+            RefreshNotesDisplay();
+        }
+    }
+
+    private async void OnAddNoteClicked(object sender, TappedEventArgs e)
+    {
+        var content = NoteInputEntry.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            await DisplayAlert("Lỗi", "Vui lòng nhập ghi chú trước.", "OK");
+            return;
+        }
+
+        await _userProfileService.AddNoteAsync(_place.PlaceId, _place.Name, content);
+        _placeNotes.Add(new PlaceNote
+        {
+            PlaceId = _place.PlaceId,
+            Name = _place.Name,
+            Content = content,
+            CreatedAt = DateTime.Now
+        });
+        NoteInputEntry.Text = string.Empty;
+        RefreshNotesDisplay();
+        await DisplayAlert("Thành công", "Ghi chú đã lưu.", "OK");
+    }
+
+    private async void OnCopyTtsClicked(object sender, TappedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_place.TtsScript))
+        {
+            await DisplayAlert("Thông báo", "Quán này chưa có script TTS.", "OK");
+            return;
+        }
+        await Clipboard.SetTextAsync(_place.TtsScript);
+        await DisplayAlert("Thành công", "Script TTS đã sao chép.", "OK");
+    }
+
+    private async void OnPlayTtsClicked(object sender, TappedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_place.TtsScript))
+        {
+            await DisplayAlert("Thông báo", "Quán này chưa có script TTS.", "OK");
+            return;
+        }
+        await _narrationService.SpeakAsync(_place.GetScriptForLocale(_narrationService.PreferredLocale));
     }
 }

@@ -181,7 +181,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     }
     public async Task<(bool, string)> UpdateTtsScriptAsync(int id, string? script)
     {
-        var (ok, err) = await PutAsync($"/api/places/{id}/tts", (object?)script ?? string.Empty);
+        var (ok, err) = await PutAsync($"/api/places/{id}/tts", new { ttsScript = script });
         return (ok, err);
     }
     // ══════════════════════════════════════════════════════════════
@@ -296,23 +296,53 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         public List<PlaceViewModel> Items { get; set; } = new List<PlaceViewModel>();
     }
 
-    // Lấy thông tin profile của user đang đăng nhập
     public Task<ProfileViewModel?> GetProfileAsync()
         => GetAsync<ProfileViewModel>("/api/auth/profile");
-
-    // Cập nhật profile
     public async Task<(bool, string)> UpdateProfileAsync(UpdateProfileViewModel vm)
     {
         var body = new { fullName = vm.FullName, email = vm.Email, phone = vm.Phone };
         var (ok, err) = await PutAsync("/api/auth/profile", body);
         return (ok, err);
     }
-
-    // Đổi mật khẩu
     public async Task<(bool, string)> ChangePasswordAsync(ChangePasswordViewModel vm)
     {
         var body = new { currentPassword = vm.CurrentPassword, newPassword = vm.NewPassword };
         var (ok, err) = await PutAsync("/api/auth/change-password", body);
         return (ok, err);
+    }
+
+    public Task<List<PlaceImageViewModel>?> GetPlaceImagesAsync(int placeId)
+    => GetAsync<List<PlaceImageViewModel>>($"/api/places/{placeId}/images");
+
+    // SUBSCRIPTION
+    public Task<List<SubscriptionPlanViewModel>?> GetSubscriptionPlansAsync()
+        => GetAsync<List<SubscriptionPlanViewModel>>("/api/subscriptions/plans");
+
+    public Task<SubscriptionDto?> GetMySubscriptionAsync()
+        => GetAsync<SubscriptionDto>("/api/subscriptions/mine");
+
+    public Task<List<SubscriptionDto>?> GetSubscriptionHistoryAsync()
+        => GetAsync<List<SubscriptionDto>>("/api/subscriptions/history");
+
+    public async Task<(bool, string?, string)> CreateSubscriptionAsync(int planId, string paymentMethod)
+    {
+        var (ok, data, err) = await PostAsync<SubscriptionCreateResponse>(
+            "/api/subscriptions",
+            new { planId, paymentMethod });
+        return (ok, data?.PaymentUrl, err);
+    }
+
+    public async Task<(bool, string)> CancelSubscriptionAsync(int subId)
+    {
+        var (ok, err) = await PutAsync($"/api/subscriptions/{subId}/cancel", new { });
+        return (ok, err);
+    }
+
+    private class SubscriptionCreateResponse
+    {
+        [Newtonsoft.Json.JsonProperty("paymentUrl")]
+        public string? PaymentUrl { get; set; }
+        [Newtonsoft.Json.JsonProperty("subId")]
+        public int SubId { get; set; }
     }
 }

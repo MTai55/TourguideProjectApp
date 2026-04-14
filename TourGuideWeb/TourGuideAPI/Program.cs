@@ -12,6 +12,7 @@ using TourGuideAPI.Middleware;
 using TourGuideAPI.Services;
 using TourGuideAPI.Validators;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -57,6 +58,7 @@ builder.Services.AddCors(opt => opt.AddPolicy("AllowAll", p =>
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddOpenApi();
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

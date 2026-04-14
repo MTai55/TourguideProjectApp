@@ -15,7 +15,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<Promotion> Promotions { get; set; }
-
+    public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+    public DbSet<Subscription>     Subscriptions     { get; set; }
     protected override void OnModelCreating(ModelBuilder mb)
     {
         mb.Entity<User>(e => {
@@ -129,5 +130,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         mb.Entity<Message>().ToTable("Messages").HasKey(m => m.MessageId);
         mb.Entity<Promotion>().ToTable("Promotions").HasKey(p => p.PromoId);
+        mb.Entity<SubscriptionPlan>().ToTable("SubscriptionPlans").HasKey(p => p.PlanId);
+        
+        mb.Entity<Subscription>().ToTable("Subscriptions").HasKey(s => s.SubId);
+        mb.Entity<Subscription>()
+            .HasOne(s => s.Owner)
+            .WithMany()
+            .HasForeignKey(s => s.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+        mb.Entity<Subscription>()
+            .HasOne(s => s.Plan)
+            .WithMany(p => p.Subscriptions)
+            .HasForeignKey(s => s.PlanId);
     }
 }

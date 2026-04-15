@@ -261,7 +261,7 @@
                                    TextColor="#F0E6D3"
                                    BackgroundColor="#26201A"
                                    FontSize="13"
-                                   Padding="8,6"/>
+                                   Margin="0,4"/>
 
                             <Border BackgroundColor="#C8A96E"
                                     StrokeShape="RoundRectangle 8"

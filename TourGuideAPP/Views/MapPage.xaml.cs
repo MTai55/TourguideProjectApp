@@ -328,9 +328,17 @@ public partial class MapPage : ContentPage
         var place = _selectedPlace;
         PlaceCard.IsVisible = false;
         _selectedPlace = null;
-        var detailPage = new PlaceDetailPage(place, _authService, _locationService,
-                                             _geofenceEngine, _narrationService, _userProfileService);
-        await Navigation.PushAsync(detailPage);
+        try
+        {
+            var detailPage = new PlaceDetailPage(place, _authService, _locationService,
+                                                 _geofenceEngine, _narrationService, _userProfileService);
+            await Navigation.PushAsync(detailPage);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ MapPage.OnCardDetail crash: {ex}");
+            await DisplayAlert("Debug", ex.Message, "OK");
+        }
     }
 
     private void UpdateUserMarker(double lat, double lon)
@@ -412,6 +420,7 @@ public partial class MapPage : ContentPage
                         _lastSpokenPlaceId = nearestId;
                         nearest.LastPlayedAt = DateTime.Now;
                         await _narrationService.SpeakAsync(nearest.GetScriptForLocale(_narrationService.PreferredLocale));
+                        await _userProfileService.AddHistoryByGpsAsync(nearest);
                     }
                 }
                 else

@@ -23,7 +23,13 @@ public partial class PlaceDetailPage : ContentPage
         NarrationService narrationService,
         UserProfileService userProfileService)
     {
-        InitializeComponent();
+        try { InitializeComponent(); }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ InitializeComponent crash: {ex}");
+            throw; // re-throw để caller bắt được
+        }
+
         _place = place;
         _authService = authService;
         _locationService = locationService;
@@ -31,7 +37,14 @@ public partial class PlaceDetailPage : ContentPage
         _narrationService = narrationService;
         _userProfileService = userProfileService;
 
-        LoadPlaceDetail();
+        try
+        {
+            LoadPlaceDetail();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ LoadPlaceDetail crash: {ex}");
+        }
     }
 
     private void LoadPlaceDetail()
@@ -142,10 +155,16 @@ public partial class PlaceDetailPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        // Load ghi chú lịch sử của quán này
-        var allNotes = await _userProfileService.GetNotesAsync();
-        _placeNotes = allNotes.Where(n => n.PlaceId == _place.PlaceId).ToList();
-        RefreshNotesDisplay();
+        try
+        {
+            var allNotes = await _userProfileService.GetNotesAsync();
+            _placeNotes = allNotes.Where(n => n.PlaceId == _place.PlaceId).ToList();
+            RefreshNotesDisplay();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ PlaceDetailPage.OnAppearing crash: {ex}");
+        }
     }
 
     private void RefreshNotesDisplay()
@@ -185,7 +204,11 @@ public partial class PlaceDetailPage : ContentPage
             Margin = new Thickness(0, 0, 0, 8)
         };
 
-        var grid = new Grid { ColumnDefinitions = "*,Auto", ColumnSpacing = 8 };
+        var grid = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitionCollection(new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto)),
+            ColumnSpacing = 8
+        };
 
         var contentStack = new VerticalStackLayout { Spacing = 2 };
         contentStack.Children.Add(new Label

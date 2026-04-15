@@ -137,6 +137,58 @@
 
             </VerticalStackLayout>
 
+            <!-- ═══ LỊCH SỬ GHÉ THĂM ═══ -->
+            <VerticalStackLayout Padding="20,20,20,0" Spacing="10">
+
+                <Label Text="{x:Static res:AppResources.AccHistorySection}"
+                       FontSize="9"
+                       CharacterSpacing="3"
+                       TextColor="#C8A96E"
+                       FontAttributes="Bold"
+                       Margin="0,0,0,4"/>
+
+                <Border BackgroundColor="#1A1410"
+                        StrokeShape="RoundRectangle 14"
+                        Stroke="#2A2018"
+                        StrokeThickness="1">
+                    <VerticalStackLayout>
+
+                        <!-- Empty state -->
+                        <Label x:Name="HistoryEmptyLabel"
+                               Text="{x:Static res:AppResources.AccHistoryEmpty}"
+                               TextColor="#5A4A3A"
+                               FontSize="13"
+                               HorizontalTextAlignment="Center"
+                               LineBreakMode="WordWrap"
+                               Margin="20,20"/>
+
+                        <!-- Dynamic items -->
+                        <VerticalStackLayout x:Name="HistoryContainer" IsVisible="False"/>
+
+                        <!-- Clear button -->
+                        <Border x:Name="HistoryClearBtn"
+                                IsVisible="False"
+                                BackgroundColor="#26201A"
+                                StrokeShape="RoundRectangle 10"
+                                Stroke="#3A2D22"
+                                StrokeThickness="1"
+                                Margin="16,0,16,14"
+                                Padding="0,10">
+                            <Label Text="{x:Static res:AppResources.AccHistoryClearBtn}"
+                                   TextColor="#E94560"
+                                   FontSize="13"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"/>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnClearHistoryTapped"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+
             <!-- ═══ BẢN ĐỒ & VỊ TRÍ ═══ -->
             <VerticalStackLayout Padding="20,20,20,0" Spacing="10">
 

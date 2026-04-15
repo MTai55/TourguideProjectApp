@@ -53,6 +53,12 @@
   <data name="PayStep4"><value>4. App auto-unlocks after confirmation</value></data>
 
   <!-- AccountPage -->
+  <data name="AccHistorySection"><value>— VISIT HISTORY</value></data>
+  <data name="AccHistoryEmpty"><value>No visit history yet.&#10;Move near attractions to start.</value></data>
+  <data name="AccHistoryClearBtn"><value>Clear all history</value></data>
+  <data name="AccHistoryClearTitle"><value>Clear history</value></data>
+  <data name="AccHistoryClearMsg"><value>Are you sure you want to clear all visit history?</value></data>
+  <data name="AccHistoryClearYes"><value>Clear</value></data>
   <data name="AccApp"><value>APPLICATION</value></data>
   <data name="AccSettings"><value>Settings</value></data>
   <data name="AccExperience"><value>— EXPERIENCE</value></data>

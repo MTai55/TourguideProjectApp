@@ -232,16 +232,27 @@ public partial class MainPage : ContentPage
 // BindingContext của Frame chính là Place object trong danh sách
             private async void OnPlaceTapped(object sender, EventArgs e)
             {
-                if (sender is not BindableObject bindable || bindable.BindingContext is not Place place)
-                    return;
+                try
+                {
+                    if (sender is not BindableObject bindable || bindable.BindingContext is not Place place)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"❌ OnPlaceTapped: sender={sender?.GetType().Name}, BindingContext={((sender as BindableObject)?.BindingContext)?.GetType().Name}");
+                        return;
+                    }
 
-                await Navigation.PushAsync(new PlaceDetailPage(
-                    place,
-                    _authService,
-                    _locationService,
-                    _geofenceEngine,
-                    _narrationService,
-                    _userProfileService));
+                    await Navigation.PushAsync(new PlaceDetailPage(
+                        place,
+                        _authService,
+                        _locationService,
+                        _geofenceEngine,
+                        _narrationService,
+                        _userProfileService));
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ OnPlaceTapped crash: {ex}");
+                    await DisplayAlert("Debug", ex.Message, "OK");
+                }
             }
 
 

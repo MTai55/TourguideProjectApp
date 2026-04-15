@@ -63,6 +63,12 @@ public static class AppResources
     public static string PayStep4          => Get(nameof(PayStep4));
 
     // AccountPage
+    public static string AccHistorySection  => Get(nameof(AccHistorySection));
+    public static string AccHistoryEmpty    => Get(nameof(AccHistoryEmpty));
+    public static string AccHistoryClearBtn => Get(nameof(AccHistoryClearBtn));
+    public static string AccHistoryClearTitle => Get(nameof(AccHistoryClearTitle));
+    public static string AccHistoryClearMsg => Get(nameof(AccHistoryClearMsg));
+    public static string AccHistoryClearYes => Get(nameof(AccHistoryClearYes));
     public static string AccApp            => Get(nameof(AccApp));
     public static string AccSettings       => Get(nameof(AccSettings));
     public static string AccExperience     => Get(nameof(AccExperience));

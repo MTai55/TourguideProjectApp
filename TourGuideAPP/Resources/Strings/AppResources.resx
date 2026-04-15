@@ -53,6 +53,12 @@
   <data name="PayStep4"><value>4. App tự động mở khóa sau xác nhận</value></data>
 
   <!-- AccountPage -->
+  <data name="AccHistorySection"><value>— LỊCH SỬ GHÉ THĂM</value></data>
+  <data name="AccHistoryEmpty"><value>Chưa có lịch sử ghé thăm nào.&#10;Di chuyển đến các điểm tham quan để bắt đầu.</value></data>
+  <data name="AccHistoryClearBtn"><value>Xóa toàn bộ lịch sử</value></data>
+  <data name="AccHistoryClearTitle"><value>Xóa lịch sử</value></data>
+  <data name="AccHistoryClearMsg"><value>Bạn có chắc muốn xóa toàn bộ lịch sử ghé thăm?</value></data>
+  <data name="AccHistoryClearYes"><value>Xóa</value></data>
   <data name="AccApp"><value>ỨNG DỤNG</value></data>
   <data name="AccSettings"><value>Cài đặt</value></data>
   <data name="AccExperience"><value>— TRẢI NGHIỆM</value></data>

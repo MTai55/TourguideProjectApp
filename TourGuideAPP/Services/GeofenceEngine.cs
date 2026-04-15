@@ -29,10 +29,9 @@ public class GeofenceEngine
     /// </summary>
     public Place? FindNearestPOI(double userLat, double userLon, List<Place> places)
     {
-        // Lọc các POI trong vùng, có TtsScript, chưa hết cooldown
+        // Lọc các POI trong vùng, chưa hết cooldown (không yêu cầu TtsScript)
         var candidates = places
             .Where(p =>
-                !string.IsNullOrWhiteSpace(p.TtsScript) &&
                 GetDistance(userLat, userLon, p.Latitude, p.Longitude) <= (p.Radius ?? 50) &&
                 (p.LastPlayedAt == null ||
                  (DateTime.Now - p.LastPlayedAt.Value).TotalMinutes >= (p.CooldownMinutes ?? 10)))
@@ -63,9 +62,7 @@ public class GeofenceEngine
         if ((DateTime.Now - _pendingFirstSeenAt).TotalMilliseconds < DebounceMs)
             return null; // Chưa đủ debounce
 
-        // Đủ debounce → reset và trả về POI
-        _pendingPlaceId = null;
-        _pendingFirstSeenAt = DateTime.MinValue;
+        // Đủ debounce → trả về POI (KHÔNG reset để tránh handler thứ 2 restart debounce)
         return top;
     }
 

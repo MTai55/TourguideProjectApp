@@ -32,6 +32,7 @@ public partial class MapPage : ContentPage
     private bool _followUserLocation = true;   // tự follow GPS
     private bool _programmaticNav = false;     // đang nav bằng code (không phải user kéo)
     private Place? _selectedPlace;
+    private bool _gpsStarted = false;          // tránh đăng ký LocationChanged nhiều lần
 
     // Dùng để truyền điểm đến từ PlaceDetailPage trước khi chuyển tab
     public static (double Lat, double Lon, string? Name)? PendingRoute { get; set; }
@@ -64,6 +65,7 @@ public partial class MapPage : ContentPage
         SetupMap();
         await LoadPOIsAsync();
         StartGPS();
+        await _locationService.StartAsync(); // tự khởi động GPS khi vào tab bản đồ
 
         // Nhận điểm đến từ PlaceDetailPage nếu có
         if (PendingRoute is { } pending)
@@ -384,6 +386,9 @@ public partial class MapPage : ContentPage
 
     private void StartGPS()
     {
+        if (_gpsStarted) return;
+        _gpsStarted = true;
+
         _locationService.LocationChanged += (location) =>
         {
             MainThread.BeginInvokeOnMainThread(async () =>
@@ -404,8 +409,12 @@ public partial class MapPage : ContentPage
                 CurrentAddressLabel.Text = $"📍 {address}";
 
                 var places = _placeService.GetCachedPlaces();
+                System.Diagnostics.Debug.WriteLine($"[GPS] 📍 {location.Latitude:F6},{location.Longitude:F6} | places={places.Count}");
+
                 var nearest = _geofenceEngine.FindNearestPOI(
                     location.Latitude, location.Longitude, places);
+
+                System.Diagnostics.Debug.WriteLine($"[GPS] nearest={(nearest?.Name ?? "null")} | cancelRoute={CancelRoutePanel.IsVisible}");
 
                 // Khi đang chỉ đường, không cho GPS callback ghi đè label
                 if (CancelRoutePanel.IsVisible)
@@ -415,12 +424,14 @@ public partial class MapPage : ContentPage
                 {
                     NearestPOILabel.Text = $"{AppResources.MainNearbyPrefix}{nearest.Name} ({GetDistanceMeters(location.Latitude, location.Longitude, nearest.Latitude, nearest.Longitude):F0}m)";
                     var nearestId = nearest.PlaceId.ToString();
+                    System.Diagnostics.Debug.WriteLine($"[GPS] nearestId={nearestId} | lastSpoken={_lastSpokenPlaceId}");
                     if (_lastSpokenPlaceId != nearestId)
                     {
                         _lastSpokenPlaceId = nearestId;
                         nearest.LastPlayedAt = DateTime.Now;
                         await _narrationService.SpeakAsync(nearest.GetScriptForLocale(_narrationService.PreferredLocale));
                         await _userProfileService.AddHistoryByGpsAsync(nearest);
+                        System.Diagnostics.Debug.WriteLine($"[GPS] ✅ Ghi lịch sử: {nearest.Name}");
                     }
                 }
                 else

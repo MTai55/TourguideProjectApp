@@ -1,5 +1,6 @@
 using TourGuideAPP.Services;
 using TourGuideAPP.Views;
+using TourGuideAPP.Resources.Strings;
 
 namespace TourGuideAPP;
 
@@ -10,26 +11,29 @@ public partial class App : Application
 
     public App(AccessSessionService accessService, IServiceProvider services)
     {
+        // Apply saved language TRƯỚC khi InitializeComponent để XAML dùng đúng culture
+        if (LocalizationService.IsLanguageSelected)
+            LocalizationService.ApplySaved();
+
         InitializeComponent();
         _accessService = accessService;
         _services      = services;
 
-        // Lắng nghe sự kiện hết hạn từ bất kỳ đâu trong app
         _accessService.AccessExpired += OnAccessExpired;
 
-        // Nếu đang có session hợp lệ, khởi động timer ngay
         if (_accessService.IsAccessValid())
             _accessService.StartExpiryTimer();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
+        // Đã có access hợp lệ → vào thẳng app
         if (_accessService.IsAccessValid())
             return new Window(new AppShell());
 
-        // Chưa có gói → hiện trang chọn gói
-        var subPage = _services.GetRequiredService<SubscriptionPage>();
-        return new Window(new NavigationPage(subPage)
+        // Chưa có access → luôn hiện chọn ngôn ngữ trước khi thanh toán
+        var langPage = _services.GetRequiredService<LanguageSelectionPage>();
+        return new Window(new NavigationPage(langPage)
         {
             BarBackgroundColor = Color.FromArgb("#1A1410"),
             BarTextColor       = Color.FromArgb("#F0E6D3")
@@ -41,12 +45,12 @@ public partial class App : Application
         MainThread.BeginInvokeOnMainThread(async () =>
         {
             await MainPage!.DisplayAlert(
-                "Hết hạn sử dụng",
-                "Gói sử dụng của bạn đã hết hạn.\nVui lòng gia hạn để tiếp tục khám phá.",
-                "Gia hạn ngay");
+                AppResources.AlertExpiredTitle,
+                AppResources.AlertExpiredMsg,
+                AppResources.AlertExpiredBtn);
 
-            var subPage = _services.GetRequiredService<SubscriptionPage>();
-            MainPage = new NavigationPage(subPage)
+            var langPage = _services.GetRequiredService<LanguageSelectionPage>();
+            MainPage = new NavigationPage(langPage)
             {
                 BarBackgroundColor = Color.FromArgb("#1A1410"),
                 BarTextColor       = Color.FromArgb("#F0E6D3")

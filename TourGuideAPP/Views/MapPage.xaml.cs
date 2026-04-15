@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using Mapsui.Nts;
 using NetTopologySuite.Geometries;
 using TourGuideAPP.Data.Models;
+using TourGuideAPP.Resources.Strings;
 using TourGuideAPP.Services;
 using Microsoft.Maui.ApplicationModel.Communication;
 
@@ -186,7 +187,7 @@ public partial class MapPage : ContentPage
 
         // Status badge
         bool isOpen = IsPlaceOpen(place);
-        CardStatusLabel.Text = isOpen ? "Đang mở" : "Đóng cửa";
+        CardStatusLabel.Text = isOpen ? AppResources.MapOpenNow : AppResources.PlaceClosedNow;
         CardStatusLabel.TextColor = isOpen
             ? Color.FromArgb("#4CAF50")
             : Color.FromArgb("#E94560");
@@ -206,7 +207,7 @@ public partial class MapPage : ContentPage
         {
             CardStars.Text = "☆☆☆☆☆";
             CardRating.Text = "";
-            CardReviews.Text = "Chưa có đánh giá";
+            CardReviews.Text = AppResources.PlaceNoRating;
         }
 
         // Tag chips from Specialty
@@ -311,11 +312,11 @@ public partial class MapPage : ContentPage
         await FlashButton(BtnCall, isPrimary: false);
         if (string.IsNullOrWhiteSpace(_selectedPlace.Phone))
         {
-            DisplayAlert("Thông báo", "Địa điểm này chưa có số điện thoại.", "OK");
+            DisplayAlert(AppResources.AlertInfo, AppResources.PlaceNoPhone, AppResources.AlertOk);
             return;
         }
         try { PhoneDialer.Open(_selectedPlace.Phone); }
-        catch { DisplayAlert("Lỗi", "Không thể mở ứng dụng gọi điện.", "OK"); }
+        catch { DisplayAlert(AppResources.AlertError, AppResources.AlertCannotCall, AppResources.AlertOk); }
     }
 
     private async void OnCardDetail(object sender, TappedEventArgs e)
@@ -390,7 +391,7 @@ public partial class MapPage : ContentPage
                 UpdateUserMarker(location.Latitude, location.Longitude);
 
                 var address = await _locationService.GetAddressAsync(location);
-                CurrentAddressLabel.Text = $"📍 Địa chỉ hiện tại: {address}";
+                CurrentAddressLabel.Text = $"📍 {address}";
 
                 var places = _placeService.GetCachedPlaces();
                 var nearest = _geofenceEngine.FindNearestPOI(
@@ -402,7 +403,7 @@ public partial class MapPage : ContentPage
 
                 if (nearest != null)
                 {
-                    NearestPOILabel.Text = $"🏛️ Gần: {nearest.Name} ({GetDistanceMeters(location.Latitude, location.Longitude, nearest.Latitude, nearest.Longitude):F0}m)";
+                    NearestPOILabel.Text = $"{AppResources.MainNearbyPrefix}{nearest.Name} ({GetDistanceMeters(location.Latitude, location.Longitude, nearest.Latitude, nearest.Longitude):F0}m)";
                     var nearestId = nearest.PlaceId.ToString();
                     if (_lastSpokenPlaceId != nearestId)
                     {
@@ -413,7 +414,7 @@ public partial class MapPage : ContentPage
                 }
                 else
                 {
-                    NearestPOILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
+                    NearestPOILabel.Text = AppResources.MapNoNearby;
                     _lastSpokenPlaceId = null;
                 }
             });
@@ -439,7 +440,7 @@ public partial class MapPage : ContentPage
         var origin = _locationService.LastKnownLocation;
         if (origin is null)
         {
-            NearestPOILabel.Text = "📍 Chưa có vị trí hiện tại để chỉ đường";
+            NearestPOILabel.Text = AppResources.MapNoCurrentLocation;
             return;
         }
 
@@ -454,14 +455,14 @@ public partial class MapPage : ContentPage
         }
         catch (Exception ex)
         {
-            NearestPOILabel.Text = $"❌ Lỗi lấy đường đi: {ex.Message}";
+            NearestPOILabel.Text = $"{AppResources.MapRouteError}: {ex.Message}";
             return;
         }
 
         var coords = res?.Routes?.FirstOrDefault()?.Geometry?.Coordinates;
         if (coords is null || coords.Count < 2)
         {
-            NearestPOILabel.Text = "❌ Không lấy được đường đi";
+            NearestPOILabel.Text = AppResources.MapRouteFailed;
             return;
         }
 
@@ -516,7 +517,7 @@ public partial class MapPage : ContentPage
         if (extent is not null)
             MyMap.Map.Navigator.ZoomToBox(extent, MBoxFit.Fit);
 
-        NearestPOILabel.Text = $"🧭 Đang chỉ đường tới: {destination.name ?? "điểm đến"}";
+        NearestPOILabel.Text = AppResources.MapNavigatingTo + (destination.name ?? AppResources.MapDestination);
         CancelRoutePanel.IsVisible = true;
     }
 
@@ -555,7 +556,7 @@ public partial class MapPage : ContentPage
         if (destLayer is not null) MyMap.Map.Layers.Remove(destLayer);
 
         CancelRoutePanel.IsVisible = false;
-        NearestPOILabel.Text = "Chưa xác định điểm gần nhất";
+        NearestPOILabel.Text = AppResources.MapNoNearby;
         MyMap.Map.RefreshData();
     }
 

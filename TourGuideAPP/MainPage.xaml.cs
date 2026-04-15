@@ -1,4 +1,5 @@
 using Supabase;
+using TourGuideAPP.Resources.Strings;
 using TourGuideAPP.Services;
 using TourGuideAPP.Views;
 using TourGuideAPP.Data.Models;
@@ -51,7 +52,7 @@ public partial class MainPage : ContentPage
    private void UpdateAuthUI()
 {
     GpsCard.IsVisible = true;
-    UserLabel.Text = "👤 Khách";
+    UserLabel.Text = AppResources.MainUserLabel;
 }
 
     private async Task TestConnection()
@@ -64,7 +65,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception ex)
         {
-            StatusLabel.Text = $"❌ Không kết nối được dữ liệu. {ex.Message}";
+            StatusLabel.Text = $"{AppResources.MainNoConnection} {ex.Message}";
             StatusLabel.IsVisible = true;
         }
     }
@@ -137,7 +138,7 @@ public partial class MainPage : ContentPage
     }
     private async void OnStartGpsClicked(object sender, EventArgs e)
     {
-        GpsLabel.Text = "📍 Đang khởi động GPS...";
+        GpsLabel.Text = AppResources.MainGpsStarting;
         _locationService.LocationChanged += (location) =>
         {
             MainThread.BeginInvokeOnMainThread(async () =>
@@ -149,7 +150,7 @@ public partial class MainPage : ContentPage
                 if (nearest != null)
                 {
                     UserLocationLabel.Text = nearest.Name;
-                    POILabel.Text = $"🏛️ Gần: {nearest.Name}";
+                    POILabel.Text = AppResources.MainNearbyPrefix + nearest.Name;
                     var nearestId = nearest.PlaceId.ToString();
                     if (_lastSpokenPlaceId != nearestId)
                     {
@@ -161,7 +162,7 @@ public partial class MainPage : ContentPage
                 else
                 {
                     UserLocationLabel.Text = await ResolveLocationNameAsync(location);
-                    POILabel.Text = "🏛️ Chưa xác định điểm gần nhất";
+                    POILabel.Text = AppResources.MainNoNearby;
                     _lastSpokenPlaceId = null;
                 }
             });

@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+             xmlns:res="clr-namespace:TourGuideAPP.Resources.Strings"
              x:Class="TourGuideAPP.Views.MapPage"
              BackgroundColor="#0F0E0D"
              Shell.NavBarIsVisible="False"
@@ -16,12 +17,12 @@
               Padding="20,52,20,16">
 
             <VerticalStackLayout Grid.Column="0" Spacing="3">
-                <Label Text="KHÁM PHÁ"
+                <Label Text="{x:Static res:AppResources.MapExplore}"
                        FontSize="10"
                        CharacterSpacing="4"
                        TextColor="#C8A96E"
                        FontAttributes="Bold"/>
-                <Label Text="Bản đồ"
+                <Label Text="{x:Static res:AppResources.MapTitle}"
                        FontSize="24"
                        FontAttributes="Bold"
                        TextColor="#F0E6D3"/>
@@ -37,7 +38,7 @@
                             StrokeShape="RoundRectangle 8"
                             Stroke="Transparent"
                             Padding="12,6">
-                        <Label Text="Tất cả"
+                        <Label Text="{x:Static res:AppResources.MapFilterAll}"
                                FontSize="10"
                                FontAttributes="Bold"
                                TextColor="#1A1410"/>
@@ -46,7 +47,7 @@
                             StrokeShape="RoundRectangle 8"
                             Stroke="Transparent"
                             Padding="12,6">
-                        <Label Text="☕ Cafe"
+                        <Label Text="{x:Static res:AppResources.MapFilterCafe}"
                                FontSize="10"
                                TextColor="#8A7560"/>
                     </Border>
@@ -54,7 +55,7 @@
                             StrokeShape="RoundRectangle 8"
                             Stroke="Transparent"
                             Padding="12,6">
-                        <Label Text="🍜 Ăn"
+                        <Label Text="{x:Static res:AppResources.MapFilterFood}"
                                FontSize="10"
                                TextColor="#8A7560"/>
                     </Border>
@@ -88,7 +89,7 @@
                            FontAttributes="Bold"
                            TextColor="White"
                            VerticalOptions="Center"/>
-                    <Label Text="Tắt chỉ đường"
+                    <Label Text="{x:Static res:AppResources.MapCancelRoute}"
                            FontSize="12"
                            FontAttributes="Bold"
                            TextColor="White"
@@ -182,13 +183,13 @@
                                              VerticalOptions="Center"
                                              Spacing="2">
                             <Label x:Name="CurrentAddressLabel"
-                                   Text="📍 Địa chỉ hiện tại: đang cập nhật..."
+                                   Text="{x:Static res:AppResources.MapAddressUpdating}"
                                    FontSize="11"
                                    TextColor="#5A4A3A"
                                    LineBreakMode="TailTruncation"
                                    MaxLines="1"/>
                             <Label x:Name="NearestPOILabel"
-                                   Text="Chưa xác định điểm gần nhất"
+                                   Text="{x:Static res:AppResources.MapNoNearby}"
                                    FontSize="13"
                                    FontAttributes="Bold"
                                    TextColor="#C8A96E"
@@ -237,7 +238,7 @@
                                         Stroke="Transparent"
                                         Padding="8,4">
                                     <Label x:Name="CardStatusLabel"
-                                           Text="Đang mở"
+                                           Text="{x:Static res:AppResources.MapOpenNow}"
                                            FontSize="11"
                                            FontAttributes="Bold"
                                            TextColor="#4CAF50"/>
@@ -332,7 +333,7 @@
                                 <Label Text="🧭"
                                        FontSize="16"
                                        HorizontalOptions="Center"/>
-                                <Label Text="Chỉ đường"
+                                <Label Text="{x:Static res:AppResources.MapDirections}"
                                        FontSize="10"
                                        FontAttributes="Bold"
                                        TextColor="#1A1410"
@@ -357,7 +358,7 @@
                                 <Label Text="🎙️"
                                        FontSize="16"
                                        HorizontalOptions="Center"/>
-                                <Label Text="Thuyết minh"
+                                <Label Text="{x:Static res:AppResources.MapNarrate}"
                                        FontSize="10"
                                        FontAttributes="Bold"
                                        TextColor="#C8A96E"
@@ -382,7 +383,7 @@
                                 <Label Text="📞"
                                        FontSize="16"
                                        HorizontalOptions="Center"/>
-                                <Label Text="Gọi ngay"
+                                <Label Text="{x:Static res:AppResources.MapCall}"
                                        FontSize="10"
                                        FontAttributes="Bold"
                                        TextColor="#C8A96E"
@@ -407,7 +408,7 @@
                                 <Label Text="ℹ️"
                                        FontSize="16"
                                        HorizontalOptions="Center"/>
-                                <Label Text="Chi tiết"
+                                <Label Text="{x:Static res:AppResources.MapDetails}"
                                        FontSize="10"
                                        FontAttributes="Bold"
                                        TextColor="#C8A96E"

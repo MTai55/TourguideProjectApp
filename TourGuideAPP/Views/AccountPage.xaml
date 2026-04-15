@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TourGuideAPP.Resources.Strings"
              x:Class="TourGuideAPP.Views.AccountPage"
              BackgroundColor="#0F0E0D"
              Shell.NavBarIsVisible="False">
@@ -12,12 +13,12 @@
             <VerticalStackLayout BackgroundColor="#1A1410"
                                  Padding="20,52,20,20"
                                  Spacing="4">
-                <Label Text="ỨNG DỤNG"
+                <Label Text="{x:Static res:AppResources.AccApp}"
                        FontSize="10"
                        CharacterSpacing="4"
                        TextColor="#C8A96E"
                        FontAttributes="Bold"/>
-                <Label Text="Cài đặt"
+                <Label Text="{x:Static res:AppResources.AccSettings}"
                        FontSize="28"
                        FontAttributes="Bold"
                        TextColor="#F0E6D3"/>
@@ -26,7 +27,7 @@
             <!-- ═══ TRẢI NGHIỆM ═══ -->
             <VerticalStackLayout Padding="20,24,20,0" Spacing="10">
 
-                <Label Text="— TRẢI NGHIỆM"
+                <Label Text="{x:Static res:AppResources.AccExperience}"
                        FontSize="9"
                        CharacterSpacing="3"
                        TextColor="#C8A96E"
@@ -53,7 +54,7 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Giọng đọc thuyết minh"
+                                <Label Text="{x:Static res:AppResources.AccTtsVoice}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
                                 <Label x:Name="TtsLocaleSubtitle"
@@ -89,10 +90,10 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Thông báo"
+                                <Label Text="{x:Static res:AppResources.AccNotifications}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="Bật"
+                                <Label Text="{x:Static res:AppResources.AccNotificationsOn}"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
                             <Switch Grid.Column="2"
@@ -118,10 +119,10 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Chế độ tối"
+                                <Label Text="{x:Static res:AppResources.AccDarkMode}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="Đang bật"
+                                <Label Text="{x:Static res:AppResources.AccDarkModeOn}"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
                             <Switch Grid.Column="2"
@@ -139,7 +140,7 @@
             <!-- ═══ BẢN ĐỒ & VỊ TRÍ ═══ -->
             <VerticalStackLayout Padding="20,20,20,0" Spacing="10">
 
-                <Label Text="— BẢN ĐỒ &amp; VỊ TRÍ"
+                <Label Text="{x:Static res:AppResources.AccMapSection}"
                        FontSize="9"
                        CharacterSpacing="3"
                        TextColor="#C8A96E"
@@ -166,10 +167,10 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="GPS tự động"
+                                <Label Text="{x:Static res:AppResources.AccGpsAuto}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="Tự bật khi mở app"
+                                <Label Text="{x:Static res:AppResources.AccGpsAutoSub}"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
                             <Switch Grid.Column="2"
@@ -195,10 +196,10 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Bán kính tìm kiếm"
+                                <Label Text="{x:Static res:AppResources.AccSearchRadius}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="500m"
+                                <Label Text="{x:Static res:AppResources.AccSearchRadiusVal}"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
                             <Label Grid.Column="2" Text="›"
@@ -214,7 +215,7 @@
             <!-- ═══ THÔNG TIN ỨNG DỤNG ═══ -->
             <VerticalStackLayout Padding="20,20,20,100" Spacing="10">
 
-                <Label Text="— THÔNG TIN"
+                <Label Text="{x:Static res:AppResources.AccInfoSection}"
                        FontSize="9"
                        CharacterSpacing="3"
                        TextColor="#C8A96E"
@@ -241,10 +242,10 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Về ứng dụng"
+                                <Label Text="{x:Static res:AppResources.AccAbout}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="Phiên bản 1.0.0"
+                                <Label Text="{x:Static res:AppResources.AccVersion}"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
                             <Label Grid.Column="2" Text="›"
@@ -268,10 +269,10 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Hướng dẫn sử dụng"
+                                <Label Text="{x:Static res:AppResources.AccUserGuide}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="Xem cách dùng app"
+                                <Label Text="{x:Static res:AppResources.AccUserGuideSub}"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
                             <Label Grid.Column="2" Text="›"
@@ -295,10 +296,10 @@
                             <VerticalStackLayout Grid.Column="1"
                                                  Margin="12,0,0,0"
                                                  VerticalOptions="Center">
-                                <Label Text="Xóa bộ nhớ đệm"
+                                <Label Text="{x:Static res:AppResources.AccClearCache}"
                                        FontSize="13" FontAttributes="Bold"
                                        TextColor="#F0E6D3"/>
-                                <Label Text="Giải phóng dung lượng"
+                                <Label Text="{x:Static res:AppResources.AccClearCacheSub}"
                                        FontSize="11" TextColor="#5A4A3A"/>
                             </VerticalStackLayout>
                             <Label Grid.Column="2" Text="›"
@@ -312,7 +313,7 @@
             </VerticalStackLayout>
 
             <!-- DEV ONLY: huỷ kích hoạt để test luồng thanh toán -->
-            <Label Text="[DEV] Huỷ kích hoạt phiên"
+            <Label Text="{x:Static res:AppResources.AccDevDeactivate}"
                    TextColor="#5A4A3A"
                    FontSize="12"
                    HorizontalOptions="Center"

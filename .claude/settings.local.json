@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn 'Text=\"[^{\"][^\"]*[àáảãạấầẩẫậắằẳẵặếềểễệổốổỗộớờởỡợứừửữựđĐ]' Views/*.xaml MainPage.xaml AppShell.xaml)",
+      "Bash(python3 -c ':*)"
+    ]
+  }
+}

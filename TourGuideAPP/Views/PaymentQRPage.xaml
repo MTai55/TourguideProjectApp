@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TourGuideAPP.Resources.Strings"
              x:Class="TourGuideAPP.Views.PaymentQRPage"
              BackgroundColor="#0F0E0D"
-             Title="Thanh toán">
+             Title="{x:Static res:AppResources.PayTitle}">
 
     <Shell.TitleView>
-        <Label Text="Thanh toán"
+        <Label Text="{x:Static res:AppResources.PayTitle}"
                TextColor="#F0E6D3"
                FontSize="16"
                FontAttributes="Bold"
@@ -24,7 +25,7 @@
                     Margin="0,0,0,24">
                 <Grid ColumnDefinitions="*,Auto">
                     <VerticalStackLayout Grid.Column="0" Spacing="2">
-                        <Label Text="— GÓI ĐÃ CHỌN"
+                        <Label Text="{x:Static res:AppResources.PaySelectedPkg}"
                                TextColor="#5A4A3A"
                                FontSize="9"
                                CharacterSpacing="3"
@@ -44,7 +45,7 @@
             </Border>
 
             <!-- QR Code -->
-            <Label Text="— QUÉT ĐỂ CHUYỂN KHOẢN"
+            <Label Text="{x:Static res:AppResources.PayScanLabel}"
                    TextColor="#C8A96E"
                    FontSize="9"
                    CharacterSpacing="3"
@@ -68,7 +69,7 @@
                     Padding="16,12"
                     Margin="0,20,0,0">
                 <VerticalStackLayout Spacing="4">
-                    <Label Text="— MÃ THIẾT BỊ (NỘI DUNG CHUYỂN KHOẢN)"
+                    <Label Text="{x:Static res:AppResources.PayDeviceCodeLabel}"
                            TextColor="#5A4A3A"
                            FontSize="9"
                            CharacterSpacing="2"
@@ -79,7 +80,7 @@
                            FontAttributes="Bold"
                            CharacterSpacing="4"
                            HorizontalOptions="Center"/>
-                    <Label Text="Ghi mã này vào nội dung chuyển khoản"
+                    <Label Text="{x:Static res:AppResources.PayDeviceCodeHint}"
                            TextColor="#5A4A3A"
                            FontSize="11"
                            HorizontalOptions="Center"/>
@@ -100,7 +101,7 @@
                                        HeightRequest="20"
                                        VerticalOptions="Center"/>
                     <Label x:Name="StatusLabel"
-                           Text="Đang chờ xác nhận thanh toán..."
+                           Text="{x:Static res:AppResources.PayWaiting}"
                            TextColor="#F0E6D3"
                            FontSize="14"
                            VerticalOptions="Center"/>
@@ -114,22 +115,22 @@
                     Padding="16,14"
                     Margin="0,12,0,32">
                 <VerticalStackLayout Spacing="6">
-                    <Label Text="— HƯỚNG DẪN"
+                    <Label Text="{x:Static res:AppResources.PayInstructions}"
                            TextColor="#5A4A3A"
                            FontSize="9"
                            CharacterSpacing="3"
                            FontAttributes="Bold"
                            Margin="0,0,0,4"/>
-                    <Label Text="1. Quét mã QR bằng app ngân hàng"
+                    <Label Text="{x:Static res:AppResources.PayStep1}"
                            TextColor="#8A7560"
                            FontSize="13"/>
-                    <Label Text="2. Nhập MÃ THIẾT BỊ vào nội dung CK"
+                    <Label Text="{x:Static res:AppResources.PayStep2}"
                            TextColor="#8A7560"
                            FontSize="13"/>
-                    <Label Text="3. Chuyển khoản đúng số tiền"
+                    <Label Text="{x:Static res:AppResources.PayStep3}"
                            TextColor="#8A7560"
                            FontSize="13"/>
-                    <Label Text="4. App tự động mở khóa sau xác nhận"
+                    <Label Text="{x:Static res:AppResources.PayStep4}"
                            TextColor="#8A7560"
                            FontSize="13"/>
                 </VerticalStackLayout>

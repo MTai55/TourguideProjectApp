@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <!-- Language Selection -->
+  <data name="LangTitle"><value>Choose Language</value></data>
+  <data name="LangSubtitle"><value>Select app display language</value></data>
+  <data name="LangVietnamese"><value>Tiếng Việt</value></data>
+  <data name="LangEnglish"><value>English</value></data>
+  <data name="LangContinue"><value>Continue →</value></data>
+
+  <!-- Tab Bar -->
+  <data name="TabTours"><value>Tours</value></data>
+  <data name="TabFeatured"><value>Featured</value></data>
+  <data name="TabMap"><value>Map</value></data>
+  <data name="TabSettings"><value>Settings</value></data>
+
+  <!-- SubscriptionPage -->
+  <data name="SubChoosePackage"><value>— SELECT A PACKAGE</value></data>
+  <data name="SubPackage1hLabel"><value>1 HOUR</value></data>
+  <data name="SubPackage1hDesc"><value>Basic experience</value></data>
+  <data name="SubPackage1hSub"><value>Explore 1 area</value></data>
+  <data name="SubPackage2hLabel"><value>2 HOURS</value></data>
+  <data name="SubPackage2hBadge"><value>POPULAR</value></data>
+  <data name="SubPackage2hDesc"><value>Wider exploration</value></data>
+  <data name="SubPackage2hSub"><value>Tour 2 adjacent areas</value></data>
+  <data name="SubPackage1dLabel"><value>1 DAY</value></data>
+  <data name="SubPackage1dDesc"><value>Full day tour</value></data>
+  <data name="SubPackage1dSub"><value>Explore all places</value></data>
+  <data name="SubPackage3dLabel"><value>3 DAYS</value></data>
+  <data name="SubPackage3dDesc"><value>Extended travel</value></data>
+  <data name="SubPackage3dSub"><value>The most complete experience</value></data>
+  <data name="SubSelectBtn"><value>Select →</value></data>
+  <data name="SubPaymentMethod"><value>Payment via bank transfer</value></data>
+  <data name="SubAutoUnlock"><value>Auto-unlocks after confirmation</value></data>
+  <data name="SubDevBypass"><value>[DEV] Skip payment</value></data>
+
+  <!-- PaymentPage -->
+  <data name="PayTitle"><value>Payment</value></data>
+  <data name="PaySelectedPkg"><value>— SELECTED PACKAGE</value></data>
+  <data name="PayScanLabel"><value>— SCAN TO TRANSFER</value></data>
+  <data name="PayDeviceCodeLabel"><value>— DEVICE CODE (TRANSFER CONTENT)</value></data>
+  <data name="PayDeviceCodeHint"><value>Enter this code as transfer content</value></data>
+  <data name="PayWaiting"><value>Waiting for payment confirmation...</value></data>
+  <data name="PayConnError"><value>⚠ Connection error. Check network and try again.</value></data>
+  <data name="PayInstructions"><value>— INSTRUCTIONS</value></data>
+  <data name="PayStep1"><value>1. Scan QR code with your banking app</value></data>
+  <data name="PayStep2"><value>2. Enter DEVICE CODE as transfer content</value></data>
+  <data name="PayStep3"><value>3. Transfer the exact amount</value></data>
+  <data name="PayStep4"><value>4. App auto-unlocks after confirmation</value></data>
+
+  <!-- AccountPage -->
+  <data name="AccApp"><value>APPLICATION</value></data>
+  <data name="AccSettings"><value>Settings</value></data>
+  <data name="AccExperience"><value>— EXPERIENCE</value></data>
+  <data name="AccTtsVoice"><value>Narration voice</value></data>
+  <data name="AccNotifications"><value>Notifications</value></data>
+  <data name="AccNotificationsOn"><value>On</value></data>
+  <data name="AccDarkMode"><value>Dark mode</value></data>
+  <data name="AccDarkModeOn"><value>Enabled</value></data>
+  <data name="AccMapSection"><value>— MAP &amp; LOCATION</value></data>
+  <data name="AccGpsAuto"><value>Auto GPS</value></data>
+  <data name="AccGpsAutoSub"><value>Turns on when app opens</value></data>
+  <data name="AccSearchRadius"><value>Search radius</value></data>
+  <data name="AccSearchRadiusVal"><value>500m</value></data>
+  <data name="AccInfoSection"><value>— INFORMATION</value></data>
+  <data name="AccAbout"><value>About app</value></data>
+  <data name="AccVersion"><value>Version 1.0.0</value></data>
+  <data name="AccUserGuide"><value>User guide</value></data>
+  <data name="AccUserGuideSub"><value>Learn how to use the app</value></data>
+  <data name="AccClearCache"><value>Clear cache</value></data>
+  <data name="AccClearCacheSub"><value>Free up storage</value></data>
+  <data name="AccDevDeactivate"><value>[DEV] Deactivate session</value></data>
+
+  <!-- MainPage -->
+  <data name="MainGreeting"><value>GOOD MORNING,</value></data>
+  <data name="MainTraveler"><value>Saigon Traveler</value></data>
+  <data name="MainSearchPlaceholder"><value>Find restaurants, cafes...</value></data>
+  <data name="MainWaitGps"><value>Waiting for GPS...</value></data>
+  <data name="MainNoNearby"><value>🏛️ No nearby place identified</value></data>
+  <data name="MainExploreCategory"><value>EXPLORE BY CATEGORY</value></data>
+  <data name="MainCatAll"><value>All</value></data>
+  <data name="MainCatCafe"><value>☕ Coffee</value></data>
+  <data name="MainCatFood"><value>🍲 Food</value></data>
+  <data name="MainCatBeer"><value>🍺 Beer</value></data>
+  <data name="MainCatBubbleTea"><value>🧋 Bubble Tea</value></data>
+  <data name="MainFeatured"><value>FEATURED PLACES</value></data>
+  <data name="MainGastronomy"><value>Culinary journey</value></data>
+  <data name="MainViewAll"><value>View all →</value></data>
+  <data name="MainSpecialty"><value>Specialty</value></data>
+  <data name="MainUserLabel"><value>👤 Guest</value></data>
+  <data name="MainGpsStarting"><value>📍 Starting GPS...</value></data>
+  <data name="MainNoConnection"><value>❌ Cannot connect to data.</value></data>
+  <data name="MainNearbyPrefix"><value>🏛️ Nearby: </value></data>
+
+  <!-- MapPage -->
+  <data name="MapExplore"><value>EXPLORE</value></data>
+  <data name="MapTitle"><value>Map</value></data>
+  <data name="MapFilterAll"><value>All</value></data>
+  <data name="MapFilterCafe"><value>☕ Cafe</value></data>
+  <data name="MapFilterFood"><value>🍜 Food</value></data>
+  <data name="MapCancelRoute"><value>Cancel route</value></data>
+  <data name="MapNavigatingTo"><value>🧭 Navigating to: </value></data>
+  <data name="MapDestination"><value>destination</value></data>
+  <data name="MapAddressUpdating"><value>📍 Current location: updating...</value></data>
+  <data name="MapNoNearby"><value>No nearby place identified</value></data>
+  <data name="MapOpenNow"><value>Open now</value></data>
+  <data name="MapDirections"><value>Directions</value></data>
+  <data name="MapNarrate"><value>Narrate</value></data>
+  <data name="MapCall"><value>Call</value></data>
+  <data name="MapDetails"><value>Details</value></data>
+
+  <!-- ToursPage -->
+  <data name="TourExplore"><value>EXPLORE</value></data>
+  <data name="TourPageTitle"><value>Tour Packages</value></data>
+  <data name="TourSubtitle"><value>Suggested by interest, budget, and time.</value></data>
+  <data name="TourSearchPlaceholder"><value>Search tours (snacks, seafood, cafe...)</value></data>
+  <data name="TourFilterLabel"><value>Filter</value></data>
+  <data name="TourTimeFilter"><value>TIME</value></data>
+  <data name="TourBudgetFilter"><value>BUDGET</value></data>
+  <data name="TourBudgetValue"><value>200k</value></data>
+  <data name="TourPriorityFilter"><value>PRIORITY</value></data>
+  <data name="TourWalkLess"><value>Less walking</value></data>
+  <data name="TourApply"><value>Apply</value></data>
+  <data name="TourCuratedLabel"><value>— CURATED TOUR PACKAGES</value></data>
+  <data name="TourSelect"><value>Select</value></data>
+
+  <!-- TourDetailPage -->
+  <data name="TourDetailLabel"><value>TOUR PACKAGE</value></data>
+  <data name="TourDetailItinerary"><value>— ITINERARY</value></data>
+  <data name="TourDetailStart"><value>🧭  Start tour — navigate to first stop</value></data>
+
+  <!-- PlaceDetailPage -->
+  <data name="PlaceOpenNow"><value>Open now</value></data>
+  <data name="PlaceDirections"><value>Directions</value></data>
+  <data name="PlaceGoogleMaps"><value>Google Maps</value></data>
+  <data name="PlaceCall"><value>Call</value></data>
+  <data name="PlaceInfo"><value>— INFORMATION</value></data>
+  <data name="PlaceNarrate"><value>Narrate</value></data>
+
+  <!-- ToursPage (code-behind) -->
+  <data name="TourDuration1"><value>1–1.5 hours</value></data>
+  <data name="TourDuration2"><value>2–3 hours</value></data>
+  <data name="TourDurationHalfDay"><value>Half day</value></data>
+  <data name="TourEmptyTitle"><value>No matching tours found</value></data>
+  <data name="TourEmptyDesc"><value>Try increasing budget or clearing search keywords for more suggestions.</value></data>
+  <data name="TourSuggestionTag"><value>Suggestion</value></data>
+  <data name="TourStopsFormat"><value>• {0} stops</value></data>
+  <data name="TourLowWalkDesc"><value>Prioritizes short routes with less walking.</value></data>
+  <data name="TourQuickTitle"><value>Quick tour</value></data>
+  <data name="TourQuickDesc"><value>Fewer stops, only the best picks.</value></data>
+  <data name="TourBalancedTitle"><value>Balanced tour</value></data>
+  <data name="TourBalancedDesc"><value>Suits most travelers: just the right amount.</value></data>
+  <data name="TourFullTitle"><value>Full tour</value></data>
+  <data name="TourFullDesc"><value>More stops if you have the time.</value></data>
+  <data name="AlertSelectTour"><value>Select Tour</value></data>
+  <data name="AlertNoStops"><value>This tour has no stops yet.</value></data>
+  <data name="AlertServiceError"><value>Could not initialize services.</value></data>
+
+  <!-- PlaceDetailPage (code-behind) -->
+  <data name="PlaceNoRating"><value>No rating yet</value></data>
+  <data name="PlaceReviewsSuffix"><value>Google reviews</value></data>
+  <data name="PlaceClosedNow"><value>Closed</value></data>
+  <data name="PlaceNoDescription"><value>No description yet.</value></data>
+  <data name="PlaceNoUpdate"><value>Not updated</value></data>
+  <data name="PlaceContactForPrice"><value>Contact</value></data>
+  <data name="PlaceNoPhone"><value>This place has no phone number.</value></data>
+
+  <!-- MapPage (code-behind) -->
+  <data name="MapNoCurrentLocation"><value>📍 No current location for directions</value></data>
+  <data name="MapRouteError"><value>❌ Failed to get directions</value></data>
+  <data name="MapRouteFailed"><value>❌ Could not get directions</value></data>
+
+  <!-- Generic alerts -->
+  <data name="AlertOk"><value>OK</value></data>
+  <data name="AlertError"><value>Error</value></data>
+  <data name="AlertInfo"><value>Notice</value></data>
+  <data name="AlertNoCoords"><value>No coordinates available for directions.</value></data>
+  <data name="AlertCannotCall"><value>Cannot open phone app.</value></data>
+  <data name="AlertCannotWebsite"><value>Cannot open website.</value></data>
+
+  <!-- Alerts -->
+  <data name="AlertExpiredTitle"><value>Subscription Expired</value></data>
+  <data name="AlertExpiredMsg"><value>Your subscription has expired.\nPlease renew to continue exploring.</value></data>
+  <data name="AlertExpiredBtn"><value>Renew now</value></data>
+</root>

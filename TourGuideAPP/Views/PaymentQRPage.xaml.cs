@@ -1,3 +1,4 @@
+using TourGuideAPP.Resources.Strings;
 using TourGuideAPP.Services;
 
 namespace TourGuideAPP.Views;
@@ -42,7 +43,7 @@ public partial class PaymentQRPage : ContentPage
         }
         catch
         {
-            StatusLabel.Text   = "⚠ Lỗi kết nối. Kiểm tra mạng và thử lại.";
+            StatusLabel.Text   = AppResources.PayConnError;
             WaitingSpinner.IsRunning = false;
         }
     }

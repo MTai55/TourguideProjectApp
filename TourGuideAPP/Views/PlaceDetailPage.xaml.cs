@@ -1,5 +1,6 @@
 using Microsoft.Maui.ApplicationModel.Communication;
 using TourGuideAPP.Data.Models;
+using TourGuideAPP.Resources.Strings;
 using TourGuideAPP.Services;
 
 namespace TourGuideAPP.Views;
@@ -35,25 +36,25 @@ public partial class PlaceDetailPage : ContentPage
 
         RatingLabel.Text = _place.AverageRating.HasValue
             ? $"★ {_place.AverageRating:F1}"
-            : "Chưa có đánh giá";
+            : AppResources.PlaceNoRating;
         ReviewsLabel.Text = _place.TotalReviews.HasValue
-            ? $"({_place.TotalReviews} đánh giá Google)"
+            ? $"({_place.TotalReviews} {AppResources.PlaceReviewsSuffix})"
             : "";
 
         // Status badge
         bool isOpen = IsPlaceOpen(_place);
-        StatusLabel.Text = isOpen ? "Đang mở" : "Đóng cửa";
+        StatusLabel.Text = isOpen ? AppResources.PlaceOpenNow : AppResources.PlaceClosedNow;
         StatusLabel.TextColor = isOpen ? Color.FromArgb("#4CAF50") : Color.FromArgb("#E94560");
         StatusBadge.BackgroundColor = isOpen ? Color.FromArgb("#1B3A28") : Color.FromArgb("#3A1B20");
 
-        DescriptionLabel.Text = _place.Description ?? "Chưa có mô tả.";
-        AddressLabel.Text = _place.Address ?? "Chưa cập nhật";
+        DescriptionLabel.Text = _place.Description ?? AppResources.PlaceNoDescription;
+        AddressLabel.Text = _place.Address ?? AppResources.PlaceNoUpdate;
         OpenTimeLabel.Text = _place.OpenTime != null
             ? $"{_place.OpenTime} – {_place.CloseTime}"
-            : "Chưa cập nhật";
+            : AppResources.PlaceNoUpdate;
         PriceLabel.Text = _place.PriceMin.HasValue
             ? $"{_place.PriceMin:N0}đ – {_place.PriceMax:N0}đ"
-            : "Liên hệ";
+            : AppResources.PlaceContactForPrice;
 
         if (!string.IsNullOrWhiteSpace(_place.Website))
             WebsiteLabel.Text = _place.Website;
@@ -77,7 +78,7 @@ public partial class PlaceDetailPage : ContentPage
     {
         if (_place.Latitude == 0 && _place.Longitude == 0)
         {
-            await DisplayAlert("Lỗi", "Không có tọa độ để chỉ đường.", "OK");
+            await DisplayAlert(AppResources.AlertError, AppResources.AlertNoCoords, AppResources.AlertOk);
             return;
         }
         MapPage.PendingRoute = (_place.Latitude, _place.Longitude, _place.Name);
@@ -113,17 +114,17 @@ public partial class PlaceDetailPage : ContentPage
     {
         if (string.IsNullOrWhiteSpace(_place.Phone))
         {
-            DisplayAlert("Thông báo", "Địa điểm này chưa có số điện thoại.", "OK");
+            DisplayAlert(AppResources.AlertInfo, AppResources.PlaceNoPhone, AppResources.AlertOk);
             return;
         }
         try { PhoneDialer.Open(_place.Phone); }
-        catch { DisplayAlert("Lỗi", "Không thể mở ứng dụng gọi điện.", "OK"); }
+        catch { DisplayAlert(AppResources.AlertError, AppResources.AlertCannotCall, AppResources.AlertOk); }
     }
 
     private async void OnWebsiteClicked(object sender, TappedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(_place.Website)) return;
         try { await Launcher.OpenAsync(new Uri(_place.Website)); }
-        catch { await DisplayAlert("Lỗi", "Không thể mở website.", "OK"); }
+        catch { await DisplayAlert(AppResources.AlertError, AppResources.AlertCannotWebsite, AppResources.AlertOk); }
     }
 }

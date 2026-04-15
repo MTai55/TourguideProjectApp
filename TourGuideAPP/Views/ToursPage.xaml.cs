@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using TourGuideAPP.Resources.Strings;
 using TourGuideAPP.Services;
 using TourGuideAPP.Data.Models;
 
@@ -18,9 +19,9 @@ public partial class ToursPage : ContentPage
 
         DurationPicker.ItemsSource = new List<string>
         {
-            "1–1.5 giờ",
-            "2–3 giờ",
-            "Nửa ngày"
+            AppResources.TourDuration1,
+            AppResources.TourDuration2,
+            AppResources.TourDurationHalfDay
         };
         DurationPicker.SelectedIndex = 1;
         UpdateBudgetLabel();
@@ -102,7 +103,7 @@ public partial class ToursPage : ContentPage
 
         if (selected.Stops.Count == 0)
         {
-            await DisplayAlertAsync("Chọn tour", "Tour này chưa có điểm dừng.", "OK");
+            await DisplayAlertAsync(AppResources.AlertSelectTour, AppResources.AlertNoStops, AppResources.AlertOk);
             return;
         }
 
@@ -116,7 +117,7 @@ public partial class ToursPage : ContentPage
         if (locationService is null || poiService is null || geofenceEngine is null ||
             narrationService is null || authService is null)
         {
-            await DisplayAlertAsync("Lỗi", "Không khởi tạo được các dịch vụ.", "OK");
+            await DisplayAlertAsync(AppResources.AlertError, AppResources.AlertServiceError, AppResources.AlertOk);
             return;
         }
 
@@ -137,12 +138,12 @@ public partial class ToursPage : ContentPage
         {
             Tours.Add(new TourCard(
                 "empty",
-                "Chưa tìm thấy tour phù hợp",
-                "Thử tăng ngân sách hoặc xóa từ khóa tìm kiếm để xem thêm gợi ý.",
+                AppResources.TourEmptyTitle,
+                AppResources.TourEmptyDesc,
                 DurationTextFromBucket(_filters.DurationBucket),
                 $"≤ {_filters.MaxBudgetK}k",
-                "Gợi ý",
-                "• 0 điểm",
+                AppResources.TourSuggestionTag,
+                string.Format(AppResources.TourStopsFormat, 0),
                 Array.Empty<Place>()));
             return;
         }
@@ -155,9 +156,9 @@ public partial class ToursPage : ContentPage
             .ToList();
 
         // Build 3 variations from the same candidate pool
-        Tours.Add(BuildTour("tour-quick", "Tour nhanh", "Đi ít điểm nhưng chọn chỗ “đáng” nhất.", stopCount: Math.Min(2, top.Count), top));
-        Tours.Add(BuildTour("tour-balanced", "Tour cân bằng", "Phù hợp đa số: vừa đủ điểm, dễ đi.", stopCount: Math.Min(stopCount, top.Count), top));
-        Tours.Add(BuildTour("tour-full", "Tour no nê", "Nhiều điểm hơn nếu bạn có thời gian.", stopCount: Math.Min(stopCount + 1, top.Count), top));
+        Tours.Add(BuildTour("tour-quick",    AppResources.TourQuickTitle,    AppResources.TourQuickDesc,    stopCount: Math.Min(2, top.Count),          top));
+        Tours.Add(BuildTour("tour-balanced", AppResources.TourBalancedTitle, AppResources.TourBalancedDesc, stopCount: Math.Min(stopCount, top.Count),     top));
+        Tours.Add(BuildTour("tour-full",     AppResources.TourFullTitle,     AppResources.TourFullDesc,     stopCount: Math.Min(stopCount + 1, top.Count), top));
     }
 
     private static IEnumerable<Place> ApplyPlaceFilters(IEnumerable<Place> places, TourFilters filters)
@@ -184,11 +185,11 @@ public partial class ToursPage : ContentPage
         var stops = pool.Take(stopCount).ToList();
         var budgetText = $"≤ {_filters.MaxBudgetK}k";
         var durationText = DurationTextFromBucket(_filters.DurationBucket);
-        var tag = _filters.PreferLowWalking ? "Đi bộ ít" : "Gợi ý";
-        var stopsText = $"• {stops.Count} điểm";
+        var tag = _filters.PreferLowWalking ? AppResources.TourWalkLess : AppResources.TourSuggestionTag;
+        var stopsText = string.Format(AppResources.TourStopsFormat, stops.Count);
 
         if (_filters.PreferLowWalking)
-            desc = "Ưu tiên lộ trình ngắn, ít di chuyển.";
+            desc = AppResources.TourLowWalkDesc;
 
         return new TourCard(id, title, desc, durationText, budgetText, tag, stopsText, stops);
     }
@@ -202,9 +203,9 @@ public partial class ToursPage : ContentPage
 
     private static string DurationTextFromBucket(int bucket) => bucket switch
     {
-        0 => "1–1.5 giờ",
-        2 => "Nửa ngày",
-        _ => "2–3 giờ"
+        0 => AppResources.TourDuration1,
+        2 => AppResources.TourDurationHalfDay,
+        _ => AppResources.TourDuration2
     };
 
     public sealed record TourCard(

@@ -1,3 +1,4 @@
+using TourGuideAPP.Resources.Strings;
 using TourGuideAPP.Services;
 
 namespace TourGuideAPP.Views;
@@ -8,12 +9,12 @@ public partial class SubscriptionPage : ContentPage
 {
     private readonly AccessSessionService _accessService;
 
-    private static readonly List<SubscriptionPackage> Packages = new()
+    private static List<SubscriptionPackage> Packages => new()
     {
-        new("1h",   "1 Tiếng",  1,   10_000),
-        new("2h",   "2 Tiếng",  2,   18_000),
-        new("1day", "1 Ngày",  24,   50_000),
-        new("3day", "3 Ngày",  72,  120_000),
+        new("1h",   AppResources.SubPackage1hLabel,  1,   10_000),
+        new("2h",   AppResources.SubPackage2hLabel,  2,   18_000),
+        new("1day", AppResources.SubPackage1dLabel,  24,  50_000),
+        new("3day", AppResources.SubPackage3dLabel,  72,  120_000),
     };
 
     public SubscriptionPage(AccessSessionService accessService)

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TourGuideAPP.Resources.Strings"
              x:Class="TourGuideAPP.Views.ToursPage"
              Title="Tour"
              BackgroundColor="#0F0E0D"
@@ -14,18 +15,18 @@
                              Padding="20,52,20,18"
                              Spacing="4">
 
-            <Label Text="KHÁM PHÁ"
+            <Label Text="{x:Static res:AppResources.TourExplore}"
                    FontSize="10"
                    CharacterSpacing="4"
                    TextColor="#C8A96E"
                    FontAttributes="Bold"/>
 
-            <Label Text="Gói Tour"
+            <Label Text="{x:Static res:AppResources.TourPageTitle}"
                    FontSize="28"
                    FontAttributes="Bold"
                    TextColor="#F0E6D3"/>
 
-            <Label Text="Gợi ý theo sở thích, ngân sách, thời gian."
+            <Label Text="{x:Static res:AppResources.TourSubtitle}"
                    FontSize="12"
                    TextColor="#5A4A3A"
                    Margin="0,0,0,14"/>
@@ -47,7 +48,7 @@
                                TextColor="#5A4A3A"/>
                         <Entry x:Name="SearchEntry"
                                Grid.Column="1"
-                               Placeholder="Tìm tour (ăn vặt, hải sản, cafe...)"
+                               Placeholder="{x:Static res:AppResources.TourSearchPlaceholder}"
                                PlaceholderColor="#5A4A3A"
                                TextColor="#F0E6D3"
                                BackgroundColor="Transparent"
@@ -65,7 +66,7 @@
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnFilterClicked"/>
                     </Border.GestureRecognizers>
-                    <Label Text="Lọc"
+                    <Label Text="{x:Static res:AppResources.TourFilterLabel}"
                            FontSize="13"
                            FontAttributes="Bold"
                            TextColor="#1A1410"
@@ -91,7 +92,7 @@
 
                     <!-- Thời gian -->
                     <VerticalStackLayout Grid.Column="0" Spacing="6">
-                        <Label Text="THỜI GIAN"
+                        <Label Text="{x:Static res:AppResources.TourTimeFilter}"
                                FontSize="9"
                                CharacterSpacing="2"
                                TextColor="#C8A96E"
@@ -114,7 +115,7 @@
                     <VerticalStackLayout Grid.Column="1" Spacing="6">
                         <Grid ColumnDefinitions="*,Auto">
                             <Label Grid.Column="0"
-                                   Text="NGÂN SÁCH"
+                                   Text="{x:Static res:AppResources.TourBudgetFilter}"
                                    FontSize="9"
                                    CharacterSpacing="2"
                                    TextColor="#C8A96E"
@@ -142,13 +143,13 @@
 
                     <!-- Ưu tiên đi bộ ít -->
                     <VerticalStackLayout Grid.Column="0" Spacing="6">
-                        <Label Text="ƯU TIÊN"
+                        <Label Text="{x:Static res:AppResources.TourPriorityFilter}"
                                FontSize="9"
                                CharacterSpacing="2"
                                TextColor="#C8A96E"
                                FontAttributes="Bold"/>
                         <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                            <Label Text="Đi bộ ít"
+                            <Label Text="{x:Static res:AppResources.TourWalkLess}"
                                    FontSize="12"
                                    TextColor="#F0E6D3"
                                    VerticalOptions="Center"/>
@@ -168,7 +169,7 @@
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnApplyFiltersClicked"/>
                         </Border.GestureRecognizers>
-                        <Label Text="Áp dụng"
+                        <Label Text="{x:Static res:AppResources.TourApply}"
                                FontSize="12"
                                FontAttributes="Bold"
                                TextColor="#1A1410"
@@ -188,7 +189,7 @@
             <VerticalStackLayout Spacing="0" Padding="20,16,20,100">
 
                 <!-- Section label -->
-                <Label Text="— CÁC GÓI TOUR BIÊN TẬP"
+                <Label Text="{x:Static res:AppResources.TourCuratedLabel}"
                        FontSize="9"
                        CharacterSpacing="3"
                        TextColor="#C8A96E"
@@ -286,7 +287,7 @@
                                             <TapGestureRecognizer Tapped="OnSelectTourClicked"
                                                                   CommandParameter="{Binding Id}"/>
                                         </Border.GestureRecognizers>
-                                        <Label Text="Chọn"
+                                        <Label Text="{x:Static res:AppResources.TourSelect}"
                                                FontSize="13"
                                                FontAttributes="Bold"
                                                TextColor="#1A1410"

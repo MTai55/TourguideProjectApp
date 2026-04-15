@@ -32,6 +32,7 @@ public static class MauiProgram
         builder.Services.AddTransient<AccountPage>();
         builder.Services.AddTransient<MapPage>();
         builder.Services.AddTransient<SubscriptionPage>();
+        builder.Services.AddTransient<LanguageSelectionPage>();
 
         // Services
         builder.Services.AddSingleton<LocationService>();

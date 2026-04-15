@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TourGuideAPP.Views.LanguageSelectionPage"
+             BackgroundColor="#0F0E0D"
+             NavigationPage.HasNavigationBar="False">
+
+    <VerticalStackLayout VerticalOptions="Center"
+                         Padding="32,0"
+                         Spacing="0">
+
+        <!-- Logo -->
+        <Label Text="🗺"
+               FontSize="64"
+               HorizontalOptions="Center"
+               Margin="0,0,0,12"/>
+        <Label Text="TourGuide"
+               TextColor="#C8A96E"
+               FontSize="32"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               CharacterSpacing="1"
+               Margin="0,0,0,4"/>
+        <Label Text="TP. HỒ CHÍ MINH"
+               TextColor="#5A4A3A"
+               FontSize="10"
+               CharacterSpacing="4"
+               HorizontalOptions="Center"
+               Margin="0,0,0,48"/>
+
+        <!-- Title -->
+        <Label Text="NGÔN NGỮ / LANGUAGE"
+               TextColor="#C8A96E"
+               FontSize="10"
+               CharacterSpacing="3"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               Margin="0,0,0,24"/>
+
+        <!-- Vietnamese option -->
+        <Border x:Name="CardVi"
+                BackgroundColor="#1A1410"
+                StrokeShape="RoundRectangle 16"
+                Stroke="#C8A96E"
+                StrokeThickness="1.5"
+                Padding="24,18"
+                Margin="0,0,0,12">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnVietnameseTapped"/>
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Label Grid.Column="0"
+                       Text="🇻🇳"
+                       FontSize="28"
+                       VerticalOptions="Center"/>
+                <VerticalStackLayout Grid.Column="1"
+                                     Margin="16,0,0,0"
+                                     VerticalOptions="Center">
+                    <Label Text="Tiếng Việt"
+                           TextColor="#F0E6D3"
+                           FontSize="17"
+                           FontAttributes="Bold"/>
+                    <Label Text="Vietnamese"
+                           TextColor="#5A4A3A"
+                           FontSize="12"/>
+                </VerticalStackLayout>
+                <Label x:Name="CheckVi"
+                       Grid.Column="2"
+                       Text="✓"
+                       TextColor="#C8A96E"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- English option -->
+        <Border x:Name="CardEn"
+                BackgroundColor="#1A1410"
+                StrokeShape="RoundRectangle 16"
+                Stroke="#2A2018"
+                StrokeThickness="1"
+                Padding="24,18"
+                Margin="0,0,0,40">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnEnglishTapped"/>
+            </Border.GestureRecognizers>
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Label Grid.Column="0"
+                       Text="🇬🇧"
+                       FontSize="28"
+                       VerticalOptions="Center"/>
+                <VerticalStackLayout Grid.Column="1"
+                                     Margin="16,0,0,0"
+                                     VerticalOptions="Center">
+                    <Label Text="English"
+                           TextColor="#F0E6D3"
+                           FontSize="17"
+                           FontAttributes="Bold"/>
+                    <Label Text="Tiếng Anh"
+                           TextColor="#5A4A3A"
+                           FontSize="12"/>
+                </VerticalStackLayout>
+                <Label x:Name="CheckEn"
+                       Grid.Column="2"
+                       Text="✓"
+                       TextColor="#C8A96E"
+                       FontSize="22"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       IsVisible="False"/>
+            </Grid>
+        </Border>
+
+        <!-- Continue button -->
+        <Border x:Name="ContinueBtn"
+                BackgroundColor="#C8A96E"
+                StrokeShape="RoundRectangle 14"
+                Padding="0,18">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnContinueTapped"/>
+            </Border.GestureRecognizers>
+            <Label Text="Tiếp tục →"
+                   TextColor="#0F0E0D"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+        </Border>
+
+    </VerticalStackLayout>
+
+</ContentPage>

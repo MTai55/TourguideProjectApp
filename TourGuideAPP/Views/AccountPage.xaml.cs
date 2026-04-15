@@ -50,7 +50,11 @@ public partial class AccountPage : ContentPage
     private void OnDevDeactivateTapped(object sender, TappedEventArgs e)
     {
         _accessService?.ClearLocalSession();
-        Application.Current!.MainPage = new NavigationPage(new SubscriptionPage(
-            Handler!.MauiContext!.Services.GetRequiredService<AccessSessionService>()));
+        var langPage = Handler!.MauiContext!.Services.GetRequiredService<LanguageSelectionPage>();
+        Application.Current!.MainPage = new NavigationPage(langPage)
+        {
+            BarBackgroundColor = Color.FromArgb("#1A1410"),
+            BarTextColor       = Color.FromArgb("#F0E6D3")
+        };
     }
 }

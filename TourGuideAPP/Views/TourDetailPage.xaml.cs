@@ -1,4 +1,5 @@
 using TourGuideAPP.Data.Models;
+using TourGuideAPP.Resources.Strings;
 using TourGuideAPP.Services;
 
 namespace TourGuideAPP.Views;
@@ -53,7 +54,7 @@ public partial class TourDetailPage : ContentPage
         var first = _tour.Stops.FirstOrDefault();
         if (first is null)
         {
-            await DisplayAlertAsync("Tour", "Tour này chưa có điểm dừng.", "OK");
+            await DisplayAlertAsync(AppResources.AlertSelectTour, AppResources.AlertNoStops, AppResources.AlertOk);
             return;
         }
 

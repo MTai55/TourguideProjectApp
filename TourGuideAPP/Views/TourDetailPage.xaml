@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TourGuideAPP.Resources.Strings"
              x:Class="TourGuideAPP.Views.TourDetailPage"
              BackgroundColor="#0F0E0D"
              Shell.NavBarIsVisible="False">
@@ -34,7 +35,7 @@
                 </Border>
 
                 <VerticalStackLayout Grid.Column="1" Spacing="4">
-                    <Label Text="GÓI TOUR"
+                    <Label Text="{x:Static res:AppResources.TourDetailLabel}"
                            FontSize="10"
                            CharacterSpacing="4"
                            TextColor="#C8A96E"
@@ -56,7 +57,7 @@
         <ScrollView Grid.Row="1" BackgroundColor="#0F0E0D">
             <VerticalStackLayout Padding="20,20,20,16" Spacing="0">
 
-                <Label Text="— LỘ TRÌNH"
+                <Label Text="{x:Static res:AppResources.TourDetailItinerary}"
                        FontSize="9"
                        CharacterSpacing="3"
                        TextColor="#C8A96E"
@@ -146,7 +147,7 @@
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnStartClicked"/>
                 </Border.GestureRecognizers>
-                <Label Text="🧭  Bắt đầu tour — chỉ đường điểm đầu tiên"
+                <Label Text="{x:Static res:AppResources.TourDetailStart}"
                        FontSize="14"
                        FontAttributes="Bold"
                        TextColor="#1A1410"

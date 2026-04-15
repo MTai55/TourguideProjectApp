@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <!-- Language Selection -->
+  <data name="LangTitle"><value>Chọn ngôn ngữ</value></data>
+  <data name="LangSubtitle"><value>Chọn ngôn ngữ hiển thị trong app</value></data>
+  <data name="LangVietnamese"><value>Tiếng Việt</value></data>
+  <data name="LangEnglish"><value>English</value></data>
+  <data name="LangContinue"><value>Tiếp tục →</value></data>
+
+  <!-- Tab Bar -->
+  <data name="TabTours"><value>Tour</value></data>
+  <data name="TabFeatured"><value>Nổi bật</value></data>
+  <data name="TabMap"><value>Bản đồ</value></data>
+  <data name="TabSettings"><value>Cài đặt</value></data>
+
+  <!-- SubscriptionPage -->
+  <data name="SubChoosePackage"><value>— CHỌN GÓI SỬ DỤNG</value></data>
+  <data name="SubPackage1hLabel"><value>1 TIẾNG</value></data>
+  <data name="SubPackage1hDesc"><value>Trải nghiệm cơ bản</value></data>
+  <data name="SubPackage1hSub"><value>Khám phá 1 khu vực</value></data>
+  <data name="SubPackage2hLabel"><value>2 TIẾNG</value></data>
+  <data name="SubPackage2hBadge"><value>PHỔ BIẾN</value></data>
+  <data name="SubPackage2hDesc"><value>Khám phá rộng hơn</value></data>
+  <data name="SubPackage2hSub"><value>Tour 2 khu vực liền kề</value></data>
+  <data name="SubPackage1dLabel"><value>1 NGÀY</value></data>
+  <data name="SubPackage1dDesc"><value>Tour trọn ngày</value></data>
+  <data name="SubPackage1dSub"><value>Khám phá tất cả địa điểm</value></data>
+  <data name="SubPackage3dLabel"><value>3 NGÀY</value></data>
+  <data name="SubPackage3dDesc"><value>Du lịch dài ngày</value></data>
+  <data name="SubPackage3dSub"><value>Trải nghiệm đầy đủ nhất</value></data>
+  <data name="SubSelectBtn"><value>Chọn →</value></data>
+  <data name="SubPaymentMethod"><value>Thanh toán qua chuyển khoản ngân hàng</value></data>
+  <data name="SubAutoUnlock"><value>Tự động mở khóa sau khi xác nhận</value></data>
+  <data name="SubDevBypass"><value>[DEV] Bỏ qua thanh toán</value></data>
+
+  <!-- PaymentPage -->
+  <data name="PayTitle"><value>Thanh toán</value></data>
+  <data name="PaySelectedPkg"><value>— GÓI ĐÃ CHỌN</value></data>
+  <data name="PayScanLabel"><value>— QUÉT ĐỂ CHUYỂN KHOẢN</value></data>
+  <data name="PayDeviceCodeLabel"><value>— MÃ THIẾT BỊ (NỘI DUNG CHUYỂN KHOẢN)</value></data>
+  <data name="PayDeviceCodeHint"><value>Ghi mã này vào nội dung chuyển khoản</value></data>
+  <data name="PayWaiting"><value>Đang chờ xác nhận thanh toán...</value></data>
+  <data name="PayConnError"><value>⚠ Lỗi kết nối. Kiểm tra mạng và thử lại.</value></data>
+  <data name="PayInstructions"><value>— HƯỚNG DẪN</value></data>
+  <data name="PayStep1"><value>1. Quét mã QR bằng app ngân hàng</value></data>
+  <data name="PayStep2"><value>2. Nhập MÃ THIẾT BỊ vào nội dung CK</value></data>
+  <data name="PayStep3"><value>3. Chuyển khoản đúng số tiền</value></data>
+  <data name="PayStep4"><value>4. App tự động mở khóa sau xác nhận</value></data>
+
+  <!-- AccountPage -->
+  <data name="AccApp"><value>ỨNG DỤNG</value></data>
+  <data name="AccSettings"><value>Cài đặt</value></data>
+  <data name="AccExperience"><value>— TRẢI NGHIỆM</value></data>
+  <data name="AccTtsVoice"><value>Giọng đọc thuyết minh</value></data>
+  <data name="AccNotifications"><value>Thông báo</value></data>
+  <data name="AccNotificationsOn"><value>Bật</value></data>
+  <data name="AccDarkMode"><value>Chế độ tối</value></data>
+  <data name="AccDarkModeOn"><value>Đang bật</value></data>
+  <data name="AccMapSection"><value>— BẢN ĐỒ &amp; VỊ TRÍ</value></data>
+  <data name="AccGpsAuto"><value>GPS tự động</value></data>
+  <data name="AccGpsAutoSub"><value>Tự bật khi mở app</value></data>
+  <data name="AccSearchRadius"><value>Bán kính tìm kiếm</value></data>
+  <data name="AccSearchRadiusVal"><value>500m</value></data>
+  <data name="AccInfoSection"><value>— THÔNG TIN</value></data>
+  <data name="AccAbout"><value>Về ứng dụng</value></data>
+  <data name="AccVersion"><value>Phiên bản 1.0.0</value></data>
+  <data name="AccUserGuide"><value>Hướng dẫn sử dụng</value></data>
+  <data name="AccUserGuideSub"><value>Xem cách dùng app</value></data>
+  <data name="AccClearCache"><value>Xóa bộ nhớ đệm</value></data>
+  <data name="AccClearCacheSub"><value>Giải phóng dung lượng</value></data>
+  <data name="AccDevDeactivate"><value>[DEV] Huỷ kích hoạt phiên</value></data>
+
+  <!-- MainPage -->
+  <data name="MainGreeting"><value>CHÀO BUỔI SÁNG,</value></data>
+  <data name="MainTraveler"><value>Lữ khách Sài Gòn</value></data>
+  <data name="MainSearchPlaceholder"><value>Tìm quán ăn, cà phê...</value></data>
+  <data name="MainWaitGps"><value>Chờ GPS...</value></data>
+  <data name="MainNoNearby"><value>🏛️ Chưa xác định điểm gần nhất</value></data>
+  <data name="MainExploreCategory"><value>KHÁM PHÁ THEO DANH MỤC</value></data>
+  <data name="MainCatAll"><value>Tất cả</value></data>
+  <data name="MainCatCafe"><value>☕ Cà phê</value></data>
+  <data name="MainCatFood"><value>🍲 Cơm</value></data>
+  <data name="MainCatBeer"><value>🍺 Quán nhậu</value></data>
+  <data name="MainCatBubbleTea"><value>🧋 Trà sữa</value></data>
+  <data name="MainFeatured"><value>ĐỊA ĐIỂM NỔI BẬT</value></data>
+  <data name="MainGastronomy"><value>Hành trình vị giác</value></data>
+  <data name="MainViewAll"><value>Xem tất cả →</value></data>
+  <data name="MainSpecialty"><value>Đặc trưng</value></data>
+  <data name="MainUserLabel"><value>👤 Khách</value></data>
+  <data name="MainGpsStarting"><value>📍 Đang khởi động GPS...</value></data>
+  <data name="MainNoConnection"><value>❌ Không kết nối được dữ liệu.</value></data>
+  <data name="MainNearbyPrefix"><value>🏛️ Gần: </value></data>
+
+  <!-- MapPage -->
+  <data name="MapExplore"><value>KHÁM PHÁ</value></data>
+  <data name="MapTitle"><value>Bản đồ</value></data>
+  <data name="MapFilterAll"><value>Tất cả</value></data>
+  <data name="MapFilterCafe"><value>☕ Cafe</value></data>
+  <data name="MapFilterFood"><value>🍜 Ăn</value></data>
+  <data name="MapCancelRoute"><value>Tắt chỉ đường</value></data>
+  <data name="MapNavigatingTo"><value>🧭 Đang chỉ đường tới: </value></data>
+  <data name="MapDestination"><value>điểm đến</value></data>
+  <data name="MapAddressUpdating"><value>📍 Địa chỉ hiện tại: đang cập nhật...</value></data>
+  <data name="MapNoNearby"><value>Chưa xác định điểm gần nhất</value></data>
+  <data name="MapOpenNow"><value>Đang mở</value></data>
+  <data name="MapDirections"><value>Chỉ đường</value></data>
+  <data name="MapNarrate"><value>Thuyết minh</value></data>
+  <data name="MapCall"><value>Gọi ngay</value></data>
+  <data name="MapDetails"><value>Chi tiết</value></data>
+
+  <!-- ToursPage -->
+  <data name="TourExplore"><value>KHÁM PHÁ</value></data>
+  <data name="TourPageTitle"><value>Gói Tour</value></data>
+  <data name="TourSubtitle"><value>Gợi ý theo sở thích, ngân sách, thời gian.</value></data>
+  <data name="TourSearchPlaceholder"><value>Tìm tour (ăn vặt, hải sản, cafe...)</value></data>
+  <data name="TourFilterLabel"><value>Lọc</value></data>
+  <data name="TourTimeFilter"><value>THỜI GIAN</value></data>
+  <data name="TourBudgetFilter"><value>NGÂN SÁCH</value></data>
+  <data name="TourBudgetValue"><value>200k</value></data>
+  <data name="TourPriorityFilter"><value>ƯU TIÊN</value></data>
+  <data name="TourWalkLess"><value>Đi bộ ít</value></data>
+  <data name="TourApply"><value>Áp dụng</value></data>
+  <data name="TourCuratedLabel"><value>— CÁC GÓI TOUR BIÊN TẬP</value></data>
+  <data name="TourSelect"><value>Chọn</value></data>
+
+  <!-- TourDetailPage -->
+  <data name="TourDetailLabel"><value>GÓI TOUR</value></data>
+  <data name="TourDetailItinerary"><value>— LỘ TRÌNH</value></data>
+  <data name="TourDetailStart"><value>🧭  Bắt đầu tour — chỉ đường điểm đầu tiên</value></data>
+
+  <!-- PlaceDetailPage -->
+  <data name="PlaceOpenNow"><value>Đang mở</value></data>
+  <data name="PlaceDirections"><value>Chỉ đường</value></data>
+  <data name="PlaceGoogleMaps"><value>Google Maps</value></data>
+  <data name="PlaceCall"><value>Gọi ngay</value></data>
+  <data name="PlaceInfo"><value>— THÔNG TIN</value></data>
+  <data name="PlaceNarrate"><value>Thuyết minh</value></data>
+
+  <!-- ToursPage (code-behind) -->
+  <data name="TourDuration1"><value>1–1.5 giờ</value></data>
+  <data name="TourDuration2"><value>2–3 giờ</value></data>
+  <data name="TourDurationHalfDay"><value>Nửa ngày</value></data>
+  <data name="TourEmptyTitle"><value>Chưa tìm thấy tour phù hợp</value></data>
+  <data name="TourEmptyDesc"><value>Thử tăng ngân sách hoặc xóa từ khóa tìm kiếm để xem thêm gợi ý.</value></data>
+  <data name="TourSuggestionTag"><value>Gợi ý</value></data>
+  <data name="TourStopsFormat"><value>• {0} điểm</value></data>
+  <data name="TourLowWalkDesc"><value>Ưu tiên lộ trình ngắn, ít di chuyển.</value></data>
+  <data name="TourQuickTitle"><value>Tour nhanh</value></data>
+  <data name="TourQuickDesc"><value>Đi ít điểm nhưng chọn chỗ đáng nhất.</value></data>
+  <data name="TourBalancedTitle"><value>Tour cân bằng</value></data>
+  <data name="TourBalancedDesc"><value>Phù hợp đa số: vừa đủ điểm, dễ đi.</value></data>
+  <data name="TourFullTitle"><value>Tour no nê</value></data>
+  <data name="TourFullDesc"><value>Nhiều điểm hơn nếu bạn có thời gian.</value></data>
+  <data name="AlertSelectTour"><value>Chọn tour</value></data>
+  <data name="AlertNoStops"><value>Tour này chưa có điểm dừng.</value></data>
+  <data name="AlertServiceError"><value>Không khởi tạo được các dịch vụ.</value></data>
+
+  <!-- PlaceDetailPage (code-behind) -->
+  <data name="PlaceNoRating"><value>Chưa có đánh giá</value></data>
+  <data name="PlaceReviewsSuffix"><value>đánh giá Google</value></data>
+  <data name="PlaceClosedNow"><value>Đóng cửa</value></data>
+  <data name="PlaceNoDescription"><value>Chưa có mô tả.</value></data>
+  <data name="PlaceNoUpdate"><value>Chưa cập nhật</value></data>
+  <data name="PlaceContactForPrice"><value>Liên hệ</value></data>
+  <data name="PlaceNoPhone"><value>Địa điểm này chưa có số điện thoại.</value></data>
+
+  <!-- MapPage (code-behind) -->
+  <data name="MapNoCurrentLocation"><value>📍 Chưa có vị trí hiện tại để chỉ đường</value></data>
+  <data name="MapRouteError"><value>❌ Lỗi lấy đường đi</value></data>
+  <data name="MapRouteFailed"><value>❌ Không lấy được đường đi</value></data>
+
+  <!-- Generic alerts -->
+  <data name="AlertOk"><value>OK</value></data>
+  <data name="AlertError"><value>Lỗi</value></data>
+  <data name="AlertInfo"><value>Thông báo</value></data>
+  <data name="AlertNoCoords"><value>Không có tọa độ để chỉ đường.</value></data>
+  <data name="AlertCannotCall"><value>Không thể mở ứng dụng gọi điện.</value></data>
+  <data name="AlertCannotWebsite"><value>Không thể mở website.</value></data>
+
+  <!-- Alerts -->
+  <data name="AlertExpiredTitle"><value>Hết hạn sử dụng</value></data>
+  <data name="AlertExpiredMsg"><value>Gói sử dụng của bạn đã hết hạn.\nVui lòng gia hạn để tiếp tục khám phá.</value></data>
+  <data name="AlertExpiredBtn"><value>Gia hạn ngay</value></data>
+</root>

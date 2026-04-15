@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:res="clr-namespace:TourGuideAPP.Resources.Strings"
              x:Class="TourGuideAPP.MainPage"
              BackgroundColor="#0F0E0D"
              Shell.NavBarIsVisible="False">
@@ -20,13 +21,13 @@
                     <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16">
 
                         <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
-                            <Label Text="CHÀO BUỔI SÁNG,"
+                            <Label Text="{x:Static res:AppResources.MainGreeting}"
                                    FontSize="9"
                                    CharacterSpacing="3"
                                    TextColor="#5A4A3A"
                                    FontAttributes="Bold"/>
                             <Label x:Name="UserLabel"
-                                   Text="Lữ khách Sài Gòn"
+                                   Text="{x:Static res:AppResources.MainTraveler}"
                                    FontSize="20"
                                    FontAttributes="Bold"
                                    TextColor="#F0E6D3"/>
@@ -80,7 +81,7 @@
                                    TextColor="#5A4A3A"/>
                             <Entry x:Name="SearchEntry"
                                    Grid.Column="1"
-                                   Placeholder="Tìm quán ăn, cà phê..."
+                                   Placeholder="{x:Static res:AppResources.MainSearchPlaceholder}"
                                    PlaceholderColor="#5A4A3A"
                                    TextColor="#F0E6D3"
                                    BackgroundColor="Transparent"
@@ -107,11 +108,11 @@
                            VerticalOptions="Center"/>
                     <VerticalStackLayout Grid.Column="1" Spacing="2">
                         <Label x:Name="GpsLabel"
-                               Text="Chờ GPS..."
+                               Text="{x:Static res:AppResources.MainWaitGps}"
                                FontSize="11"
                                TextColor="#5A4A3A"/>
                         <Label x:Name="POILabel"
-                               Text="🏛️ Chưa xác định điểm gần nhất"
+                               Text="{x:Static res:AppResources.MainNoNearby}"
                                FontSize="13"
                                FontAttributes="Bold"
                                TextColor="#C8A96E"/>
@@ -159,7 +160,7 @@
             <VerticalStackLayout BackgroundColor="#1A1410"
                                  Padding="20,16,20,16">
 
-                <Label Text="KHÁM PHÁ THEO DANH MỤC"
+                <Label Text="{x:Static res:AppResources.MainExploreCategory}"
                        FontSize="9"
                        CharacterSpacing="3"
                        TextColor="#5A4A3A"
@@ -180,7 +181,7 @@
                                 <TapGestureRecognizer Tapped="OnCategoryAllTapped"/>
                             </Border.GestureRecognizers>
                             <Label x:Name="ChipAllLabel"
-                                   Text="Tất cả"
+                                   Text="{x:Static res:AppResources.MainCatAll}"
                                    TextColor="#C8A96E"
                                    FontSize="11"
                                    FontAttributes="Bold"/>
@@ -196,7 +197,7 @@
                                 <TapGestureRecognizer Tapped="OnCategoryCafeTapped"/>
                             </Border.GestureRecognizers>
                             <Label x:Name="ChipCafeLabel"
-                                   Text="☕ Cà phê"
+                                   Text="{x:Static res:AppResources.MainCatCafe}"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
@@ -211,7 +212,7 @@
                                 <TapGestureRecognizer Tapped="OnCategoryRiceTapped"/>
                             </Border.GestureRecognizers>
                             <Label x:Name="ChipRiceLabel"
-                                   Text="🍲 Cơm"
+                                   Text="{x:Static res:AppResources.MainCatFood}"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
@@ -226,7 +227,7 @@
                                 <TapGestureRecognizer Tapped="OnCategoryBeerTapped"/>
                             </Border.GestureRecognizers>
                             <Label x:Name="ChipBeerLabel"
-                                   Text="🍺 Quán nhậu"
+                                   Text="{x:Static res:AppResources.MainCatBeer}"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
@@ -241,7 +242,7 @@
                                 <TapGestureRecognizer Tapped="OnCategoryBubbleTeaTapped"/>
                             </Border.GestureRecognizers>
                             <Label x:Name="ChipBubbleTeaLabel"
-                                   Text="🧋 Trà sữa"
+                                   Text="{x:Static res:AppResources.MainCatBubbleTea}"
                                    TextColor="#8A7560"
                                    FontSize="11"/>
                         </Border>
@@ -256,18 +257,18 @@
                   Padding="20,16,20,12"
                   BackgroundColor="#0F0E0D">
                 <VerticalStackLayout Grid.Column="0" Spacing="3">
-                    <Label Text="ĐỊA ĐIỂM NỔI BẬT"
+                    <Label Text="{x:Static res:AppResources.MainFeatured}"
                            FontSize="9"
                            CharacterSpacing="3"
                            FontAttributes="Bold"
                            TextColor="#C8A96E"/>
-                    <Label Text="Hành trình vị giác"
+                    <Label Text="{x:Static res:AppResources.MainGastronomy}"
                            FontSize="20"
                            FontAttributes="Bold"
                            TextColor="#F0E6D3"/>
                 </VerticalStackLayout>
                 <Label Grid.Column="1"
-                       Text="Xem tất cả →"
+                       Text="{x:Static res:AppResources.MainViewAll}"
                        FontSize="10"
                        FontAttributes="Bold"
                        TextColor="#C8A96E"
@@ -307,7 +308,7 @@
                                             HorizontalOptions="End"
                                             VerticalOptions="Start"
                                             Margin="0,10,10,0">
-                                        <Label Text="Đặc trưng"
+                                        <Label Text="{x:Static res:AppResources.MainSpecialty}"
                                                FontSize="9"
                                                FontAttributes="Bold"
                                                TextColor="#1A1410"/>

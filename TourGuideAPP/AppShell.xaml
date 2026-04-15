@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:TourGuideAPP"
     xmlns:views="clr-namespace:TourGuideAPP.Views"
+    xmlns:res="clr-namespace:TourGuideAPP.Resources.Strings"
     Title="TourGuideAPP"
     Shell.TabBarBackgroundColor="#1A1410"
     Shell.TabBarForegroundColor="#C8A96E"
@@ -27,25 +28,25 @@
     <TabBar Route="MainTabs">
 
         <ShellContent
-            Title="Tour"
+            Title="{x:Static res:AppResources.TabTours}"
             Route="ToursPage"
             Icon="icon_tour.svg"
             ContentTemplate="{DataTemplate views:ToursPage}" />
 
         <ShellContent
-            Title="Nổi bật"
+            Title="{x:Static res:AppResources.TabFeatured}"
             Route="MainPage"
             Icon="icon_trending.svg"
             ContentTemplate="{DataTemplate local:MainPage}" />
 
         <ShellContent
-            Title="Bản đồ"
+            Title="{x:Static res:AppResources.TabMap}"
             Route="MapPage"
             Icon="icon_map.svg"
             ContentTemplate="{DataTemplate views:MapPage}" />
 
         <ShellContent
-            Title="Cài đặt"
+            Title="{x:Static res:AppResources.TabSettings}"
             Route="AccountPage"
             Icon="icon_account.svg"
             ContentTemplate="{DataTemplate views:AccountPage}" />

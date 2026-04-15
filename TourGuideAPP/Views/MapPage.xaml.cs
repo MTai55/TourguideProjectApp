@@ -24,6 +24,7 @@ public partial class MapPage : ContentPage
     private readonly GeofenceEngine _geofenceEngine;
     private readonly NarrationService _narrationService;
     private readonly AuthService _authService;
+    private readonly UserProfileService _userProfileService;
     private string? _lastSpokenPlaceId;
     private bool _mapInfoHooked;
     private (double lat, double lon, string? name)? _destination;
@@ -37,7 +38,7 @@ public partial class MapPage : ContentPage
 
     public MapPage(LocationService locationService, PlaceService placeService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
-                   AuthService authService)
+                   AuthService authService, UserProfileService userProfileService)
     {
         InitializeComponent();
         _locationService = locationService;
@@ -45,13 +46,14 @@ public partial class MapPage : ContentPage
         _geofenceEngine = geofenceEngine;
         _narrationService = narrationService;
         _authService = authService;
+        _userProfileService = userProfileService;
     }
 
     public MapPage(LocationService locationService, PlaceService placeService,
                    GeofenceEngine geofenceEngine, NarrationService narrationService,
-                   AuthService authService,
+                   AuthService authService, UserProfileService userProfileService,
                    double destinationLat, double destinationLon, string? destinationName = null)
-        : this(locationService, placeService, geofenceEngine, narrationService, authService)
+        : this(locationService, placeService, geofenceEngine, narrationService, authService, userProfileService)
     {
         _destination = (destinationLat, destinationLon, destinationName);
     }
@@ -327,7 +329,7 @@ public partial class MapPage : ContentPage
         PlaceCard.IsVisible = false;
         _selectedPlace = null;
         var detailPage = new PlaceDetailPage(place, _authService, _locationService,
-                                             _geofenceEngine, _narrationService);
+                                             _geofenceEngine, _narrationService, _userProfileService);
         await Navigation.PushAsync(detailPage);
     }
 

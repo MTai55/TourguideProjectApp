@@ -30,11 +30,9 @@ public class Place
     public int OwnerId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-    // TODO: Uncomment after database migration is complete
-    // public string? TtsScript { get; set; }
-    // public double? Radius { get; set; } = 100;
-
-    // Navigation
+    public string? tts_script { get; set; }
+    public string? tts_translations { get; set; } 
+    public double? radius { get; set; } = 100;
     public User? Owner { get; set; }
     public Category? Category { get; set; }
     public ICollection<PlaceImage> Images { get; set; } = [];

@@ -180,6 +180,104 @@
 
                 </VerticalStackLayout>
 
+                <!-- ═══ TTS SCRIPT ═══ -->
+                <VerticalStackLayout Padding="20,20,20,0" Spacing="10">
+
+                    <Label Text="— CẨU CHUYỆN HƯỚNG DẪN"
+                           FontSize="9" CharacterSpacing="3"
+                           TextColor="#C8A96E" FontAttributes="Bold"
+                           Margin="0,0,0,4"/>
+
+                    <Border BackgroundColor="#1A1410"
+                            StrokeShape="RoundRectangle 14"
+                            Stroke="#2A2018" StrokeThickness="1"
+                            Padding="0,0,0,0">
+                        <VerticalStackLayout Padding="0,0,0,0" Spacing="0">
+                            <!-- TTS Script display -->
+                            <Label x:Name="TtsScriptLabel"
+                                   FontSize="13" TextColor="#F0E6D3"
+                                   LineBreakMode="WordWrap"
+                                   Padding="16,14,16,0"
+                                   Text="Chưa có cẩu chuyện hướng dẫn"/>
+
+                            <!-- Action buttons -->
+                            <HorizontalStackLayout Padding="12,10,12,12" Spacing="8" HorizontalOptions="End">
+                                <!-- Copy button -->
+                                <Border BackgroundColor="#26201A"
+                                        StrokeShape="RoundRectangle 8"
+                                        Stroke="#3A2D22" StrokeThickness="1"
+                                        Padding="10,6">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnCopyTtsClicked"/>
+                                    </Border.GestureRecognizers>
+                                    <Label Text="📋 Sao chép" FontSize="10" FontAttributes="Bold"
+                                           TextColor="#C8A96E" VerticalOptions="Center"/>
+                                </Border>
+
+                                <!-- Play button -->
+                                <Border BackgroundColor="#26201A"
+                                        StrokeShape="RoundRectangle 8"
+                                        Stroke="#3A2D22" StrokeThickness="1"
+                                        Padding="10,6">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnPlayTtsClicked"/>
+                                    </Border.GestureRecognizers>
+                                    <Label Text="🔊 Nghe" FontSize="10" FontAttributes="Bold"
+                                           TextColor="#C8A96E" VerticalOptions="Center"/>
+                                </Border>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <!-- ═══ GHI CHÚ QUÁN ═══ -->
+                <VerticalStackLayout Padding="20,20,20,0" Spacing="10">
+
+                    <Label Text="— GHI CHÚ LẦN TRƯỚC"
+                           FontSize="9" CharacterSpacing="3"
+                           TextColor="#C8A96E" FontAttributes="Bold"
+                           Margin="0,0,0,4"/>
+
+                    <!-- Danh sách ghi chú cũ -->
+                    <VerticalStackLayout x:Name="NotesHistoryStack" Spacing="6">
+                        <Label Text="Chưa có ghi chú nào"
+                               TextColor="#5A4A3A"
+                               FontSize="12"
+                               HorizontalOptions="Center"
+                               Padding="0,12"/>
+                    </VerticalStackLayout>
+
+                    <!-- Thêm ghi chú mới -->
+                    <Border BackgroundColor="#1A1410"
+                            StrokeShape="RoundRectangle 12"
+                            Stroke="#2A2018" StrokeThickness="1"
+                            Padding="0,0,0,0"
+                            Margin="0,0,0,0">
+                        <VerticalStackLayout Padding="12,10,12,10" Spacing="8">
+                            <Entry x:Name="NoteInputEntry"
+                                   Placeholder="Ghi chú lần tới (vd: nên thử món...)"
+                                   PlaceholderColor="#5A4A3A"
+                                   TextColor="#F0E6D3"
+                                   BackgroundColor="#26201A"
+                                   FontSize="13"
+                                   Padding="8,6"/>
+
+                            <Border BackgroundColor="#C8A96E"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="Transparent"
+                                    Padding="0,8">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnAddNoteClicked"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="💾 Lưu ghi chú" FontSize="12" FontAttributes="Bold"
+                                       TextColor="#1A1410" HorizontalOptions="Center"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+
+                </VerticalStackLayout>
+
             </VerticalStackLayout>
         </ScrollView>
 

@@ -30,14 +30,17 @@
 
 <!-- Tab: Thông tin -->
 <div id="tab-info" class="tab-panel">
-  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-surface-container">
-      <h3 class="font-bold text-base">Thông tin cơ bản</h3>
-      <p class="text-xs text-on-surface-variant mt-0.5">Cập nhật tên, địa chỉ, giờ mở cửa và mô tả quán.</p>
-    </div>
-    <form asp-action="Edit" asp-route-id="@ViewBag.PlaceId" method="post" class="p-6">
-      @Html.AntiForgeryToken()
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main form -->
+    <div class="lg:col-span-2">
+      <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-surface-container">
+          <h3 class="font-bold text-base">Thông tin cơ bản</h3>
+          <p class="text-xs text-on-surface-variant mt-0.5">Cập nhật tên, địa chỉ, giờ mở cửa và mô tả quán.</p>
+        </div>
+        <form asp-action="Edit" asp-route-id="@ViewBag.PlaceId" method="post" class="p-6">
+          @Html.AntiForgeryToken()
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div class="md:col-span-2">
           <label class="block text-sm font-semibold mb-2">Tên quán *</label>
           <input asp-for="Name" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
@@ -99,20 +102,20 @@
         </div>
         <div>
           <label class="block text-sm font-semibold mb-2">Giờ mở cửa</label>
-          <input asp-for="OpenTime" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" />
+          <input id="OpenTime" asp-for="OpenTime" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" />
         </div>
         <div>
           <label class="block text-sm font-semibold mb-2">Giờ đóng cửa</label>
-          <input asp-for="CloseTime" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" />
+          <input id="CloseTime" asp-for="CloseTime" type="time" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20" />
         </div>
         <div>
           <label class="block text-sm font-semibold mb-2">Giá thấp nhất (VNĐ)</label>
-          <input asp-for="PriceMin" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+          <input id="PriceMin" asp-for="PriceMin" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
                  placeholder="35000" />
         </div>
         <div>
           <label class="block text-sm font-semibold mb-2">Giá cao nhất (VNĐ)</label>
-          <input asp-for="PriceMax" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+          <input id="PriceMax" asp-for="PriceMax" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
                  placeholder="150000" />
         </div>
         <div>
@@ -149,177 +152,465 @@
         </div>
       </div>
     </form>
+      </div>
+    </div>
+
+    <!-- Side Panel: Last Saved Values -->
+    <div class="lg:col-span-1">
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 sticky top-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-600">history</span>
+          <h4 class="font-bold text-blue-900">Lần sửa trước</h4>
+        </div>
+        
+        <p class="text-xs text-blue-700 leading-relaxed">
+          Những thông tin dưới đây là giá trị từ lần sửa cuối cùng. Bạn có thể tham khảo để chỉnh sửa chính xác hơn.
+        </p>
+
+        <!-- Giờ mở cửa cũ -->
+        @if (!string.IsNullOrEmpty(Model.PreviousOpenTime))
+        {
+          <div class="pt-3 border-t border-blue-200">
+            <p class="text-xs font-semibold text-blue-900 mb-1">⏰ Giờ mở cửa (cũ)</p>
+            <div class="flex gap-2 items-center">
+              <p class="text-sm text-blue-700 bg-white rounded px-3 py-2 flex-1">@Model.PreviousOpenTime</p>
+              <button type="button" onclick="copyOldValue('OpenTime', '@Model.PreviousOpenTime')"
+                      title="Copy giá trị cũ"
+                      class="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors">
+                <span class="material-symbols-outlined text-sm">content_copy</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Giờ đóng cửa cũ -->
+        @if (!string.IsNullOrEmpty(Model.PreviousCloseTime))
+        {
+          <div class="pt-3 border-t border-blue-200">
+            <p class="text-xs font-semibold text-blue-900 mb-1">🕐 Giờ đóng cửa (cũ)</p>
+            <div class="flex gap-2 items-center">
+              <p class="text-sm text-blue-700 bg-white rounded px-3 py-2 flex-1">@Model.PreviousCloseTime</p>
+              <button type="button" onclick="copyOldValue('CloseTime', '@Model.PreviousCloseTime')"
+                      title="Copy giá trị cũ"
+                      class="p-2 text-blue-600 hover:bg-blue-100 rounded transition-colors">
+                <span class="material-symbols-outlined text-sm">content_copy</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Giá cũ -->
+        @if (Model.PreviousPriceMin.HasValue || Model.PreviousPriceMax.HasValue)
+        {
+          <div class="pt-3 border-t border-blue-200">
+            <p class="text-xs font-semibold text-blue-900 mb-1">💰 Giá (cũ)</p>
+            <div class="flex gap-2 items-start">
+              <div class="flex-1">
+                @if (Model.PreviousPriceMin.HasValue)
+                {
+                  <button type="button" onclick="copyOldValue('PriceMin', '@Model.PreviousPriceMin')"
+                          title="Copy giá thấp"
+                          class="w-full text-sm text-blue-700 bg-white rounded px-3 py-2 hover:bg-blue-50 transition-colors text-left flex justify-between items-center">
+                    <span>Từ: @Model.PreviousPriceMin:N0đ</span>
+                    <span class="material-symbols-outlined text-xs ml-2">content_copy</span>
+                  </button>
+                }
+              </div>
+            </div>
+            @if (Model.PreviousPriceMax.HasValue)
+            {
+              <div class="flex gap-2 items-start mt-1">
+                <button type="button" onclick="copyOldValue('PriceMax', '@Model.PreviousPriceMax')"
+                        title="Copy giá cao"
+                        class="w-full text-sm text-blue-700 bg-white rounded px-3 py-2 hover:bg-blue-50 transition-colors text-left flex justify-between items-center">
+                  <span>Đến: @Model.PreviousPriceMax:N0đ</span>
+                  <span class="material-symbols-outlined text-xs ml-2">content_copy</span>
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- TTS Script cũ -->
+        @if (!string.IsNullOrEmpty(Model.PreviousTtsScript))
+        {
+          <div class="pt-3 border-t border-blue-200">
+            <p class="text-xs font-semibold text-blue-900 mb-1">🎙️ TTS Script (cũ)</p>
+            <div class="text-sm text-blue-700 bg-white rounded px-3 py-2 max-h-32 overflow-y-auto mb-2">
+              @Model.PreviousTtsScript
+            </div>
+            <button type="button" onclick="copyOldValue('TtsScript', @System.Text.Json.JsonSerializer.Serialize(Model.PreviousTtsScript))"
+                    title="Copy TTS Script"
+                    class="w-full px-3 py-2 text-sm font-semibold text-blue-700 bg-blue-100 hover:bg-blue-200 rounded transition-colors flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-sm">content_copy</span> Copy Script
+            </button>
+          </div>
+        }
+
+        <!-- Không có dữ liệu cũ -->
+        @if (string.IsNullOrEmpty(Model.PreviousOpenTime) && 
+             string.IsNullOrEmpty(Model.PreviousCloseTime) && 
+             !Model.PreviousPriceMin.HasValue && 
+             !Model.PreviousPriceMax.HasValue && 
+             string.IsNullOrEmpty(Model.PreviousTtsScript))
+        {
+          <div class="pt-3 border-t border-blue-200">
+            <p class="text-sm text-blue-600 italic">ℹ️ Chưa có dữ liệu lần sửa trước. Đây là lần đầu tiên chỉnh sửa.</p>
+          </div>
+        }
+
+        <!-- Last Modified -->
+        @if (Model.LastModifiedAt.HasValue)
+        {
+          <div class="pt-3 border-t border-blue-200">
+            <p class="text-xs text-blue-600">
+              <strong>Sửa lần cuối:</strong> @Model.LastModifiedAt.Value.ToString("dd/MM/yyyy HH:mm")
+            </p>
+          </div>
+        }
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- ══ Tab: TTS Script ════════════════════════════════════════════ -->
 <div id="tab-tts" class="tab-panel hidden">
-  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-surface-container">
-      <div class="flex items-start gap-3">
-        <div class="p-2.5 bg-violet-100 text-violet-600 rounded-xl">
-          <span class="material-symbols-outlined">record_voice_over</span>
+  <div class="space-y-5">
+
+    <!-- Script chính -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-surface-container">
+        <div class="flex items-start gap-3">
+          <div class="p-2.5 bg-violet-100 text-violet-600 rounded-xl">
+            <span class="material-symbols-outlined">record_voice_over</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">TTS Narration Script</h3>
+            <p class="text-xs text-on-surface-variant mt-0.5">
+              Viết script bằng tiếng Việt, sau đó bấm <strong>Dịch tự động</strong>
+              để tạo bản dịch cho các ngôn ngữ khác.
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 class="font-bold text-base">TTS Narration Script</h3>
-          <p class="text-xs text-on-surface-variant mt-0.5">
-            Đoạn văn bản sẽ được đọc tự động khi khách du lịch đến gần quán của bạn.
-            Hệ thống dùng Text-to-Speech để phát âm thanh giới thiệu qua ứng dụng di động.
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Tips -->
+        <div class="p-4 bg-violet-50 border border-violet-100 rounded-xl space-y-2">
+          <p class="text-xs font-bold text-violet-700 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">lightbulb</span>
+            Gợi ý viết script hiệu quả
           </p>
+          <ul class="text-xs text-violet-600 space-y-1 ml-5 list-disc">
+            <li>Ngắn gọn, súc tích — tối đa 200 từ</li>
+            <li>Bắt đầu bằng tên quán và điểm nổi bật nhất</li>
+            <li>Nêu món đặc trưng, giờ mở cửa, ưu đãi hiện tại</li>
+            <li>Tránh ký tự đặc biệt, viết tắt khó đọc</li>
+          </ul>
         </div>
-      </div>
-    </div>
 
-    <div class="p-6 space-y-5">
-      <!-- Tips box -->
-      <div class="p-4 bg-violet-50 border border-violet-100 rounded-xl space-y-2">
-        <p class="text-xs font-bold text-violet-700 flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-sm">lightbulb</span>
-          Gợi ý viết script hiệu quả
-        </p>
-        <ul class="text-xs text-violet-600 space-y-1 ml-5 list-disc">
-          <li>Ngắn gọn, súc tích — tối đa 200 từ</li>
-          <li>Bắt đầu bằng tên quán và điểm nổi bật nhất</li>
-          <li>Nêu món đặc trưng, giờ mở cửa, hoặc ưu đãi hiện tại</li>
-          <li>Dùng ngôn ngữ thân thiện, mời gọi khách ghé thăm</li>
-          <li>Tránh dùng ký tự đặc biệt như &#33;, &#64;, &#35;, &amp;</li>
-        </ul>
-      </div>
-
-      <!-- Script textarea -->
-      <form asp-action="UpdateTtsScript" asp-route-id="@ViewBag.PlaceId" method="post">
-        @Html.AntiForgeryToken()
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="block text-sm font-semibold">Nội dung script</label>
-            <span id="char-count" class="text-xs text-on-surface-variant font-medium">0 / 1000 ký tự</span>
-          </div>
-          <textarea id="tts-textarea" name="ttsScript" rows="8"
-                    class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-400/30 resize-none leading-relaxed"
-                    maxlength="1000"
-                    placeholder="Ví dụ: Chào mừng bạn đến với Nhà Hàng Ngon tại 160 Pasteur, Quận 3. Chúng tôi tự hào phục vụ hơn 40 món ăn Nam Bộ truyền thống. Đặc biệt hôm nay có bánh xèo giòn tan và gỏi cuốn tươi mát. Mở cửa từ 7 giờ sáng đến 10 giờ tối. Hẹn gặp bạn tại đây!">@ViewBag.TtsScript</textarea>
-
-          <!-- Preview -->
-          <div id="preview-box" class="hidden p-4 bg-slate-900 rounded-xl">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-sm text-violet-400">volume_up</span>
-              Preview — Âm thanh sẽ phát
-            </p>
-            <p id="preview-text" class="text-sm text-white leading-relaxed"></p>
-            <button type="button" onclick="stopPreview()"
-                    class="mt-3 text-xs text-slate-400 hover:text-white font-semibold flex items-center gap-1">
-              <span class="material-symbols-outlined text-sm">stop_circle</span> Dừng
-            </button>
-          </div>
-
-          <div class="flex gap-3 pt-2">
-            <!-- Preview button -->
-            <button type="button" onclick="previewTts()"
-                    class="flex items-center gap-2 px-5 py-3 bg-violet-50 text-violet-700 font-bold rounded-xl text-sm hover:bg-violet-100 transition-colors">
-              <span class="material-symbols-outlined text-sm">play_circle</span> Nghe thử
-            </button>
-
-            <!-- Clear button -->
-            <button type="button" onclick="clearScript()"
-                    class="flex items-center gap-2 px-5 py-3 bg-surface-container-low text-on-surface-variant font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
-              <span class="material-symbols-outlined text-sm">clear</span> Xóa script
-            </button>
-
-            <!-- Save button -->
-            <button type="submit"
-                    class="flex items-center gap-2 px-7 py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all ml-auto"
-                    style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
-              <span class="material-symbols-outlined text-sm">save</span> Lưu script
-            </button>
-          </div>
-        </div>
-      </form>
-
-      <!-- Current script info -->
-      @if (!string.IsNullOrEmpty(ViewBag.TtsScript as string))
-      {
-        <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
-          <span class="material-symbols-outlined text-emerald-600 mt-0.5">check_circle</span>
-          <div>
-            <p class="text-sm font-bold text-emerald-700">Script đang hoạt động</p>
-            <p class="text-xs text-emerald-600 mt-0.5">
-              Script của bạn sẽ được phát khi khách đến trong bán kính
-              <strong>@(ViewBag.Radius ?? 100)m</strong> quanh quán.
-            </p>
-          </div>
-        </div>
-      }
-      else
-      {
-        <div class="p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
-          <span class="material-symbols-outlined text-amber-600 mt-0.5">info</span>
-          <div>
-            <p class="text-sm font-bold text-amber-700">Chưa có script</p>
-            <p class="text-xs text-amber-600 mt-0.5">Nhập script ở trên để kích hoạt tính năng narration cho quán của bạn.</p>
-          </div>
-        </div>
-      }
-    </div>
-  </div>
-</div>
-
-<!-- Tab: Hình ảnh -->
-<div id="tab-images" class="tab-panel hidden">
-  <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-surface-container">
-      <h3 class="font-bold text-base">Quản lý hình ảnh</h3>
-      <p class="text-xs text-on-surface-variant mt-0.5">Thêm URL hình ảnh để giới thiệu quán với khách hàng.</p>
-    </div>
-    <div class="p-6">
-      <form method="post" asp-action="AddImage" asp-route-id="@ViewBag.PlaceId" class="mb-6">
-        @Html.AntiForgeryToken()
-        <div class="flex flex-col sm:flex-row gap-3">
-          <input name="imageUrl"
-                 class="flex-1 px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
-                 placeholder="https://example.com/image.jpg" required />
-          <div class="flex items-center gap-3">
-            <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer">
-              <input type="checkbox" name="isMain" class="rounded" />
-              Ảnh chính
-            </label>
-            <button type="submit"
-                    class="px-5 py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all flex items-center gap-2 shrink-0"
-                    style="background:linear-gradient(135deg,#954400,#fc8127)">
-              <span class="material-symbols-outlined text-sm">add_photo_alternate</span> Thêm ảnh
-            </button>
-          </div>
-        </div>
-      </form>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        @foreach (var img in (ViewBag.Images as List<TourismApp.Web.Models.PlaceImageViewModel>) ?? new List<TourismApp.Web.Models.PlaceImageViewModel>())
-        {
-          <div class="relative group rounded-xl overflow-hidden">
-            <img src="@img.ImageUrl" alt="Place image" class="w-full h-40 object-cover" />
-            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-              <form method="post" asp-action="DeleteImage" asp-route-imageId="@img.ImageId">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors">
-                  <span class="material-symbols-outlined text-sm">delete</span>
-                </button>
-              </form>
+        <form asp-action="UpdateTtsScript" asp-route-id="@ViewBag.PlaceId" method="post" id="tts-form">
+          @Html.AntiForgeryToken()
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="block text-sm font-semibold">Nội dung script (Tiếng Việt) *</label>
+              <span id="char-count" class="text-xs text-on-surface-variant font-medium">0 / 1000 ký tự</span>
             </div>
-            @if (img.IsMain)
+            <textarea id="tts-textarea" name="ttsScript" rows="7"
+                      class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-400/30 resize-none leading-relaxed"
+                      maxlength="1000"
+                      placeholder="Chào mừng bạn đến với... Chúng tôi tự hào phục vụ... Hẹn gặp bạn tại đây!">@ViewBag.TtsScript</textarea>
+
+            <!-- Preview box -->
+            <div id="preview-box" class="hidden p-4 bg-slate-900 rounded-xl">
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-violet-400">volume_up</span>
+                Đang phát...
+              </p>
+              <p id="preview-text" class="text-sm text-white leading-relaxed"></p>
+              <button type="button" onclick="stopPreview()"
+                      class="mt-3 text-xs text-slate-400 hover:text-white font-semibold flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">stop_circle</span> Dừng
+              </button>
+            </div>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button type="button" onclick="previewTts('vi')"
+                      class="flex items-center gap-1.5 px-4 py-2.5 bg-violet-50 text-violet-700 font-bold rounded-xl text-sm hover:bg-violet-100 transition-colors">
+                <span class="material-symbols-outlined text-sm">play_circle</span> Nghe thử
+              </button>
+              <button type="button" onclick="clearScript()"
+                      class="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container-low text-on-surface-variant font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+                <span class="material-symbols-outlined text-sm">clear</span> Xóa
+              </button>
+              <button type="submit"
+                      class="flex items-center gap-1.5 px-6 py-2.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+                      style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
+                <span class="material-symbols-outlined text-sm">save</span> Lưu script
+              </button>
+              <!-- Nút dịch tự động - Coming Soon -->
+              <div class="flex items-center gap-1.5 px-6 py-2.5 font-bold rounded-xl text-sm ml-auto cursor-not-allowed opacity-50"
+                   style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:white"
+                   title="Tính năng dịch tự động sắp ra mắt">
+                <span class="material-symbols-outlined text-sm">construction</span> Đang phát triển
+              </div>
+            </div>
+          </div>
+        </form>
+
+        @if (!string.IsNullOrEmpty(ViewBag.TtsScript as string))
+        {
+          <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
+            <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+            <div>
+              <p class="text-sm font-bold text-emerald-700">Script đang hoạt động</p>
+              <p class="text-xs text-emerald-600 mt-0.5">
+                Bán kính kích hoạt: <strong>@(ViewBag.Radius ?? 100)m</strong>
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Bản dịch -->
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-cyan-100 text-cyan-600 rounded-xl">
+            <span class="material-symbols-outlined">translate</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">Bản dịch đa ngôn ngữ</h3>
+            <p class="text-xs text-on-surface-variant mt-0.5">
+              Tự động dịch bởi AI — App mobile dùng đúng ngôn ngữ của khách
+            </p>
+          </div>
+        </div>
+        <span id="translate-status" class="text-xs font-bold px-3 py-1.5 rounded-xl
+              @(string.IsNullOrEmpty(ViewBag.TtsTranslations as string) ? "bg-slate-100 text-slate-500" : "bg-emerald-50 text-emerald-700")">
+          @(string.IsNullOrEmpty(ViewBag.TtsTranslations as string) ? "Chưa dịch" : "Đã dịch")
+        </span>
+      </div>
+
+      <!-- Loading state -->
+      <div id="translate-loading" class="hidden p-8 text-center">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-10 h-10 rounded-full border-4 border-cyan-200 border-t-cyan-600 animate-spin"></div>
+          <p class="text-sm font-semibold text-on-surface-variant">Đang dịch tự động bằng AI...</p>
+          <p class="text-xs text-on-surface-variant">Quá trình này mất khoảng 10-20 giây</p>
+        </div>
+      </div>
+
+      <!-- Translations grid -->
+      <div id="translations-grid" class="p-6">
+        @{
+          var langs = new (string code, string name, string flag)[] {
+            ("vi","Tiếng Việt","🇻🇳"),
+            ("en","English","🇺🇸"),
+            ("zh","中文","🇨🇳"),
+            ("ko","한국어","🇰🇷"),
+            ("ja","日本語","🇯🇵"),
+            ("fr","Français","🇫🇷"),
+          };
+
+          Dictionary<string, string>? existing = null;
+          try {
+            var raw = ViewBag.TtsTranslations as string;
+            if (!string.IsNullOrEmpty(raw))
+              existing = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(raw);
+          } catch { }
+        }
+
+        @if (existing == null && string.IsNullOrEmpty(ViewBag.TtsScript as string))
+        {
+          <div class="flex flex-col items-center py-10 text-center">
+            <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">translate</span>
+            <p class="font-bold text-on-surface-variant">Chưa có script để dịch</p>
+            <p class="text-xs text-on-surface-variant mt-1">Nhập script tiếng Việt ở trên trước, sau đó bấm Dịch tự động.</p>
+          </div>
+        }
+        else
+        {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lang-cards">
+            @foreach (var (code, name, flag) in langs)
             {
-              <span class="absolute top-2 left-2 px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-lg">Ảnh chính</span>
+              string? txt = null;
+              var hasText = existing != null && existing.TryGetValue(code, out txt) && !string.IsNullOrEmpty(txt);
+              <div class="p-4 bg-surface-container-low rounded-xl" id="card-@code">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="flex items-center gap-2 text-sm font-bold">
+                    <span class="text-xl">@flag</span> @name
+                  </span>
+                  <div class="flex items-center gap-2">
+                    @if (hasText)
+                    {
+                      <button type="button" onclick="previewTts('@code')"
+                              class="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-colors" title="Nghe thử">
+                        <span class="material-symbols-outlined text-sm">play_circle</span>
+                      </button>
+                    }
+                    <span class="text-[10px] font-bold px-2 py-1 rounded-lg @(hasText ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400")">
+                      @(code == "vi" ? (string.IsNullOrEmpty(ViewBag.TtsScript as string) ? "Trống" : "Có sẵn") : (hasText ? "Đã dịch" : "Chưa dịch"))
+                    </span>
+                  </div>
+                </div>
+                <p class="text-xs text-on-surface-variant leading-relaxed line-clamp-3" id="text-@code">
+                  @if (code == "vi")
+                  {
+                    @(ViewBag.TtsScript as string ?? "—")
+                  }
+                  else if (hasText)
+                  {
+                    @txt
+                  }
+                  else
+                  {
+                    <span class="italic">Bấm "Dịch tự động" để tạo bản dịch...</span>
+                  }
+                </p>
+              </div>
             }
           </div>
+
+          @if (existing != null)
+          {
+            <div class="mt-4 p-3 bg-cyan-50 border border-cyan-100 rounded-xl flex items-center gap-2">
+              <span class="material-symbols-outlined text-cyan-600 text-sm">info</span>
+              <p class="text-xs text-cyan-700">
+                Bản dịch được tạo tự động bởi AI. Bạn có thể bấm <strong>Dịch tự động</strong> lại sau khi cập nhật script để đồng bộ.
+              </p>
+            </div>
+          }
         }
-        @if (!((ViewBag.Images as List<TourismApp.Web.Models.PlaceImageViewModel>)?.Any() ?? false))
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- Tab: Hình ảnh -->
+<div id="tab-images" class="tab-panel hidden">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main content -->
+    <div class="lg:col-span-2">
+      <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-surface-container">
+          <h3 class="font-bold text-base">Quản lý hình ảnh</h3>
+          <p class="text-xs text-on-surface-variant mt-0.5">Thêm URL hình ảnh để giới thiệu quán với khách hàng.</p>
+        </div>
+        <div class="p-6 space-y-6">
+          <form method="post" asp-action="AddImage" asp-route-id="@ViewBag.PlaceId" class="">
+            @Html.AntiForgeryToken()
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input name="imageUrl"
+                     class="flex-1 px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/20"
+                     placeholder="https://example.com/image.jpg" required />
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                  <input type="checkbox" name="isMain" class="rounded" />
+                  Ảnh chính
+                </label>
+                <button type="submit"
+                        class="px-5 py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all flex items-center gap-2 shrink-0"
+                        style="background:linear-gradient(135deg,#954400,#fc8127)">
+                  <span class="material-symbols-outlined text-sm">add_photo_alternate</span> Thêm ảnh
+                </button>
+              </div>
+            </div>
+          </form>
+          
+          <div>
+            <h4 class="text-sm font-semibold mb-4">Danh sách hình ảnh</h4>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              @foreach (var img in (ViewBag.Images as List<TourismApp.Web.Models.PlaceImageViewModel>) ?? new List<TourismApp.Web.Models.PlaceImageViewModel>())
+              {
+                <div class="relative group rounded-xl overflow-hidden">
+                  <img src="@img.ImageUrl" alt="Place image" class="w-full h-40 object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                    <form method="post" asp-action="DeleteImage" asp-route-imageId="@img.ImageId">
+                      @Html.AntiForgeryToken()
+                      <button type="submit" class="p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                    </form>
+                  </div>
+                  @if (img.IsMain)
+                  {
+                    <span class="absolute top-2 left-2 px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-lg">Ảnh chính</span>
+                  }
+                </div>
+              }
+              
+              @if (!((ViewBag.Images as List<TourismApp.Web.Models.PlaceImageViewModel>)?.Any() ?? false))
+              {
+                <div class="flex flex-col items-center py-12 text-center">
+                  <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">photo_library</span>
+                  <p class="text-sm text-on-surface-variant">Chưa có hình ảnh nào. Thêm URL ảnh ở trên.</p>
+                </div>
+              }
+            </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 sticky top-4 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600">image</span>
+          <h4 class="font-bold text-amber-900">Ảnh hiện tại</h4>
+        </div>
+        
+        @{
+          var mainImage = (ViewBag.Images as List<TourismApp.Web.Models.PlaceImageViewModel>)?.FirstOrDefault(x => x.IsMain);
+        }
+
+        @if (mainImage != null)
         {
-          <div class="col-span-full flex flex-col items-center py-12 text-center">
-            <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">photo_library</span>
-            <p class="text-sm text-on-surface-variant">Chưa có hình ảnh nào. Thêm URL ảnh ở trên.</p>
+          <div class="space-y-3">
+            <div class="pt-3 border-t border-amber-200">
+              <p class="text-xs font-semibold text-amber-900 mb-2">🖼️ Ảnh chính sử dụng</p>
+              <div class="relative rounded-xl overflow-hidden bg-white shadow-md">
+                <img src="@mainImage.ImageUrl" alt="Main place image" class="w-full h-40 object-cover" />
+                <span class="absolute top-2 right-2 px-2 py-1 bg-amber-600 text-white text-[10px] font-bold rounded-lg">CHÍNH</span>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-amber-200">
+              <p class="text-xs font-semibold text-amber-900 mb-1">🔗 URL</p>
+              <div class="text-xs text-amber-700 bg-white rounded px-3 py-2 break-all max-h-20 overflow-y-auto">
+                @mainImage.ImageUrl
+              </div>
+            </div>
+            <button type="button" onclick="copyToClipboard('@mainImage.ImageUrl')"
+                    class="w-full px-3 py-2 text-sm font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-xl transition-colors flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-sm">content_copy</span> Copy URL
+            </button>
+          </div>
+        }
+        else
+        {
+          <div class="pt-3 border-t border-amber-200">
+            <p class="text-sm text-amber-600 italic">ℹ️ Chưa có ảnh chính nào được chọn.</p>
+            <p class="text-xs text-amber-600 mt-2">Thêm ảnh mới rồi chọn "Ảnh chính" khi thêm.</p>
+          </div>
+        }
+
+        @{
+          var otherImages = (ViewBag.Images as List<TourismApp.Web.Models.PlaceImageViewModel>)?.Where(x => !x.IsMain).ToList() ?? new();
+        }
+
+        @if (otherImages.Count > 0)
+        {
+          <div class="pt-3 border-t border-amber-200">
+            <p class="text-xs font-semibold text-amber-900 mb-2">📸 Hình ảnh khác (@otherImages.Count)</p>
+            <div class="grid grid-cols-2 gap-2">
+              @foreach (var img in otherImages.Take(4))
+              {
+                <div class="relative rounded-lg overflow-hidden shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                     onclick="showImagePreview('@img.ImageUrl', '@System.Web.HttpUtility.JavaScriptStringEncode(img.ImageUrl)')">
+                  <img src="@img.ImageUrl" alt="Place thumbnail" class="w-full h-20 object-cover" />
+                </div>
+              }
+            </div>
           </div>
         }
       </div>
     </div>
   </div>
-</div>
 
 <!-- Tab: Nguy hiểm -->
 <div id="tab-danger" class="tab-panel hidden">
@@ -348,20 +639,30 @@
 </div>
 
 @section Scripts {
-<script>
+<script id="tts-script-block">
+  const JWT_TOKEN = '@Html.Raw(Context.Session.GetString("JwtToken") ?? "")';
+  const PLACE_ID  = '@ViewBag.PlaceId';
+  const API_BASE  = 'http://localhost:5010';
+
+  // Lưu translations hiện có
+  let currentTranslations = {};
+  try {
+    const raw = '@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.TtsTranslations ?? "{}").Trim('"'))';
+    if (raw && raw !== '{}') currentTranslations = JSON.parse(raw.replace(/\\"/g, '"'));
+  } catch(e) {}
+
   // ── Tab switching ─────────────────────────────────────────────
   function switchTab(tab) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
     document.getElementById('tab-' + tab).classList.remove('hidden');
     document.querySelectorAll('[id^="tab-btn-"]').forEach(b => {
-      b.classList.remove('bg-white', 'shadow-sm', 'text-on-surface');
-      b.classList.add('text-on-surface-variant', 'hover:text-on-surface');
+      b.classList.remove('bg-white','shadow-sm','text-on-surface');
+      b.classList.add('text-on-surface-variant','hover:text-on-surface');
     });
     const btn = document.getElementById('tab-btn-' + tab);
-    btn.classList.remove('text-on-surface-variant', 'hover:text-on-surface');
-    btn.classList.add('bg-white', 'shadow-sm', 'text-on-surface');
-    // Invalidate mini map if exists
-    if (tab === 'tts') setTimeout(() => updateCharCount(), 50);
+    btn.classList.remove('text-on-surface-variant','hover:text-on-surface');
+    btn.classList.add('bg-white','shadow-sm','text-on-surface');
+    if (tab === 'tts') setTimeout(updateCharCount, 50);
   }
 
   // ── Char counter ──────────────────────────────────────────────
@@ -369,32 +670,33 @@
   function updateCharCount() {
     const len = ta?.value?.length ?? 0;
     const el  = document.getElementById('char-count');
-    if (el) {
-      el.textContent = `${len} / 1000 ký tự`;
-      el.className   = `text-xs font-medium ${len > 900 ? 'text-red-500' : len > 700 ? 'text-amber-600' : 'text-on-surface-variant'}`;
-    }
+    if (!el) return;
+    el.textContent = `${len} / 1000 ký tự`;
+    el.className   = `text-xs font-medium ${len > 900 ? 'text-red-500' : len > 700 ? 'text-amber-600' : 'text-on-surface-variant'}`;
   }
   ta?.addEventListener('input', updateCharCount);
   updateCharCount();
 
-  // ── TTS Preview (Web Speech API) ─────────────────────────────
-  let utterance = null;
-  function previewTts() {
-    const text = ta?.value?.trim();
-    if (!text) { alert('Chưa có nội dung script!'); return; }
+  // ── TTS Preview ───────────────────────────────────────────────
+  function previewTts(lang) {
+    let text = '';
+    if (lang === 'vi') {
+      text = ta?.value?.trim() || '';
+    } else {
+      text = currentTranslations[lang] || document.getElementById('text-' + lang)?.textContent?.trim() || '';
+    }
+    if (!text || text.includes('Bấm')) { alert('Chưa có nội dung!'); return; }
     if (!window.speechSynthesis) { alert('Trình duyệt không hỗ trợ TTS.'); return; }
-    stopPreview();
-    utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'vi-VN';
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
 
-    // Show preview box
+    stopPreview();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang  = { vi:'vi-VN', en:'en-US', zh:'zh-CN', ko:'ko-KR', ja:'ja-JP', fr:'fr-FR' }[lang] || 'vi-VN';
+    u.rate  = 0.95;
+
     document.getElementById('preview-text').textContent = text;
     document.getElementById('preview-box').classList.remove('hidden');
-
-    utterance.onend = () => document.getElementById('preview-box').classList.add('hidden');
-    window.speechSynthesis.speak(utterance);
+    u.onend = () => document.getElementById('preview-box').classList.add('hidden');
+    window.speechSynthesis.speak(u);
   }
 
   function stopPreview() {
@@ -408,7 +710,79 @@
     stopPreview();
   }
 
-  // ── Open TTS tab if hash ──────────────────────────────────────
+  // ── Translate ─────────────────────────────────────────────────
+  async function translateScript() {
+    // Tính năng dịch tự động - coming soon
+    showToast('🚧 Tính năng dịch tự động sắp ra mắt. Vui lòng quay lại sau!', 'error');
+    return;
+  }
+
+  function showToast(msg, type) {
+    const cfg = { success:'bg-emerald-50 border-emerald-100 text-emerald-700', error:'bg-red-50 border-red-100 text-red-700' };
+    const el = document.createElement('div');
+    el.className = `flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-semibold shadow-lg min-w-[260px] ${cfg[type]||cfg.success}`;
+    el.textContent = msg;
+    let c = document.getElementById('toast-container');
+    if (!c) { c = document.createElement('div'); c.id='toast-container'; c.className='fixed bottom-6 right-6 z-[9999] flex flex-col gap-3'; document.body.appendChild(c); }
+    c.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+
   if (window.location.hash === '#tts') switchTab('tts');
+
+  // Copy giá trị cũ vào form
+  function copyOldValue(fieldName, value) {
+    const field = document.getElementById(fieldName);
+    
+    if (fieldName === 'TtsScript') {
+      // TtsScript là textarea trong tab TTS → chuyển tab TTS trước
+      switchTab('tts');
+      setTimeout(() => {
+        const ttsTextarea = document.getElementById('tts-textarea');
+        if (ttsTextarea) {
+          ttsTextarea.value = value;
+          ttsTextarea.classList.add('ring-2', 'ring-emerald-400');
+          ttsTextarea.focus();
+          ttsTextarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => ttsTextarea.classList.remove('ring-2', 'ring-emerald-400'), 1500);
+          showToast('✅ Đã copy TTS Script cũ vào form!', 'success');
+        }
+      }, 300);
+    } else if (field) {
+      // Input fields (OpenTime, CloseTime, PriceMin, PriceMax)
+      field.value = value;
+      field.classList.add('ring-2', 'ring-emerald-400');
+      field.focus();
+      field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => field.classList.remove('ring-2', 'ring-emerald-400'), 1500);
+      showToast(`✅ Đã copy ${fieldName} cũ!`, 'success');
+    }
+  }
+
+  // Copy URL ảnh vào clipboard
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('✅ Đã copy URL ảnh!', 'success');
+    }).catch(err => {
+      showToast('❌ Không thể copy URL', 'error');
+    });
+  }
+
+  // Xem trước ảnh toàn màn hình
+  function showImagePreview(imageUrl, title) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+      <div class="relative max-w-4xl max-h-[90vh] bg-white rounded-xl overflow-auto">
+        <button onclick="this.closest('.fixed').remove()" 
+                class="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 z-10">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+        <img src="${imageUrl}" alt="Preview" class="w-full h-auto" />
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
 </script>
 }

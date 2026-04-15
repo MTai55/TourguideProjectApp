@@ -2,18 +2,19 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using TourGuideAPI.Data;
 using TourGuideAPI.DTOs.Places;
 using TourGuideAPI.Models;
 using TourGuideAPI.Services;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace TourGuideAPI.Controllers;
 
 [ApiController]
 [Route("api/places")]
 [EnableRateLimiting("general")]
-public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<PlacesController> logger) : ControllerBase
+public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<PlacesController> logger, IConfiguration config) : ControllerBase
 {
     private int OwnerId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
@@ -187,23 +188,28 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
     {
         var place = await db.Places
             .Include(p => p.Category)
-            .Include(p => p.Images.Where(i => i.IsMain))
+            .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.PlaceId == id && p.IsActive);
 
         if (place == null) return NotFound();
 
-        var dto = new PlaceDto(
+        return Ok(new {
             place.PlaceId, place.Name, place.Description, place.Address,
             place.Latitude, place.Longitude, place.Phone,
-            place.OpenTime?.ToString(), place.CloseTime?.ToString(),
+            OpenTime  = place.OpenTime?.ToString(),
+            CloseTime = place.CloseTime?.ToString(),
             place.AverageRating, place.TotalReviews, place.TotalVisits,
-            place.Category?.Name,
-            place.Images.FirstOrDefault()?.ImageUrl,
-            null,
-            place.Specialty, place.PricePerPerson, place.PriceMin, place.PriceMax,
-            place.District, place.HasParking, place.HasAircon);
-
-        return Ok(dto);
+            CategoryName = place.Category?.Name,
+            CategoryId   = place.CategoryId,
+            MainImageUrl = place.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl,
+            place.Specialty, place.PricePerPerson,
+            place.PriceMin, place.PriceMax,
+            place.District, place.HasParking, place.HasAircon,
+            place.Status, place.OpenStatus,
+            TtsScript      = place.tts_script,
+            TtsTranslations= place.tts_translations,
+            Radius         = place.radius,
+        });
     }
 
     // ── POST /api/places ──────────────────────────────────────────
@@ -390,16 +396,191 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
         }
     }
 
-    // TODO: Uncomment after database migration is complete
-    // [HttpPut("{id}/tts")]
-    // [Authorize(Policy = "OwnerOnly")]
-    // public async Task<IActionResult> UpdateTtsScript(int id, [FromBody] string? ttsScript)
-    // {
-    //     var place = await db.Places.FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
-    //     if (place == null) return Forbid();
-    //     place.TtsScript = ttsScript;
-    //     place.UpdatedAt = DateTime.UtcNow;
-    //     await db.SaveChangesAsync();
-    //     return Ok(new { ttsScript });
-    // }
+    [HttpPut("{id}/tts")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> UpdateTtsScript(int id, [FromBody] UpdateTtsDto dto)
+    {
+        var place = await db.Places
+            .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
+        if (place == null) return Forbid();
+
+        place.tts_script = string.IsNullOrWhiteSpace(dto.TtsScript) ? null : dto.TtsScript.Trim();
+        place.UpdatedAt  = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        return Ok(new { ttsScript = place.tts_script });
+    }
+
+    [HttpPost("{id}/tts/translate")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> TranslateTtsScript(int id, [FromBody] TranslateScriptRequest request, [FromServices] IHttpClientFactory httpClientFactory)
+    {
+        var place = await db.Places
+            .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
+        if (place == null) return Forbid();
+
+        // Lấy script từ request hoặc DB
+        var scriptToTranslate = !string.IsNullOrWhiteSpace(request?.Script) 
+            ? request.Script.Trim() 
+            : place.tts_script;
+
+        if (string.IsNullOrWhiteSpace(scriptToTranslate))
+            return BadRequest(new { message = "Chưa có script để dịch. Vui lòng lưu script trước." });
+
+        // Kiểm tra ANTHROPIC_API_KEY
+        var apiKey = config["ANTHROPIC_API_KEY"];
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            logger.LogError("❌ ANTHROPIC_API_KEY not set in appsettings or environment");
+            return StatusCode(500, new { message = "❌ Server chưa được cấu hình. Thiếu ANTHROPIC_API_KEY. Liên hệ admin." });
+        }
+
+        // Danh sách ngôn ngữ cần dịch
+        var languages = new Dictionary<string, string>
+        {
+            ["vi"] = "Vietnamese",
+            ["en"] = "English",
+            ["zh"] = "Chinese (Simplified)",
+            ["ko"] = "Korean",
+            ["ja"] = "Japanese",
+            ["fr"] = "French",
+        };
+
+        var prompt = "You are a professional translator for a Vietnamese food discovery app.\n\n" +
+        "Translate the following Vietnamese TTS narration script into these languages:\n" +
+        string.Join(", ", languages.Values) + "\n\n" +
+        "SCRIPT:\n" + scriptToTranslate + "\n\n" +
+        "Rules:\n" +
+        "- Keep the same friendly, inviting tone\n" +
+        "- Preserve place names, food names, addresses as-is\n" +
+        "- Keep translations natural and suitable for Text-to-Speech\n" +
+        "- Maximum 200 words per translation\n\n" +
+        "Return ONLY a valid JSON object with language codes as keys:\n" +
+        "{\"vi\":\"...\",\"en\":\"...\",\"zh\":\"...\",\"ko\":\"...\",\"ja\":\"...\",\"fr\":\"...\"}";
+
+        var requestBody = new
+        {
+            model      = "claude-sonnet-4-20250514",
+            max_tokens = 2000,
+            messages   = new[] { new { role = "user", content = prompt } }
+        };
+
+        try
+        {
+            var client = httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+            client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+
+            logger.LogInformation($"🔵 Calling Anthropic API for place {id}...");
+            var response = await client.PostAsJsonAsync("https://api.anthropic.com/v1/messages", requestBody);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                logger.LogError($"❌ Anthropic API Error [{(int)response.StatusCode}]: {errorContent}");
+                
+                // Phân tích lỗi từ Response
+                var errorDetail = "";
+                if ((int)response.StatusCode == 401)
+                    errorDetail = "API key không hợp lệ hoặc hết hiệu lực. Vui lòng kiểm tra ANTHROPIC_API_KEY.";
+                else if ((int)response.StatusCode == 429)
+                    errorDetail = "Quá nhiều yêu cầu. Vui lòng chờ và thử lại sau.";
+                else if ((int)response.StatusCode == 500)
+                    errorDetail = "Dịch vụ Anthropic API gặp sự cố. Vui lòng thử lại sau.";
+                else
+                    errorDetail = errorContent?.Length <= 200 ? errorContent : "Lỗi từ dịch vụ dịch thuật.";
+                
+                return StatusCode(500, new { message = $"❌ Lỗi từ dịch vụ dịch thuật [{(int)response.StatusCode}]: {errorDetail}" });
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var parsed = JsonDocument.Parse(json);
+            var content = parsed.RootElement
+                .GetProperty("content")[0]
+                .GetProperty("text")
+                .GetString() ?? "{}";
+
+            logger.LogInformation($"✅ Translation successful for place {id}");
+
+            // Lưu translations vào DB
+            place.tts_translations = content;
+            place.UpdatedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+
+            // Parse và trả về
+            var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
+            return Ok(new
+            {
+                success = true,
+                translations,
+                languages = languages.Keys.ToList()
+            });
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError($"❌ Network error calling translation API: {ex.Message}");
+            return StatusCode(500, new { message = "❌ Không thể kết nối đến dịch vụ dịch thuật. Kiểm tra kết nối Internet." });
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError($"❌ Invalid JSON from translation service: {ex.Message}");
+            return StatusCode(500, new { message = "❌ Phản hồi từ dịch vụ không hợp lệ. Vui lòng thử lại sau." });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"❌ Unexpected error in TranslateTtsScript: {ex.Message}");
+            return StatusCode(500, new { message = $"❌ Lỗi không xác định: {ex.Message}" });
+        }
+    }
+
+    // GET /api/places/{id}/tts — Lấy TTS theo ngôn ngữ (dùng cho app mobile)
+    [HttpGet("{id}/tts")]
+    public async Task<IActionResult> GetTts(int id, [FromQuery] string lang = "vi")
+    {
+        var place = await db.Places
+            .Where(p => p.PlaceId == id && p.IsActive)
+            .Select(p => new {
+                p.PlaceId, p.Name,
+                p.tts_script, p.tts_translations,
+                p.radius
+            })
+            .FirstOrDefaultAsync();
+
+        if (place == null) return NotFound();
+
+        string? script = place.tts_script; // mặc định tiếng Việt
+
+        // Nếu có translations và lang != vi, lấy bản dịch
+        if (lang != "vi" && !string.IsNullOrEmpty(place.tts_translations))
+        {
+            try
+            {
+                var translations = JsonSerializer.Deserialize<Dictionary<string, string>>(place.tts_translations);
+                if (translations != null && translations.TryGetValue(lang, out var translated))
+                    script = translated;
+            }
+            catch { /* fallback to original */ }
+        }
+
+        return Ok(new {
+            placeId         = place.PlaceId,
+            name            = place.Name,
+            lang,
+            ttsScript       = script,
+            hasScript       = !string.IsNullOrEmpty(script),
+            hasTranslations = !string.IsNullOrEmpty(place.tts_translations),
+            radius          = place.radius ?? 100.0,
+        });
+    }
+    [HttpGet("{id}/images")]
+    public async Task<IActionResult> GetImages(int id)
+    {
+        var images = await db.PlaceImages
+            .Where(i => i.PlaceId == id)
+            .OrderByDescending(i => i.IsMain)
+            .ThenBy(i => i.SortOrder)
+            .Select(i => new { i.ImageId, i.ImageUrl, i.IsMain, i.SortOrder })
+            .ToListAsync();
+        return Ok(images);
+    }
 }

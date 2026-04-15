@@ -1,0 +1,100 @@
+@model List<TourismApp.Web.Models.SubscriptionDto>
+@{ ViewData["Title"] = "Lịch sử thanh toán"; }
+
+<div class="flex items-center justify-between mb-8 pt-2">
+  <div>
+    <h2 class="text-4xl font-extrabold tracking-tight">Lịch sử thanh toán</h2>
+    <p class="text-on-surface-variant text-sm font-medium mt-1">Tất cả giao dịch đăng ký của bạn.</p>
+  </div>
+  <a asp-action="Plans"
+     class="flex items-center gap-2 px-6 py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+     style="background:linear-gradient(135deg,#954400,#fc8127)">
+    <span class="material-symbols-outlined text-sm">add</span> Gia hạn / Nâng cấp
+  </a>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+  <div class="flex flex-col items-center py-20 text-center bg-surface-container-lowest rounded-2xl">
+    <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">receipt_long</span>
+    <h3 class="font-bold text-lg mb-2">Chưa có lịch sử thanh toán</h3>
+    <p class="text-sm text-on-surface-variant mb-4">Đăng ký gói dịch vụ để bắt đầu quản lý quán ăn.</p>
+    <a asp-action="Plans"
+       class="px-6 py-3 text-white font-bold rounded-xl text-sm"
+       style="background:linear-gradient(135deg,#954400,#fc8127)">
+      Xem các gói
+    </a>
+  </div>
+}
+else
+{
+  <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+    <table class="w-full text-left">
+      <thead>
+        <tr class="bg-surface-container-low">
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Gói</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Phương thức</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Số tiền</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Hiệu lực</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Trạng thái</th>
+          <th class="px-6 py-4 text-xs font-black uppercase tracking-wider text-on-surface-variant">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container">
+        @foreach (var s in Model!)
+        {
+          var (dot, txt, cls) = s.Status switch {
+            "Active"    => ("bg-emerald-500","Đang dùng","text-emerald-700 bg-emerald-50"),
+            "Pending"   => ("bg-amber-500",  "Chờ TT",   "text-amber-700 bg-amber-50"),
+            "Cancelled" => ("bg-slate-400",  "Đã hủy",   "text-slate-600 bg-slate-100"),
+            "Failed"    => ("bg-red-500",    "Thất bại", "text-red-700 bg-red-50"),
+            "Expired"   => ("bg-slate-400",  "Hết hạn",  "text-slate-500 bg-slate-100"),
+            _           => ("bg-slate-400",   s.Status,  "text-slate-500 bg-slate-100"),
+          };
+          <tr class="hover:bg-surface-bright transition-colors">
+            <td class="px-6 py-4">
+              <p class="font-bold text-sm">@s.PlanName</p>
+              <p class="text-xs text-on-surface-variant">@s.StartDate?.ToString("dd/MM/yyyy")</p>
+            </td>
+            <td class="px-6 py-4">
+              <span class="text-xs font-bold uppercase px-2.5 py-1 bg-surface-container-low rounded-lg">
+                @(s.PaymentMethod ?? "—")
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="font-bold text-primary">@s.Amount.ToString("N0")đ</span>
+            </td>
+            <td class="px-6 py-4">
+              @if (s.EndDate.HasValue)
+              {
+                <p class="text-sm">đến @s.EndDate.Value.ToString("dd/MM/yyyy")</p>
+                if (s.IsActive && s.DaysRemaining.HasValue)
+                {
+                  <p class="text-xs text-on-surface-variant">còn @s.DaysRemaining ngày</p>
+                }
+              }
+              else { <span class="text-slate-400">—</span> }
+            </td>
+            <td class="px-6 py-4">
+              <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold @cls w-fit">
+                <span class="w-1.5 h-1.5 rounded-full @dot"></span> @txt
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              @if (s.Status == "Active")
+              {
+                <form method="post" asp-action="Cancel" asp-route-subId="@s.SubId"
+                      onsubmit="return confirm('Hủy subscription? Quyền truy cập vẫn còn đến hết kỳ.')">
+                  @Html.AntiForgeryToken()
+                  <button type="submit" class="text-xs font-bold text-red-600 hover:text-red-800 transition-colors">
+                    Hủy
+                  </button>
+                </form>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

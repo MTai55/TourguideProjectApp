@@ -42,6 +42,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<PlaceService>();
         builder.Services.AddSingleton<AccessSessionService>();
+        builder.Services.AddSingleton<UserProfileService>();
  
         // App
         builder.Services.AddSingleton<App>();

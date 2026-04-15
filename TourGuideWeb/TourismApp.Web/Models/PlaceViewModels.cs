@@ -17,7 +17,6 @@ public class PlaceViewModel
     public double AverageRating { get; set; }
     public int TotalReviews { get; set; }
     public int TotalVisits { get; set; }
-    public int? CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public string? MainImageUrl { get; set; }
     public bool IsApproved { get; set; }
@@ -31,12 +30,19 @@ public class PlaceViewModel
     public string Status { get; set; } = "Pending";
     public string OpenStatus { get; set; } = "Closed";
     public string? OwnerName { get; set; }
+    [JsonProperty("categoryId")]
+        
+    public int? CategoryId { get; set; }
 
     [JsonProperty("ttsScript")]
     public string? TtsScript { get; set; }
 
+    [JsonProperty("ttsTranslations")]
+    public string? TtsTranslations { get; set; }
+
     [JsonProperty("radius")]
     public double? Radius { get; set; }
+
 }
 
 public class CreatePlaceViewModel
@@ -68,6 +74,20 @@ public class CreatePlaceViewModel
     public string? District { get; set; }
     public bool HasParking { get; set; }
     public bool HasAircon { get; set; }
+
+    // ── Thông tin cũ (để tham khảo khi chỉnh sửa) ──
+    [JsonIgnore]
+    public string? PreviousOpenTime { get; set; }
+    [JsonIgnore]
+    public string? PreviousCloseTime { get; set; }
+    [JsonIgnore]
+    public decimal? PreviousPriceMin { get; set; }
+    [JsonIgnore]
+    public decimal? PreviousPriceMax { get; set; }
+    [JsonIgnore]
+    public string? PreviousTtsScript { get; set; }
+    [JsonIgnore]
+    public DateTime? LastModifiedAt { get; set; }
 }
 
 public class ReviewViewModel
@@ -126,4 +146,50 @@ public class PlaceImageViewModel
     public int ImageId { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public bool IsMain { get; set; }
+}
+
+public class SubscriptionPlanViewModel
+{
+    [Newtonsoft.Json.JsonProperty("planId")]
+    public int    PlanId       { get; set; }
+    [Newtonsoft.Json.JsonProperty("name")]
+    public string Name         { get; set; } = string.Empty;
+    [Newtonsoft.Json.JsonProperty("slug")]
+    public string Slug         { get; set; } = string.Empty;
+    [Newtonsoft.Json.JsonProperty("price")]
+    public int    Price        { get; set; }
+    [Newtonsoft.Json.JsonProperty("maxPlaces")]
+    public int    MaxPlaces    { get; set; }
+    [Newtonsoft.Json.JsonProperty("hasTts")]
+    public bool   HasTts       { get; set; }
+    [Newtonsoft.Json.JsonProperty("hasAnalytics")]
+    public bool   HasAnalytics { get; set; }
+    [Newtonsoft.Json.JsonProperty("hasPriority")]
+    public bool   HasPriority  { get; set; }
+    [Newtonsoft.Json.JsonProperty("features")]
+    public List<string> Features { get; set; } = [];
+}
+
+public class SubscriptionDto
+{
+    [Newtonsoft.Json.JsonProperty("subId")]
+    public int     SubId         { get; set; }
+    [Newtonsoft.Json.JsonProperty("planName")]
+    public string  PlanName      { get; set; } = string.Empty;
+    [Newtonsoft.Json.JsonProperty("planSlug")]
+    public string  PlanSlug      { get; set; } = string.Empty;
+    [Newtonsoft.Json.JsonProperty("status")]
+    public string  Status        { get; set; } = string.Empty;
+    [Newtonsoft.Json.JsonProperty("startDate")]
+    public DateTime? StartDate   { get; set; }
+    [Newtonsoft.Json.JsonProperty("endDate")]
+    public DateTime? EndDate     { get; set; }
+    [Newtonsoft.Json.JsonProperty("paymentMethod")]
+    public string? PaymentMethod { get; set; }
+    [Newtonsoft.Json.JsonProperty("amount")]
+    public int     Amount        { get; set; }
+    [Newtonsoft.Json.JsonProperty("isActive")]
+    public bool    IsActive      { get; set; }
+    [Newtonsoft.Json.JsonProperty("daysRemaining")]
+    public int?    DaysRemaining { get; set; }
 }

@@ -1,0 +1,22 @@
+@{ ViewData["Title"] = "Thanh toán thất bại"; }
+
+<div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+  <div class="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center mb-6">
+    <span class="material-symbols-outlined text-5xl text-red-600">cancel</span>
+  </div>
+  <h2 class="text-3xl font-extrabold text-on-surface mb-2">Thanh toán thất bại</h2>
+  <p class="text-on-surface-variant mb-2">@(ViewBag.Reason ?? "Giao dịch không thành công.")</p>
+  <p class="text-sm text-on-surface-variant">Vui lòng thử lại hoặc chọn phương thức thanh toán khác.</p>
+
+  <div class="flex gap-3 mt-8">
+    <a asp-controller="Subscription" asp-action="Plans"
+       class="flex items-center gap-2 px-7 py-3.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+       style="background:linear-gradient(135deg,#954400,#fc8127)">
+      <span class="material-symbols-outlined text-sm">refresh</span> Thử lại
+    </a>
+    <a asp-controller="Dashboard" asp-action="Index"
+       class="flex items-center gap-2 px-6 py-3.5 bg-surface-container-low font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+      Về Dashboard
+    </a>
+  </div>
+</div>

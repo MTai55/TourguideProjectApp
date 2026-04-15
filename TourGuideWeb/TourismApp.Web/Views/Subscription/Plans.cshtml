@@ -1,0 +1,246 @@
+@{ ViewData["Title"] = "Chọn gói dịch vụ"; }
+
+<div class="pt-2 mb-8">
+  <h2 class="text-4xl font-extrabold tracking-tight">Gói dịch vụ</h2>
+  <p class="text-on-surface-variant text-sm font-medium mt-1">
+    Chọn gói phù hợp để mở và quản lý quán ăn của bạn trên Phố Ẩm Thực HCM.
+  </p>
+</div>
+
+<!-- Current subscription banner -->
+@if (ViewBag.CurrentSub != null)
+{
+  var sub = ViewBag.CurrentSub as TourismApp.Web.Models.SubscriptionDto;
+  <div class="flex items-center gap-4 p-5 mb-8 rounded-2xl border-2 border-primary/20"
+       style="background:linear-gradient(135deg,rgba(149,68,0,0.05),rgba(252,129,39,0.05))">
+    <div class="p-3 rounded-xl" style="background:linear-gradient(135deg,#954400,#fc8127)">
+      <span class="material-symbols-outlined text-white">workspace_premium</span>
+    </div>
+    <div class="flex-1">
+      <p class="font-bold text-base">Đang dùng gói <span class="text-primary">@sub!.PlanName</span></p>
+      <p class="text-sm text-on-surface-variant mt-0.5">
+        Còn <strong class="text-primary">@sub.DaysRemaining ngày</strong> —
+        hết hạn @sub.EndDate?.ToString("dd/MM/yyyy")
+      </p>
+    </div>
+    <a asp-action="History"
+       class="px-4 py-2 bg-surface-container-low font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
+      Lịch sử thanh toán
+    </a>
+  </div>
+}
+
+<!-- Pricing cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+  @{
+    var plans = ViewBag.Plans as List<TourismApp.Web.Models.SubscriptionPlanViewModel> ?? [];
+    var colors = new Dictionary<string, (string grad, string accent)> {
+      ["basic"]   = ("from-slate-600 to-slate-800",     "#64748b"),
+      ["pro"]     = ("from-primary to-primary-container","#954400"),
+      ["premium"] = ("from-amber-500 to-amber-700",     "#d97706"),
+    };
+  }
+  @foreach (var plan in plans)
+  {
+    var (grad, accent) = colors.GetValueOrDefault(plan.Slug, ("from-slate-600 to-slate-800","#64748b"));
+    var isCurrent = (ViewBag.CurrentSub as TourismApp.Web.Models.SubscriptionDto)?.PlanSlug == plan.Slug
+                    && (ViewBag.CurrentSub as TourismApp.Web.Models.SubscriptionDto)?.IsActive == true;
+    var isPopular = plan.Slug == "pro";
+
+    <div class="relative bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden
+                @(isPopular ? "ring-2 ring-primary shadow-lg shadow-primary/10" : "")">
+      @if (isPopular)
+      {
+        <div class="absolute top-4 right-4 px-3 py-1 text-white text-[10px] font-black rounded-full uppercase tracking-widest"
+             style="background:linear-gradient(135deg,#954400,#fc8127)">
+          Phổ biến nhất
+        </div>
+      }
+
+      <!-- Header -->
+      <div class="p-6 bg-gradient-to-br @grad">
+        <h3 class="text-xl font-extrabold text-white">@plan.Name</h3>
+        <div class="flex items-end gap-1 mt-3">
+          <span class="text-4xl font-black text-white">@plan.Price.ToString("N0")</span>
+          <span class="text-white/70 text-sm mb-1">đ / tháng</span>
+        </div>
+        <p class="text-white/80 text-xs mt-1">Tối đa @plan.MaxPlaces quán ăn</p>
+      </div>
+
+      <!-- Features -->
+      <div class="p-6">
+        <ul class="space-y-3 mb-6">
+          @foreach (var feat in plan.Features)
+          {
+            <li class="flex items-start gap-2.5 text-sm">
+              <span class="material-symbols-outlined text-emerald-500 text-base mt-0.5 shrink-0">check_circle</span>
+              @feat
+            </li>
+          }
+          @if (plan.HasTts)
+          {
+            <li class="flex items-start gap-2.5 text-sm">
+              <span class="material-symbols-outlined text-violet-500 text-base mt-0.5 shrink-0">record_voice_over</span>
+              TTS đa ngôn ngữ
+            </li>
+          }
+          @if (plan.HasAnalytics)
+          {
+            <li class="flex items-start gap-2.5 text-sm">
+              <span class="material-symbols-outlined text-blue-500 text-base mt-0.5 shrink-0">analytics</span>
+              Analytics nâng cao
+            </li>
+          }
+          @if (plan.HasPriority)
+          {
+            <li class="flex items-start gap-2.5 text-sm">
+              <span class="material-symbols-outlined text-amber-500 text-base mt-0.5 shrink-0">star</span>
+              Ưu tiên hiển thị trên app
+            </li>
+          }
+        </ul>
+
+        @if (isCurrent)
+        {
+          <div class="w-full py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl text-sm text-center flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">check_circle</span> Gói hiện tại
+          </div>
+        }
+        else
+        {
+          <button onclick="openPaymentModal(@plan.PlanId, '@plan.Name', @plan.Price)"
+                  class="w-full py-3 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
+                  style="background:linear-gradient(135deg,@accent,@(accent)cc)">
+            @(ViewBag.CurrentSub != null ? "Nâng cấp lên " + plan.Name : "Chọn gói " + plan.Name)
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- FAQ -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6">
+  <h3 class="font-bold text-lg mb-4">Câu hỏi thường gặp</h3>
+  <div class="space-y-4">
+    @foreach (var (q, a) in new (string,string)[] {
+      ("Thanh toán qua những hình thức nào?",
+       "Hỗ trợ VNPay (ATM/Internet Banking), MoMo, và thẻ quốc tế qua Stripe."),
+      ("Gói subscription có tự động gia hạn không?",
+       "Không. Bạn cần gia hạn thủ công trước khi gói hết hạn để tiếp tục sử dụng."),
+      ("Nếu nâng cấp gói giữa kỳ thì sao?",
+       "Gói mới sẽ có hiệu lực ngay và tính từ ngày nâng cấp thêm 1 tháng."),
+      ("Dữ liệu quán có bị mất khi gói hết hạn?",
+       "Không. Dữ liệu vẫn được lưu. Quán sẽ bị ẩn tạm thời cho đến khi gia hạn."),
+    })
+    {
+      <details class="group p-4 bg-surface-container-low rounded-xl cursor-pointer">
+        <summary class="flex items-center justify-between font-semibold text-sm select-none">
+          @q
+          <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
+        </summary>
+        <p class="text-sm text-on-surface-variant mt-3 leading-relaxed">@a</p>
+      </details>
+    }
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4"
+     style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+    <div class="p-6 border-b border-surface-container">
+      <h3 class="font-bold text-lg">Thanh toán đăng ký</h3>
+      <p id="modal-plan-info" class="text-sm text-on-surface-variant mt-1"></p>
+    </div>
+    <div class="p-6 space-y-3">
+      <p class="text-sm font-semibold mb-4">Chọn phương thức thanh toán:</p>
+
+      <form asp-controller="Subscription" asp-action="Checkout" method="post" id="payment-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="planId" id="modal-plan-id" />
+        <input type="hidden" name="paymentMethod" id="modal-payment-method" />
+
+        @foreach (var (method, icon, label, color) in new (string,string,string,string)[] {
+          ("vnpay",  "https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-VNPAY-QR-1.png",
+           "VNPay — ATM / Internet Banking", "#0066cc"),
+          ("momo",   "https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png",
+           "MoMo — Ví điện tử", "#ae2070"),
+          ("stripe", "https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg",
+           "Stripe — Thẻ quốc tế (Visa/MC)", "#635bff"),
+        })
+        {
+          <button type="button" onclick="selectPayment('@method')"
+                  id="btn-@method"
+                  class="w-full flex items-center gap-4 p-4 border-2 border-surface-container rounded-xl hover:border-primary transition-all text-left mb-2">
+            <img src="@icon" alt="@method" class="h-8 w-16 object-contain" />
+            <div>
+              <p class="font-bold text-sm">@label</p>
+            </div>
+            <span class="material-symbols-outlined ml-auto text-slate-300" id="check-@method">radio_button_unchecked</span>
+          </button>
+        }
+      </form>
+    </div>
+    <div class="p-6 border-t border-surface-container flex gap-3">
+      <button onclick="closePaymentModal()"
+              class="flex-1 py-3 bg-surface-container-low font-bold rounded-xl text-sm">Hủy</button>
+      <button id="btn-pay" onclick="submitPayment()" disabled
+              class="flex-1 py-3 text-white font-bold rounded-xl text-sm disabled:opacity-50 transition-all"
+              style="background:linear-gradient(135deg,#954400,#fc8127)">
+        Thanh toán ngay
+      </button>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+  let selectedPlanId = null;
+  let selectedMethod = null;
+
+  function openPaymentModal(planId, planName, price) {
+    selectedPlanId = planId;
+    document.getElementById('modal-plan-id').value = planId;
+    document.getElementById('modal-plan-info').textContent =
+      `Gói ${planName} — ${price.toLocaleString('vi-VN')}đ / tháng`;
+    document.getElementById('paymentModal').classList.remove('hidden');
+    selectedMethod = null;
+    document.getElementById('btn-pay').disabled = true;
+    ['vnpay','momo','stripe'].forEach(m => {
+      document.getElementById('btn-'+m).classList.remove('border-primary','bg-primary/5');
+      document.getElementById('check-'+m).textContent = 'radio_button_unchecked';
+    });
+  }
+
+  function closePaymentModal() {
+    document.getElementById('paymentModal').classList.add('hidden');
+  }
+
+  function selectPayment(method) {
+    selectedMethod = method;
+    document.getElementById('modal-payment-method').value = method;
+    ['vnpay','momo','stripe'].forEach(m => {
+      const btn   = document.getElementById('btn-'+m);
+      const check = document.getElementById('check-'+m);
+      if (m === method) {
+        btn.classList.add('border-primary','bg-primary/5');
+        check.textContent = 'radio_button_checked';
+        check.style.color = '#954400';
+      } else {
+        btn.classList.remove('border-primary','bg-primary/5');
+        check.textContent = 'radio_button_unchecked';
+        check.style.color = '';
+      }
+    });
+    document.getElementById('btn-pay').disabled = false;
+  }
+
+  function submitPayment() {
+    if (!selectedMethod) return;
+    document.getElementById('btn-pay').textContent = 'Đang xử lý...';
+    document.getElementById('btn-pay').disabled = true;
+    document.getElementById('payment-form').submit();
+  }
+</script>
+}

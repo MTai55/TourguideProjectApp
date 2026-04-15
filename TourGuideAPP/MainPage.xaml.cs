@@ -14,6 +14,7 @@ public partial class MainPage : ContentPage
     private readonly NarrationService _narrationService;
     private readonly AuthService _authService;
     private readonly PlaceService _placeService;
+    private readonly UserProfileService _userProfileService;
     private string? _lastSpokenPlaceId;
     private DateTime _lastReverseGeocodeAt = DateTime.MinValue;
     private string? _lastResolvedLocationText;
@@ -30,7 +31,7 @@ public partial class MainPage : ContentPage
 
     public MainPage(Supabase.Client supabase, LocationService locationService,
                     GeofenceEngine geofenceEngine, NarrationService narrationService,
-                    AuthService authService, PlaceService placeService)
+                    AuthService authService, PlaceService placeService, UserProfileService userProfileService)
     {
         InitializeComponent();
         _supabase = supabase;
@@ -39,6 +40,7 @@ public partial class MainPage : ContentPage
         _narrationService = narrationService;
         _authService = authService;
         _placeService = placeService;
+        _userProfileService = userProfileService;
     }
 
     protected override async void OnAppearing()
@@ -238,7 +240,8 @@ public partial class MainPage : ContentPage
                     _authService,
                     _locationService,
                     _geofenceEngine,
-                    _narrationService));
+                    _narrationService,
+                    _userProfileService));
             }
 
 

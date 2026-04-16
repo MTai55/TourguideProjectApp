@@ -79,11 +79,11 @@ public partial class PlaceDetailPage : ContentPage
         else
             WebsiteRow.IsVisible = false;
 
-        // Load TTS Script
-        if (!string.IsNullOrWhiteSpace(_place.TtsScript))
-            TtsScriptLabel.Text = _place.TtsScript;
-        else
-            TtsScriptLabel.Text = "Chưa có cẩu chuyện hướng dẫn";
+        // Load TTS Script — ưu tiên PlaceTtsContents, fallback tts_script
+        var ttsScript = _place.GetScriptForLocale(_narrationService.PreferredLocale);
+        TtsScriptLabel.Text = (!string.IsNullOrWhiteSpace(ttsScript) && !ttsScript.StartsWith("Đây là địa điểm"))
+            ? ttsScript
+            : "Chưa có câu chuyện hướng dẫn";
     }
 
     private static bool IsPlaceOpen(Place place)
@@ -280,22 +280,24 @@ public partial class PlaceDetailPage : ContentPage
 
     private async void OnCopyTtsClicked(object sender, TappedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(_place.TtsScript))
+        var script = _place.GetScriptForLocale(_narrationService.PreferredLocale);
+        if (string.IsNullOrWhiteSpace(script) || script.StartsWith("Đây là địa điểm"))
         {
             await DisplayAlert("Thông báo", "Quán này chưa có script TTS.", "OK");
             return;
         }
-        await Clipboard.SetTextAsync(_place.TtsScript);
+        await Clipboard.SetTextAsync(script);
         await DisplayAlert("Thành công", "Script TTS đã sao chép.", "OK");
     }
 
     private async void OnPlayTtsClicked(object sender, TappedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(_place.TtsScript))
+        var script = _place.GetScriptForLocale(_narrationService.PreferredLocale);
+        if (string.IsNullOrWhiteSpace(script) || script.StartsWith("Đây là địa điểm"))
         {
             await DisplayAlert("Thông báo", "Quán này chưa có script TTS.", "OK");
             return;
         }
-        await _narrationService.SpeakAsync(_place.GetScriptForLocale(_narrationService.PreferredLocale));
+        await _narrationService.SpeakAsync(script);
     }
 }

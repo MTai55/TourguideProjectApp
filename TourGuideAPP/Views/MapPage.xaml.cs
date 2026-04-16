@@ -26,6 +26,7 @@ public partial class MapPage : ContentPage
     private readonly AuthService _authService;
     private readonly UserProfileService _userProfileService;
     private string? _lastSpokenPlaceId;
+    private Place? _lastSpokenPlace;   // giữ ref để check radius khi cooldown active
     private bool _mapInfoHooked;
     private (double lat, double lon, string? name)? _destination;
     private readonly HttpClient _http = new();
@@ -428,6 +429,7 @@ public partial class MapPage : ContentPage
                     if (_lastSpokenPlaceId != nearestId)
                     {
                         _lastSpokenPlaceId = nearestId;
+                        _lastSpokenPlace = nearest;
                         nearest.LastPlayedAt = DateTime.Now;
                         await _narrationService.SpeakAsync(nearest.GetScriptForLocale(_narrationService.PreferredLocale));
                         await _userProfileService.AddHistoryByGpsAsync(nearest);
@@ -437,7 +439,20 @@ public partial class MapPage : ContentPage
                 else
                 {
                     NearestPOILabel.Text = AppResources.MapNoNearby;
-                    _lastSpokenPlaceId = null;
+
+                    // Chỉ reset khi user thực sự đi ra khỏi bán kính — không reset khi cooldown đang active
+                    // (nearest=null có thể vì cooldown chứ không phải user đã rời đi)
+                    if (_lastSpokenPlace != null)
+                    {
+                        var distToLast = _geofenceEngine.GetDistance(
+                            location.Latitude, location.Longitude,
+                            _lastSpokenPlace.Latitude, _lastSpokenPlace.Longitude);
+                        if (distToLast > (_lastSpokenPlace.Radius ?? 50))
+                        {
+                            _lastSpokenPlaceId = null;
+                            _lastSpokenPlace = null;
+                        }
+                    }
                 }
             });
         };

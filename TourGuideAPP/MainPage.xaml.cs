@@ -16,6 +16,8 @@ public partial class MainPage : ContentPage
     private readonly PlaceService _placeService;
     private readonly UserProfileService _userProfileService;
     private string? _lastSpokenPlaceId;
+    private Place?  _lastSpokenPlace;
+    private bool    _gpsStarted = false;
     private DateTime _lastReverseGeocodeAt = DateTime.MinValue;
     private string? _lastResolvedLocationText;
     private List<Place> _allPlaces = new();
@@ -141,34 +143,55 @@ public partial class MainPage : ContentPage
     private async void OnStartGpsClicked(object sender, EventArgs e)
     {
         GpsLabel.Text = AppResources.MainGpsStarting;
-        _locationService.LocationChanged += (location) =>
-        {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                GpsLabel.Text = $"📍 {location.Latitude:F6}, {location.Longitude:F6}";
-                var places = _placeService.GetCachedPlaces();
-                var nearest = _geofenceEngine.FindNearestPOI(location.Latitude, location.Longitude, places);
 
-                if (nearest != null)
+        if (!_gpsStarted)
+        {
+            _gpsStarted = true;
+            _locationService.LocationChanged += (location) =>
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    UserLocationLabel.Text = nearest.Name;
-                    POILabel.Text = AppResources.MainNearbyPrefix + nearest.Name;
-                    var nearestId = nearest.PlaceId.ToString();
-                    if (_lastSpokenPlaceId != nearestId)
+                    GpsLabel.Text = $"📍 {location.Latitude:F6}, {location.Longitude:F6}";
+                    var places = _placeService.GetCachedPlaces();
+                    var nearest = _geofenceEngine.FindNearestPOI(location.Latitude, location.Longitude, places);
+
+                    if (nearest != null)
                     {
-                        _lastSpokenPlaceId = nearestId;
-                        nearest.LastPlayedAt = DateTime.Now;
-                        await _narrationService.SpeakAsync(nearest.TtsScript ?? nearest.Name, nearest.TtsLocale);
+                        UserLocationLabel.Text = nearest.Name;
+                        POILabel.Text = AppResources.MainNearbyPrefix + nearest.Name;
+                        var nearestId = nearest.PlaceId.ToString();
+                        if (_lastSpokenPlaceId != nearestId)
+                        {
+                            _lastSpokenPlaceId = nearestId;
+                            _lastSpokenPlace = nearest;
+                            nearest.LastPlayedAt = DateTime.Now;
+                            var script = nearest.GetScriptForLocale(_narrationService.PreferredLocale);
+                            await _narrationService.SpeakAsync(script);
+                            await _userProfileService.AddHistoryByGpsAsync(nearest);
+                        }
                     }
-                }
-                else
-                {
-                    UserLocationLabel.Text = await ResolveLocationNameAsync(location);
-                    POILabel.Text = AppResources.MainNoNearby;
-                    _lastSpokenPlaceId = null;
-                }
-            });
-        };
+                    else
+                    {
+                        UserLocationLabel.Text = await ResolveLocationNameAsync(location);
+                        POILabel.Text = AppResources.MainNoNearby;
+
+                        // Chỉ reset khi user thực sự đi ra khỏi bán kính
+                        if (_lastSpokenPlace != null)
+                        {
+                            var dist = _geofenceEngine.GetDistance(
+                                location.Latitude, location.Longitude,
+                                _lastSpokenPlace.Latitude, _lastSpokenPlace.Longitude);
+                            if (dist > (_lastSpokenPlace.Radius ?? 50))
+                            {
+                                _lastSpokenPlaceId = null;
+                                _lastSpokenPlace = null;
+                            }
+                        }
+                    }
+                });
+            };
+        }
+
         await _locationService.StartAsync();
     }
 

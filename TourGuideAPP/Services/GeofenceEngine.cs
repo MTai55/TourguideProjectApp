@@ -34,7 +34,7 @@ public class GeofenceEngine
             .Where(p =>
                 GetDistance(userLat, userLon, p.Latitude, p.Longitude) <= (p.Radius ?? 50) &&
                 (p.LastPlayedAt == null ||
-                 (DateTime.Now - p.LastPlayedAt.Value).TotalMinutes >= (p.CooldownMinutes ?? 10)))
+                 (DateTime.Now - p.LastPlayedAt.Value).TotalMinutes >= (p.CooldownMinutes ?? 30)))
             .OrderByDescending(p => p.Priority ?? 1)   // Priority cao hơn → ưu tiên trước
             .ThenBy(p => GetDistance(userLat, userLon, p.Latitude, p.Longitude)) // Cùng priority → gần hơn trước
             .ToList();

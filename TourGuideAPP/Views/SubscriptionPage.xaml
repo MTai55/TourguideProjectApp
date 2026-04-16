@@ -54,7 +54,7 @@
                            TextColor="#5A4A3A" FontSize="13"/>
                     <VerticalStackLayout Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
                                          VerticalOptions="Center" HorizontalOptions="End" Spacing="8">
-                        <Label Text="10.000đ" TextColor="#C8A96E" FontSize="18"
+                        <Label x:Name="Price1h" Text="10.000đ" TextColor="#C8A96E" FontSize="18"
                                FontAttributes="Bold" HorizontalOptions="End"/>
                         <Border BackgroundColor="#26201A" StrokeShape="RoundRectangle 10"
                                 Stroke="#3A2D22" Padding="16,8">
@@ -90,7 +90,7 @@
                            TextColor="#5A4A3A" FontSize="13"/>
                     <VerticalStackLayout Grid.Row="0" Grid.Column="1" Grid.RowSpan="4"
                                          VerticalOptions="Center" HorizontalOptions="End" Spacing="8">
-                        <Label Text="18.000đ" TextColor="#C8A96E" FontSize="18"
+                        <Label x:Name="Price2h" Text="18.000đ" TextColor="#C8A96E" FontSize="18"
                                FontAttributes="Bold" HorizontalOptions="End"/>
                         <Border BackgroundColor="#C8A96E" StrokeShape="RoundRectangle 10" Padding="16,8">
                             <Label Text="{x:Static res:AppResources.SubSelectBtn}"
@@ -119,7 +119,7 @@
                            TextColor="#5A4A3A" FontSize="13"/>
                     <VerticalStackLayout Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
                                          VerticalOptions="Center" HorizontalOptions="End" Spacing="8">
-                        <Label Text="50.000đ" TextColor="#C8A96E" FontSize="18"
+                        <Label x:Name="Price1day" Text="50.000đ" TextColor="#C8A96E" FontSize="18"
                                FontAttributes="Bold" HorizontalOptions="End"/>
                         <Border BackgroundColor="#26201A" StrokeShape="RoundRectangle 10"
                                 Stroke="#3A2D22" Padding="16,8">
@@ -149,7 +149,7 @@
                            TextColor="#5A4A3A" FontSize="13"/>
                     <VerticalStackLayout Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"
                                          VerticalOptions="Center" HorizontalOptions="End" Spacing="8">
-                        <Label Text="120.000đ" TextColor="#C8A96E" FontSize="18"
+                        <Label x:Name="Price3day" Text="120.000đ" TextColor="#C8A96E" FontSize="18"
                                FontAttributes="Bold" HorizontalOptions="End"/>
                         <Border BackgroundColor="#26201A" StrokeShape="RoundRectangle 10"
                                 Stroke="#3A2D22" Padding="16,8">

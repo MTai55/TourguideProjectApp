@@ -166,7 +166,7 @@ public partial class MainPage : ContentPage
                             _lastSpokenPlace = nearest;
                             nearest.LastPlayedAt = DateTime.Now;
                             var script = nearest.GetScriptForLocale(_narrationService.PreferredLocale);
-                            await _narrationService.SpeakAsync(script);
+                            await _narrationService.SpeakFromGpsAsync(script);
                             await _userProfileService.AddHistoryByGpsAsync(nearest);
                         }
                     }

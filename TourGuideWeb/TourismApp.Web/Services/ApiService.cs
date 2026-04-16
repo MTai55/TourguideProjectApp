@@ -287,6 +287,58 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     public Task<(bool, string)> SuspendPlaceAsync(int id)
         => PutAsync($"/api/admin/places/{id}/suspend", new { });
 
+    // ── Access Packages ───────────────────────────────────────────
+    public Task<List<AccessPackageDto>?> GetAccessPackagesAsync()
+        => GetAsync<List<AccessPackageDto>>("/api/access-packages");
+
+    public Task<(bool, string)> UpdateAccessPackageAsync(string id, double durationHours, int priceVnd, bool isActive, int sortOrder)
+        => PutAsync($"/api/access-packages/{id}", new { durationHours, priceVnd, isActive, sortOrder });
+
+    public class AccessPackageDto
+    {
+        [JsonProperty("packageId")]     public string PackageId { get; set; } = string.Empty;
+        [JsonProperty("durationHours")] public double DurationHours { get; set; }
+        [JsonProperty("priceVnd")]      public int PriceVnd { get; set; }
+        [JsonProperty("isActive")]      public bool IsActive { get; set; }
+        [JsonProperty("sortOrder")]     public int SortOrder { get; set; }
+    }
+
+    public Task<DeviceStatsResponse?> GetDeviceStatsAsync(int page = 1, int pageSize = 20, string? search = null)
+    {
+        var url = $"/api/admin/devices?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrEmpty(search)) url += $"&search={search}";
+        return GetAsync<DeviceStatsResponse>(url);
+    }
+
+    public Task<List<DeviceVisitDto>?> GetDeviceVisitsAsync(string deviceId)
+        => GetAsync<List<DeviceVisitDto>>($"/api/admin/devices/{deviceId}/visits");
+
+    public class DeviceStatsResponse
+    {
+        [JsonProperty("total")]    public int Total { get; set; }
+        [JsonProperty("page")]     public int Page { get; set; }
+        [JsonProperty("pageSize")] public int PageSize { get; set; }
+        [JsonProperty("items")]    public List<DeviceStatItem> Items { get; set; } = new();
+    }
+
+    public class DeviceStatItem
+    {
+        [JsonProperty("deviceId")]   public string DeviceId { get; set; } = string.Empty;
+        [JsonProperty("visitCount")] public int VisitCount { get; set; }
+        [JsonProperty("poiCount")]   public int PoiCount { get; set; }
+        [JsonProperty("firstVisit")] public DateTime? FirstVisit { get; set; }
+        [JsonProperty("lastVisit")]  public DateTime? LastVisit { get; set; }
+    }
+
+    public class DeviceVisitDto
+    {
+        [JsonProperty("visitId")]    public long VisitId { get; set; }
+        [JsonProperty("placeId")]    public int PlaceId { get; set; }
+        [JsonProperty("placeName")]  public string? PlaceName { get; set; }
+        [JsonProperty("visitMethod")]public string VisitMethod { get; set; } = string.Empty;
+        [JsonProperty("visitedAt")]  public DateTime? VisitedAt { get; set; }
+    }
+
     // ── Helper class phân trang ───────────────────────────────────────
     public class PlaceListResponse
     {

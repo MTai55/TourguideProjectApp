@@ -17,6 +17,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Promotion> Promotions { get; set; }
     public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
     public DbSet<Subscription>     Subscriptions     { get; set; }
+    public DbSet<DevicePoiVisit>   DevicePoiVisits   { get; set; }
+    public DbSet<AccessPackage>    AccessPackages    { get; set; }
     protected override void OnModelCreating(ModelBuilder mb)
     {
         mb.Entity<User>(e => {
@@ -127,6 +129,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Category { CategoryId = 4, Name = "Trà sữa & Đồ uống", Icon = "🧋", ColorHex = "#ec4899" },
             new Category { CategoryId = 5, Name = "Bánh & Tráng miệng", Icon = "🍰", ColorHex = "#eab308" }
         );
+
+        mb.Entity<DevicePoiVisit>(e => {
+            e.ToTable("DevicePoiVisits");
+            e.HasKey(v => v.VisitId);
+            e.HasIndex(v => v.DeviceId);
+            e.HasIndex(v => v.VisitedAt);
+        });
+
+        mb.Entity<AccessPackage>(e => {
+            e.ToTable("AccessPackages");
+            e.HasKey(p => p.PackageId);
+        });
 
         mb.Entity<Message>().ToTable("Messages").HasKey(m => m.MessageId);
         mb.Entity<Promotion>().ToTable("Promotions").HasKey(p => p.PromoId);

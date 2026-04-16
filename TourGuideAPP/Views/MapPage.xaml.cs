@@ -431,7 +431,7 @@ public partial class MapPage : ContentPage
                         _lastSpokenPlaceId = nearestId;
                         _lastSpokenPlace = nearest;
                         nearest.LastPlayedAt = DateTime.Now;
-                        await _narrationService.SpeakAsync(nearest.GetScriptForLocale(_narrationService.PreferredLocale));
+                        await _narrationService.SpeakFromGpsAsync(nearest.GetScriptForLocale(_narrationService.PreferredLocale));
                         await _userProfileService.AddHistoryByGpsAsync(nearest);
                         System.Diagnostics.Debug.WriteLine($"[GPS] ✅ Ghi lịch sử: {nearest.Name}");
                     }

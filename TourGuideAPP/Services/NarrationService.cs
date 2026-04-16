@@ -8,6 +8,11 @@ public class NarrationService
     private CancellationTokenSource? _cts;
     private bool _isSpeaking = false;
 
+    // GPS-triggered TTS: dùng chung cho mọi caller (MapPage + MainPage)
+    // tránh 2 handler đọc cùng 1 POI liên tiếp
+    private DateTime _lastGpsTtsAt = DateTime.MinValue;
+    private const int GpsMinGapSeconds = 60;
+
     // Locale user chọn trong cài đặt, lưu Preferences
     public string PreferredLocale
     {
@@ -72,6 +77,17 @@ public class NarrationService
         {
             _isSpeaking = false;
         }
+    }
+
+    /// <summary>
+    /// Đọc TTS do GPS trigger. Có cooldown chung 60s giữa mọi lần GPS TTS,
+    /// dùng chung cho tất cả handlers (MapPage, MainPage).
+    /// </summary>
+    public async Task SpeakFromGpsAsync(string text)
+    {
+        if ((DateTime.Now - _lastGpsTtsAt).TotalSeconds < GpsMinGapSeconds) return;
+        _lastGpsTtsAt = DateTime.Now;
+        await SpeakAsync(text);
     }
 
     public void Stop()

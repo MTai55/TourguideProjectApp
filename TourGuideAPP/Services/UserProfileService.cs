@@ -10,6 +10,7 @@ public class UserProfileService
     private const string NotesKey = "user_profile_notes";
     private readonly AuthService _authService;
     private readonly Supabase.Client _supabase;
+    private readonly AccessSessionService _accessSessionService;
 
     public async Task<List<TripHistoryItem>> GetTripHistoryAsync()
     {
@@ -41,6 +42,30 @@ public class UserProfileService
     public async Task AddHistoryByGpsAsync(Place place)
     {
         await AddHistoryAsync(place, "GPS");
+        await RecordDevicePoiVisitAsync(place, "GPS");
+    }
+
+    private async Task RecordDevicePoiVisitAsync(Place place, string method)
+    {
+        try
+        {
+            var deviceId = _accessSessionService.GetDeviceId();
+            System.Diagnostics.Debug.WriteLine($"📡 RecordDevicePoiVisit: deviceId={deviceId}, place={place.Name}");
+            var visit = new DevicePoiVisit
+            {
+                DeviceId    = deviceId,
+                PlaceId     = place.PlaceId,
+                PlaceName   = place.Name,
+                VisitMethod = method,
+                VisitedAt   = DateTime.UtcNow
+            };
+            await _supabase.From<DevicePoiVisit>().Insert(visit);
+            System.Diagnostics.Debug.WriteLine($"✅ RecordDevicePoiVisit OK: {place.Name}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"❌ RecordDevicePoiVisit FAILED: {ex.Message}\n{ex}");
+        }
     }
 
     public async Task AddHistoryByQRAsync(Place place)
@@ -105,11 +130,12 @@ public class UserProfileService
         Preferences.Remove(HistoryKey);
         Preferences.Remove(NotesKey);
     }
-    public UserProfileService(AuthService authService, Supabase.Client supabase)
-{
-    _authService = authService;
-    _supabase = supabase;
-}
+    public UserProfileService(AuthService authService, Supabase.Client supabase, AccessSessionService accessSessionService)
+    {
+        _authService = authService;
+        _supabase = supabase;
+        _accessSessionService = accessSessionService;
+    }
 
 // Lấy UserId từ bảng Users dựa theo email đang đăng nhập
 public async Task<int?> GetCurrentUserIdAsync()

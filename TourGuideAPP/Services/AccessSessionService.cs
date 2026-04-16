@@ -55,6 +55,34 @@ public class AccessSessionService
         return remaining > TimeSpan.Zero ? remaining : null;
     }
 
+    // ── Lấy danh sách gói từ Supabase ─────────────────────────────────────────
+
+    // Fallback nếu Supabase không có bảng AccessPackages
+    private static readonly List<TourGuideAPP.Data.Models.AccessPackage> _fallbackPackages =
+    [
+        new() { PackageId = "1h",   DurationHours = 1,  PriceVnd = 10_000,  IsActive = true, SortOrder = 1 },
+        new() { PackageId = "2h",   DurationHours = 2,  PriceVnd = 18_000,  IsActive = true, SortOrder = 2 },
+        new() { PackageId = "1day", DurationHours = 24, PriceVnd = 50_000,  IsActive = true, SortOrder = 3 },
+        new() { PackageId = "3day", DurationHours = 72, PriceVnd = 120_000, IsActive = true, SortOrder = 4 },
+    ];
+
+    public async Task<List<TourGuideAPP.Data.Models.AccessPackage>> GetPackagesAsync()
+    {
+        try
+        {
+            var result = await _supabase
+                .From<TourGuideAPP.Data.Models.AccessPackage>()
+                .Filter("IsActive", Postgrest.Constants.Operator.Equals, "true")
+                .Order("SortOrder", Postgrest.Constants.Ordering.Ascending)
+                .Get();
+            return result.Models.Count > 0 ? result.Models : _fallbackPackages;
+        }
+        catch
+        {
+            return _fallbackPackages;
+        }
+    }
+
     // ── Tạo session chờ thanh toán ─────────────────────────────────────────────
 
     public async Task<string> CreatePendingSessionAsync(string packageId, double durationHours, int priceVnd)

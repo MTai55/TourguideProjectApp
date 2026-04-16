@@ -23,7 +23,7 @@ public partial class PaymentQRPage : ContentPage
         var deviceId = _accessService.GetDeviceId();
 
         // Hiển thị thông tin gói
-        PackageNameLabel.Text  = _package.PackageId.ToUpper();
+        PackageNameLabel.Text  = DurationLabel(_package.DurationHours);
         PackagePriceLabel.Text = $"{_package.PriceVnd:N0}đ".Replace(",", ".");
         DeviceIdLabel.Text     = deviceId;
 
@@ -54,6 +54,15 @@ public partial class PaymentQRPage : ContentPage
         base.OnDisappearing();
         _accessService.StopPolling();
     }
+
+    private static string DurationLabel(double hours) => hours switch
+    {
+        1  => "1 Tiếng",
+        2  => "2 Tiếng",
+        24 => "1 Ngày",
+        72 => "3 Ngày",
+        _  => hours < 24 ? $"{hours} Tiếng" : $"{hours / 24:0} Ngày"
+    };
 
     private void OnPaymentActivated()
     {

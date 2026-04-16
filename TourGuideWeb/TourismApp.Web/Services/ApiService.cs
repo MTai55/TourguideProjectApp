@@ -239,6 +239,69 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     public Task<(bool, string)> SuspendPlaceAsync(int id)
         => PutAsync($"/api/admin/places/{id}/suspend", new { });
 
+    // ── Access Sessions ───────────────────────────────────────────
+    public Task<SessionListResponse?> GetSessionsAsync(string status = "pending", int page = 1, string? search = null)
+    {
+        var url = $"/api/admin/sessions?status={status}&page={page}";
+        if (!string.IsNullOrEmpty(search)) url += $"&search={search}";
+        return GetAsync<SessionListResponse>(url);
+    }
+
+    public Task<SessionStatsDto?> GetSessionStatsAsync()
+        => GetAsync<SessionStatsDto>("/api/admin/sessions/stats");
+
+    public Task<(bool, string)> ActivateSessionAsync(Guid sessionId)
+        => PostAsync2($"/api/admin/sessions/{sessionId}/activate");
+
+    public Task<(bool, string)> DeactivateSessionAsync(Guid sessionId)
+        => PostAsync2($"/api/admin/sessions/{sessionId}/deactivate");
+
+    public async Task<(bool, string)> DeleteSessionAsync(Guid sessionId)
+    {
+        SetAuthHeader();
+        var res  = await http.DeleteAsync($"/api/admin/sessions/{sessionId}");
+        var body = await res.Content.ReadAsStringAsync();
+        return (res.IsSuccessStatusCode, body);
+    }
+
+    // Helper POST không cần body
+    private async Task<(bool, string)> PostAsync2(string url)
+    {
+        SetAuthHeader();
+        var res  = await http.PostAsync(url, null);
+        var body = await res.Content.ReadAsStringAsync();
+        return (res.IsSuccessStatusCode, body);
+    }
+
+    public class SessionListResponse
+    {
+        [JsonProperty("total")]    public int Total { get; set; }
+        [JsonProperty("page")]     public int Page { get; set; }
+        [JsonProperty("pageSize")] public int PageSize { get; set; }
+        [JsonProperty("items")]    public List<SessionDto> Items { get; set; } = new();
+    }
+
+    public class SessionDto
+    {
+        [JsonProperty("sessionId")]     public Guid SessionId { get; set; }
+        [JsonProperty("deviceId")]      public string DeviceId { get; set; } = string.Empty;
+        [JsonProperty("packageId")]     public string PackageId { get; set; } = string.Empty;
+        [JsonProperty("durationHours")] public double DurationHours { get; set; }
+        [JsonProperty("priceVnd")]      public int PriceVnd { get; set; }
+        [JsonProperty("createdAt")]     public DateTime? CreatedAt { get; set; }
+        [JsonProperty("activatedAt")]   public DateTime? ActivatedAt { get; set; }
+        [JsonProperty("expiresAt")]     public DateTime? ExpiresAt { get; set; }
+        [JsonProperty("isActive")]      public bool IsActive { get; set; }
+    }
+
+    public class SessionStatsDto
+    {
+        [JsonProperty("pending")] public int Pending { get; set; }
+        [JsonProperty("active")]  public int Active { get; set; }
+        [JsonProperty("total")]   public int Total { get; set; }
+        [JsonProperty("revenue")] public long Revenue { get; set; }
+    }
+
     // ── Access Packages ───────────────────────────────────────────
     public Task<List<AccessPackageDto>?> GetAccessPackagesAsync()
         => GetAsync<List<AccessPackageDto>>("/api/access-packages");

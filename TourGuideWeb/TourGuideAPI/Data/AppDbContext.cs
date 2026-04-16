@@ -20,6 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<DevicePoiVisit>   DevicePoiVisits   { get; set; }
     public DbSet<AccessPackage>      AccessPackages      { get; set; }
     public DbSet<DeviceRegistration> DeviceRegistrations { get; set; }
+    public DbSet<AccessSession>      AccessSessions      { get; set; }
     protected override void OnModelCreating(ModelBuilder mb)
     {
         mb.Entity<User>(e => {
@@ -147,6 +148,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         mb.Entity<DeviceRegistration>(e => {
             e.ToTable("DeviceRegistrations");
             e.HasKey(d => d.DeviceId);
+        });
+
+        mb.Entity<AccessSession>(e => {
+            e.ToTable("AccessSessions");
+            e.HasKey(s => s.SessionId);
+            e.HasIndex(s => s.DeviceId);
+            e.HasIndex(s => s.IsActive);
         });
 
         mb.Entity<Message>().ToTable("Messages").HasKey(m => m.MessageId);

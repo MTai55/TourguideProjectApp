@@ -1,0 +1,201 @@
+@model List<TourismApp.Web.Services.ApiService.SessionDto>
+@{
+    ViewData["Title"] = "Quản lý thanh toán";
+    var status     = ViewBag.Status as string ?? "pending";
+    var search     = ViewBag.Search as string ?? string.Empty;
+    var page       = (int)ViewBag.Page;
+    var totalPages = (int)ViewBag.TotalPages;
+    var stats      = ViewBag.Stats as TourismApp.Web.Services.ApiService.SessionStatsDto;
+
+    string DurationLabel(double h) => h switch {
+        1 => "1 giờ", 2 => "2 giờ", 24 => "1 ngày", 72 => "3 ngày",
+        _ => h < 24 ? $"{h}h" : $"{h/24:0} ngày"
+    };
+}
+
+<div class="pt-6 space-y-6">
+
+  <!-- Stats row -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    @foreach (var (label, value, color, icon) in new (string,string,string,string)[] {
+      ("Chờ kích hoạt", stats?.Pending.ToString() ?? "0",  "text-amber-600 bg-amber-50 border-amber-100",   "schedule"),
+      ("Đang active",   stats?.Active.ToString()  ?? "0",  "text-emerald-600 bg-emerald-50 border-emerald-100", "check_circle"),
+      ("Tổng sessions", stats?.Total.ToString()   ?? "0",  "text-blue-600 bg-blue-50 border-blue-100",      "receipt_long"),
+      ("Doanh thu",     $"{stats?.Revenue ?? 0:N0}đ".Replace(",","."), "text-primary bg-orange-50 border-orange-100", "payments"),
+    })
+    {
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center border @color shrink-0">
+          <span class="material-symbols-outlined text-xl">@icon</span>
+        </div>
+        <div>
+          <p class="text-xl font-extrabold text-on-surface">@value</p>
+          <p class="text-xs text-on-surface-variant font-bold">@label</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Filter tabs + Search -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex gap-1 bg-surface-container-low p-1 rounded-xl w-fit">
+      @foreach (var (s, label) in new (string,string)[] {
+        ("pending","Chờ kích hoạt"), ("active","Đang active"), ("expired","Hết hạn"), ("all","Tất cả")
+      })
+      {
+        <a href="?status=@s&search=@search"
+           class="px-4 py-2 rounded-lg text-sm font-bold transition-all
+                  @(status == s ? "text-white shadow" : "text-on-surface-variant hover:text-on-surface")"
+           style="@(status == s ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
+          @label
+        </a>
+      }
+    </div>
+    <form method="get" class="flex gap-2">
+      <input type="hidden" name="status" value="@status" />
+      <input name="search" value="@search" placeholder="Tìm Device ID..."
+             class="border border-outline-variant rounded-xl px-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 w-52" />
+      <button type="submit" class="px-4 py-2 rounded-xl text-sm font-bold text-white"
+              style="background:linear-gradient(135deg,#954400,#fc8127)">Tìm</button>
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="bg-surface-container-low text-on-surface-variant text-xs font-bold uppercase tracking-wide">
+          <th class="px-5 py-3.5 text-left">Device ID</th>
+          <th class="px-5 py-3.5 text-center">Gói</th>
+          <th class="px-5 py-3.5 text-center">Số tiền</th>
+          <th class="px-5 py-3.5 text-left">Tạo lúc</th>
+          <th class="px-5 py-3.5 text-left">Hết hạn</th>
+          <th class="px-5 py-3.5 text-center">Trạng thái</th>
+          <th class="px-5 py-3.5 text-center">Hành động</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+        @if (!Model.Any())
+        {
+          <tr>
+            <td colspan="7" class="px-5 py-12 text-center text-on-surface-variant">
+              <span class="material-symbols-outlined text-4xl block mb-2 text-outline-variant">receipt_long</span>
+              Không có session nào
+            </td>
+          </tr>
+        }
+        @foreach (var s in Model)
+        {
+          var isPending = !s.IsActive && s.ActivatedAt == null;
+          var isActive  = s.IsActive && s.ExpiresAt > DateTime.UtcNow;
+          var isExpired = s.IsActive && s.ExpiresAt <= DateTime.UtcNow;
+
+          <tr class="hover:bg-surface-container-lowest transition-colors @(isPending ? "bg-amber-50/30" : "")">
+            <td class="px-5 py-3.5">
+              <span class="font-mono font-bold text-sm tracking-wider bg-surface-container-low px-2.5 py-1 rounded-lg">
+                @s.DeviceId
+              </span>
+            </td>
+            <td class="px-5 py-3.5 text-center">
+              <span class="text-xs font-bold text-primary bg-orange-50 px-2.5 py-1 rounded-full">
+                @s.PackageId.ToUpper()
+              </span>
+              <p class="text-[10px] text-on-surface-variant mt-0.5">@DurationLabel(s.DurationHours)</p>
+            </td>
+            <td class="px-5 py-3.5 text-center font-bold text-on-surface">
+              @s.PriceVnd.ToString("N0").Replace(",",".")đ
+            </td>
+            <td class="px-5 py-3.5 text-xs text-on-surface-variant">
+              @(s.CreatedAt?.ToLocalTime().ToString("dd/MM HH:mm") ?? "—")
+            </td>
+            <td class="px-5 py-3.5 text-xs text-on-surface-variant">
+              @if (s.ExpiresAt.HasValue)
+              {
+                <span class="@(isExpired ? "text-red-500 font-semibold" : "")">
+                  @s.ExpiresAt.Value.ToLocalTime().ToString("dd/MM HH:mm")
+                </span>
+              }
+              else { <span>—</span> }
+            </td>
+            <td class="px-5 py-3.5 text-center">
+              @if (isPending)
+              {
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block animate-pulse"></span> Chờ
+                </span>
+              }
+              else if (isActive)
+              {
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Active
+                </span>
+              }
+              else
+              {
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-500 border border-slate-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300 inline-block"></span> Hết hạn
+                </span>
+              }
+            </td>
+            <td class="px-5 py-3.5 text-center">
+              @if (isPending)
+              {
+                <div class="flex gap-2 justify-center">
+                  <form method="post" asp-action="Activate" asp-controller="AdminSessions" asp-area="Admin"
+                        onsubmit="return confirm('Kích hoạt session cho @s.DeviceId?')">
+                    <input type="hidden" name="sessionId"    value="@s.SessionId" />
+                    <input type="hidden" name="returnStatus" value="@status" />
+                    <button type="submit"
+                            class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
+                            style="background:linear-gradient(135deg,#954400,#fc8127)">
+                      <span class="material-symbols-outlined text-sm">check_circle</span> Kích hoạt
+                    </button>
+                  </form>
+                  <form method="post" asp-action="Cancel" asp-controller="AdminSessions" asp-area="Admin"
+                        onsubmit="return confirm('Hủy session này của @s.DeviceId?')">
+                    <input type="hidden" name="sessionId" value="@s.SessionId" />
+                    <button type="submit"
+                            class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all">
+                      <span class="material-symbols-outlined text-sm">delete</span> Hủy
+                    </button>
+                  </form>
+                </div>
+              }
+              else if (isActive)
+              {
+                <form method="post" asp-action="Deactivate" asp-controller="AdminSessions" asp-area="Admin"
+                      onsubmit="return confirm('Thu hồi quyền truy cập của @s.DeviceId?')">
+                  <input type="hidden" name="sessionId"    value="@s.SessionId" />
+                  <input type="hidden" name="returnStatus" value="@status" />
+                  <button type="submit"
+                          class="inline-flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold text-red-700 bg-red-50 border border-red-100 hover:bg-red-100 transition-all">
+                    <span class="material-symbols-outlined text-sm">block</span> Thu hồi
+                  </button>
+                </form>
+              }
+              else
+              {
+                <span class="text-xs text-on-surface-variant">—</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  @if (totalPages > 1)
+  {
+    <div class="flex justify-center gap-2">
+      @for (int i = 1; i <= totalPages; i++)
+      {
+        <a href="?status=@status&search=@search&page=@i"
+           class="w-9 h-9 flex items-center justify-center rounded-xl text-sm font-bold transition-all
+                  @(i == page ? "text-white shadow" : "text-on-surface-variant border border-outline-variant hover:bg-surface-container")"
+           style="@(i == page ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">@i</a>
+      }
+    </div>
+  }
+
+</div>

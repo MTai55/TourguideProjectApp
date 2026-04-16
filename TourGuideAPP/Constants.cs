@@ -8,7 +8,7 @@ public static class Constants
     // ── Thông tin ngân hàng để tạo VietQR ─────────────────────────────────────
     // ⚠️ QUAN TRỌNG: Thay bằng thông tin tài khoản THẬT trước khi deploy
     // Để test, sử dụng tài khoản/mã ngân hàng hợp lệ hoặc kiểm tra VietQR docs
-    public const string BankId          = "MB";                    // Mã ngân hàng (MB, VCB, TCB, ACB...)
-    public const string BankAccount     = "0123456789";            // ⚠️ SỬA: Số tài khoản thật
-    public const string BankAccountName = "TOUR GUIDE APPLICATION"; // ⚠️ SỬA: Tên chủ TK thật
+    public const string BankId          = "VIB";           // ← Mã ngân hàng của bạn
+    public const string BankAccount     = "310822005";   // ← Số tài khoản của bạn
+    public const string BankAccountName = "NGUYEN HUY TOAN"; // ← Tên chủ tài khoản
 }

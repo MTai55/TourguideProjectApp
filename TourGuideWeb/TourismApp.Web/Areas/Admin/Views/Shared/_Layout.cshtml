@@ -116,11 +116,12 @@
         <p class="px-3 pb-1.5 pt-1 text-[10px] font-bold text-slate-600 uppercase tracking-widest">Quản trị</p>
 
         @foreach (var (c, a, icon, label) in new (string,string,string,string)[] {
-          ("AdminDashboard","Index",  "dashboard",         "Dashboard"),
-          ("AdminPlaces",   "Index",  "storefront",        "Duyệt quán"),
-          ("AdminUsers",    "Index",  "people",            "Tài khoản"),
-          ("AdminDevices",  "Index",  "smartphone",        "Người dùng thiết bị"),
-          ("AdminPackages", "Index",  "sell",              "Gói truy cập"),
+          ("AdminDashboard", "Index", "dashboard",   "Dashboard"),
+          ("AdminSessions",  "Index", "payments",    "Thanh toán"),
+          ("AdminPlaces",    "Index", "storefront",  "Duyệt quán"),
+          ("AdminUsers",     "Index", "people",      "Tài khoản"),
+          ("AdminDevices",   "Index", "smartphone",  "Người dùng thiết bị"),
+          ("AdminPackages",  "Index", "sell",        "Gói truy cập"),
         })
         {
           var isActive = ctrl == c && action == a;

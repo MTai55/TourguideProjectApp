@@ -184,54 +184,6 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         var (ok, err) = await PutAsync($"/api/places/{id}/tts", new { ttsScript = script });
         return (ok, err);
     }
-    // ══════════════════════════════════════════════════════════════
-    // REVIEWS
-    // ══════════════════════════════════════════════════════════════
-    public Task<List<ReviewViewModel>?> GetReviewsAsync(int placeId)
-        => GetAsync<List<ReviewViewModel>>($"/api/reviews/{placeId}");
-
-    public Task<(bool, string)> ReplyReviewAsync(int reviewId, string reply)
-        => PutAsync($"/api/reviews/{reviewId}/reply", reply);
-
-    public async Task<List<ReviewViewModel>?> GetAllReviewsAsync(bool hiddenOnly = false)
-    {
-        var response = await GetAsync<AdminReviewsResponse>($"/api/admin/reviews?hiddenOnly={hiddenOnly}");
-        return response?.Items ?? new List<ReviewViewModel>();
-    }
-    
-    // Response wrapper cho admin reviews endpoint
-    private class AdminReviewsResponse
-    {
-        [JsonProperty("total")]
-        public int Total { get; set; }
-        
-        [JsonProperty("page")]
-        public int Page { get; set; }
-        
-        [JsonProperty("pageSize")]
-        public int PageSize { get; set; }
-        
-        [JsonProperty("items")]
-        public List<ReviewViewModel> Items { get; set; } = new();
-    }
-
-    public Task<(bool, string)> HideReviewAsync(int id, string note)
-        => PutAsync($"/api/admin/reviews/{id}/hide", new { note });
-
-    public Task<(bool, string)> ShowReviewAsync(int id)
-        => PutAsync($"/api/admin/reviews/{id}/show", new { });
-
-    // ══════════════════════════════════════════════════════════════
-    // PROMOTIONS
-    // ══════════════════════════════════════════════════════════════
-    public Task<List<PromotionViewModel>?> GetPromotionsAllAsync()
-        => GetAsync<List<PromotionViewModel>>("/api/promotions/mine"); 
-
-    public Task<(bool, PromotionViewModel?, string)> CreatePromotionAsync(CreatePromotionViewModel vm)
-        => PostAsync<PromotionViewModel>("/api/promotions", vm);
-
-    public Task<bool> DeletePromotionAsync(int id)
-        => DeleteAsync($"/api/promotions/{id}");
 
     // ══════════════════════════════════════════════════════════════
     // ANALYTICS

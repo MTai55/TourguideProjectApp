@@ -7,30 +7,26 @@ namespace TourismApp.Web.Controllers.Admin;
 
 [Area("Admin")]
 [AdminOnly]
-public class AdminReviewsController(ApiService api) : Controller
+[Obsolete("Review moderation feature has been disabled")]
+public class AdminReviewsController : Controller
 {
-    public async Task<IActionResult> Index(bool hiddenOnly = false)
+    // Reviews functionality has been removed
+    public IActionResult Index(bool hiddenOnly = false)
     {
-        var reviews = await api.GetAllReviewsAsync(hiddenOnly);
-        ViewBag.HiddenOnly = hiddenOnly;
-        return View(reviews ?? []);
+        return NotFound();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Hide(int reviewId, string note)
+    public IActionResult Hide(int reviewId, string note)
     {
-        await api.HideReviewAsync(reviewId, note);
-        TempData["Success"] = "Đã ẩn review!";
-        return RedirectToAction("Index");
+        return NotFound();
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Show(int reviewId)
+    public IActionResult Show(int reviewId)
     {
-        await api.ShowReviewAsync(reviewId);
-        TempData["Success"] = "Đã hiện lại review!";
-        return RedirectToAction("Index");
+        return NotFound();
     }
 }

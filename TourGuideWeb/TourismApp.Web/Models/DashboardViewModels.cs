@@ -10,6 +10,5 @@ public class DashboardViewModel
     public double AvgRating { get; set; }
     public int PendingPlaces { get; set; }
     public int PendingReviews { get; set; }
-    public int ActivePromotions { get; set; }
     public List<PlaceViewModel> Places { get; set; } = [];
 }

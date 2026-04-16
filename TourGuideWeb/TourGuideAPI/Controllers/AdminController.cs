@@ -30,7 +30,7 @@ public class AdminController(AppDbContext db, ILogger<AdminController> logger) :
             logger.LogInformation("🔍 Starting GetUsers with search={search}, role={role}", search, role);
 
             logger.LogInformation("📦 Accessing db.Users...");
-            var q = db.Users.AsQueryable();
+            var q = db.Users.AsNoTracking();
             logger.LogInformation("✅ db.Users accessed");
 
             if (!string.IsNullOrEmpty(search))

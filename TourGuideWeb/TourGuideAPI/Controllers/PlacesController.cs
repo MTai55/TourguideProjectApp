@@ -138,7 +138,6 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
         var query = db.Places
             .Include(p => p.Category)
             .Include(p => p.Images)
-            .Include(p => p.Promotions)
             .Where(p => p.OwnerId == OwnerId && p.IsActive);
 
         if (!string.IsNullOrEmpty(search))
@@ -174,7 +173,7 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
                 p.Status,
                 p.OpenStatus,
                 p.IsApproved,
-                ActivePromotions = p.Promotions.Count(pr => pr.IsActive && pr.EndDate > DateTime.UtcNow),
+                ActivePromotions = 0,
             })
             .ToListAsync();
 

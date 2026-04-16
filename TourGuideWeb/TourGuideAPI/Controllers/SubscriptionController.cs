@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using TourGuideAPI.Data;
 using TourGuideAPI.DTOs.Subscriptions;
@@ -119,13 +122,21 @@ public class SubscriptionController(AppDbContext db, IConfiguration config) : Co
         await db.SaveChangesAsync();
 
         // Tạo payment URL theo cổng
-        var paymentUrl = dto.PaymentMethod switch
+        string paymentUrl;
+        try
         {
-            "vnpay"  => BuildVnpayUrl(sub.SubId, plan.Price),
-            "momo"   => BuildMomoUrl(sub.SubId, plan.Price),
-            "stripe" => BuildStripeUrl(sub.SubId, plan.Price, plan.Name),
-            _        => throw new Exception("Invalid payment method")
-        };
+            paymentUrl = dto.PaymentMethod switch
+            {
+                "vnpay"  => BuildVnpayUrl(sub.SubId, plan.Price),
+                "momo"   => await BuildMomoUrlAsync(sub.SubId, plan.Price),
+                "stripe" => BuildStripeUrl(sub.SubId, plan.Price, plan.Name),
+                _        => throw new Exception("Invalid payment method")
+            };
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = "Payment gateway error.", detail = ex.Message });
+        }
 
         return Ok(new {
             subId      = sub.SubId,
@@ -290,30 +301,107 @@ public class SubscriptionController(AppDbContext db, IConfiguration config) : Co
 
     private string BuildVnpayUrl(int subId, int amount)
     {
-        var baseUrl   = config["Payment:VNPay:Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-        var returnUrl = $"{config["App:ApiUrl"]}/api/subscriptions/vnpay/callback";
-        var tmnCode   = config["Payment:VNPay:TmnCode"] ?? "DEMO";
-        var secretKey = config["Payment:VNPay:SecretKey"] ?? "DEMO_SECRET";
+        var baseUrl    = config["Payment:VNPay:Url"] ?? "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+        var returnUrl  = $"{config["App:ApiUrl"]}/api/subscriptions/vnpay/callback";
+        var tmnCode    = config["Payment:VNPay:TmnCode"] ?? "YOUR_TMN_CODE";
+        var secretKey  = config["Payment:VNPay:SecretKey"] ?? "YOUR_SECRET_KEY";
+        var createDate = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+        var ipAddr     = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+        var orderInfo  = $"Thanh toán subscription {subId}";
 
-        // Build params (simplified — production cần sort + HMAC-SHA512)
-        return $"{baseUrl}?vnp_Amount={amount * 100}&vnp_Command=pay" +
-               $"&vnp_CreateDate={DateTime.Now:yyyyMMddHHmmss}" +
-               $"&vnp_CurrCode=VND&vnp_IpAddr=127.0.0.1" +
-               $"&vnp_Locale=vn&vnp_OrderInfo=Pho+Am+Thuc+Sub+{subId}" +
-               $"&vnp_OrderType=250000&vnp_ReturnUrl={Uri.EscapeDataString(returnUrl)}" +
-               $"&vnp_TmnCode={tmnCode}&vnp_TxnRef={subId}" +
-               $"&vnp_Version=2.1.0";
+        var vnpParams = new Dictionary<string, string>
+        {
+            ["vnp_Version"]     = "2.1.0",
+            ["vnp_Command"]     = "pay",
+            ["vnp_TmnCode"]     = tmnCode,
+            ["vnp_Amount"]      = (amount * 100).ToString(),
+            ["vnp_CurrCode"]    = "VND",
+            ["vnp_TxnRef"]      = subId.ToString(),
+            ["vnp_OrderInfo"]   = orderInfo,
+            ["vnp_OrderType"]   = "250000",
+            ["vnp_Locale"]      = "vn",
+            ["vnp_ReturnUrl"]   = returnUrl,
+            ["vnp_IpAddr"]      = ipAddr,
+            ["vnp_CreateDate"]  = createDate,
+        };
+
+        var sortedParams = vnpParams.OrderBy(kvp => kvp.Key, StringComparer.Ordinal).ToList();
+        var hashData = string.Join("&", sortedParams.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+        var secureHash = ComputeHmacSha512(secretKey, hashData);
+
+        var query = string.Join("&", sortedParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+        query += $"&vnp_SecureHashType=HMACSHA512&vnp_SecureHash={secureHash}";
+
+        return $"{baseUrl}?{query}";
     }
 
-    private string BuildMomoUrl(int subId, int amount)
+    private async Task<string> BuildMomoUrlAsync(int subId, int amount)
     {
-        // MoMo payment URL (simplified for demo)
-        var returnUrl = $"{config["App:WebUrl"]}/Subscription/Success?subId={subId}";
-        var notifyUrl = $"{config["App:ApiUrl"]}/api/subscriptions/momo/callback";
-        return $"https://test-payment.momo.vn/v2/gateway/pay?" +
-               $"orderId=SUB_{subId}&amount={amount}&orderInfo=Pho+Am+Thuc+{subId}" +
-               $"&returnUrl={Uri.EscapeDataString(returnUrl)}" +
-               $"&notifyUrl={Uri.EscapeDataString(notifyUrl)}";
+        var endpoint    = config["Payment:MoMo:Endpoint"] ?? "https://test-payment.momo.vn/v2/gateway/api/create";
+        var partnerCode = config["Payment:MoMo:PartnerCode"] ?? "YOUR_PARTNER_CODE";
+        var accessKey   = config["Payment:MoMo:AccessKey"] ?? "YOUR_ACCESS_KEY";
+        var secretKey   = config["Payment:MoMo:SecretKey"] ?? "YOUR_SECRET_KEY";
+        var requestId   = $"SUB_{subId}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+        var orderId     = $"SUB_{subId}";
+        var orderInfo   = $"Thanh toán subscription {subId}";
+        var redirectUrl = $"{config["App:WebUrl"]}/Subscription/Success?subId={subId}";
+        var ipnUrl      = $"{config["App:ApiUrl"]}/api/subscriptions/momo/callback";
+        var requestType = "captureWallet";
+        var extraData   = string.Empty;
+
+        var rawSignature = $"accessKey={accessKey}&amount={amount}&extraData={extraData}" +
+                           $"&ipnUrl={ipnUrl}&orderId={orderId}&orderInfo={orderInfo}" +
+                           $"&partnerCode={partnerCode}&redirectUrl={redirectUrl}" +
+                           $"&requestId={requestId}&requestType={requestType}";
+
+        var signature = ComputeHmacSha256(secretKey, rawSignature);
+
+        var payload = new
+        {
+            partnerCode,
+            accessKey,
+            requestId,
+            amount = amount.ToString(),
+            orderId,
+            orderInfo,
+            redirectUrl,
+            ipnUrl,
+            extraData,
+            requestType,
+            signature,
+            lang = "vi"
+        };
+
+        using var client = new HttpClient();
+        using var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+        var response = await client.PostAsync(endpoint, content);
+        var responseText = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode)
+            throw new Exception($"MoMo API error {response.StatusCode}: {responseText}");
+
+        var json = JsonDocument.Parse(responseText).RootElement;
+        if (!json.TryGetProperty("payUrl", out var payUrlElement) || string.IsNullOrWhiteSpace(payUrlElement.GetString()))
+            throw new Exception($"MoMo response không trả về payUrl. Response: {responseText}");
+
+        return payUrlElement.GetString()!;
+    }
+
+    private static string ComputeHmacSha512(string key, string data)
+    {
+        var keyBytes = Encoding.UTF8.GetBytes(key);
+        var dataBytes = Encoding.UTF8.GetBytes(data);
+        using var hmac = new HMACSHA512(keyBytes);
+        var hash = hmac.ComputeHash(dataBytes);
+        return BitConverter.ToString(hash).Replace("-", string.Empty).ToUpperInvariant();
+    }
+
+    private static string ComputeHmacSha256(string key, string data)
+    {
+        var keyBytes = Encoding.UTF8.GetBytes(key);
+        var dataBytes = Encoding.UTF8.GetBytes(data);
+        using var hmac = new HMACSHA256(keyBytes);
+        var hash = hmac.ComputeHash(dataBytes);
+        return BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
     }
 
     private string BuildStripeUrl(int subId, int amount, string planName)

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System.Security.Claims;
 using TourGuideAPI.Data;
 using TourGuideAPI.DTOs.Promotions;
@@ -16,37 +17,57 @@ public class PromotionsController(AppDbContext db, ILogger<PromotionsController>
 
     [HttpGet("{placeId}")]
     public async Task<IActionResult> GetByPlace(int placeId)
-        => Ok(await db.Promotions
-            .Where(p => p.PlaceId == placeId && p.IsActive && p.EndDate > DateTime.UtcNow)
-            .OrderBy(p => p.EndDate).ToListAsync());
+    {
+        try
+        {
+            var promos = await db.Promotions
+                .Where(p => p.PlaceId == placeId && p.IsActive && p.EndDate > DateTime.UtcNow)
+                .OrderBy(p => p.EndDate)
+                .ToListAsync();
+            return Ok(promos);
+        }
+        catch (PostgresException ex) when (ex.SqlState == "42P01")
+        {
+            return Ok(new List<Promotion>());
+        }
+    }
 
     [HttpGet("mine")]
     [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> GetMine()
     {
         var myPlaceIds = await db.Places
-            .Where(p => p.OwnerId == UserId).Select(p => p.PlaceId).ToListAsync();
-        var promos = await db.Promotions
-            .Where(p => myPlaceIds.Contains(p.PlaceId))
-            .OrderByDescending(p => p.CreatedAt)
+            .Where(p => p.OwnerId == UserId)
+            .Select(p => p.PlaceId)
             .ToListAsync();
-        
-        // Map to PromotionViewModel to exclude navigation properties
-        var result = promos.Select(p => new
+
+        try
         {
-            p.PromoId,
-            p.PlaceId,
-            p.Title,
-            p.Description,
-            p.Discount,
-            p.VoucherCode,
-            p.StartDate,
-            p.EndDate,
-            p.IsActive,
-            IsExpired = p.IsExpired
-        }).ToList();
-        
-        return Ok(result);
+            var promos = await db.Promotions
+                .Where(p => myPlaceIds.Contains(p.PlaceId))
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            var result = promos.Select(p => new
+            {
+                p.PromoId,
+                p.PlaceId,
+                p.Title,
+                p.Description,
+                p.Discount,
+                p.VoucherCode,
+                p.StartDate,
+                p.EndDate,
+                p.IsActive,
+                IsExpired = p.IsExpired
+            }).ToList();
+
+            return Ok(result);
+        }
+        catch (PostgresException ex) when (ex.SqlState == "42P01")
+        {
+            return Ok(new List<object>());
+        }
     }
 
     [HttpPost]
@@ -56,28 +77,27 @@ public class PromotionsController(AppDbContext db, ILogger<PromotionsController>
         try
         {
             logger.LogInformation($"📤 Creating promotion with PlaceId={dto.PlaceId}, Title='{dto.Title}'");
-            
+
             var place = await db.Places.FirstOrDefaultAsync(p => p.PlaceId == dto.PlaceId && p.OwnerId == UserId);
             if (place == null)
             {
                 logger.LogWarning($"❌ Place not found: PlaceId={dto.PlaceId}, UserId={UserId}");
                 return Forbid();
             }
-            
+
             logger.LogInformation($"✅ Found place: {place.Name}");
-            
-            // Convert StartDate and EndDate to UTC (they come from datetime-local input as Unspecified)
-            var startDateUtc = dto.StartDate.Kind == DateTimeKind.Unspecified 
-                ? DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc) 
+
+            var startDateUtc = dto.StartDate.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc)
                 : dto.StartDate.ToUniversalTime();
-            
-            var endDateUtc = dto.EndDate.Kind == DateTimeKind.Unspecified 
-                ? DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc) 
+
+            var endDateUtc = dto.EndDate.Kind == DateTimeKind.Unspecified
+                ? DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc)
                 : dto.EndDate.ToUniversalTime();
-            
+
             logger.LogInformation($"📅 StartDate: {startDateUtc:O} (Kind={startDateUtc.Kind})");
             logger.LogInformation($"📅 EndDate: {endDateUtc:O} (Kind={endDateUtc.Kind})");
-            
+
             var promo = new Promotion
             {
                 PlaceId = dto.PlaceId,
@@ -90,16 +110,15 @@ public class PromotionsController(AppDbContext db, ILogger<PromotionsController>
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
-            
+
             logger.LogInformation($"📝 Adding promotion to context");
             db.Promotions.Add(promo);
-            
+
             logger.LogInformation($"💾 Saving to database...");
             await db.SaveChangesAsync();
-            
+
             logger.LogInformation($"✅ Promotion created: PromoId={promo.PromoId}");
-            
-            // Return PromotionViewModel instead of raw Promotion
+
             return Ok(new
             {
                 PromoId = promo.PromoId,
@@ -113,6 +132,11 @@ public class PromotionsController(AppDbContext db, ILogger<PromotionsController>
                 IsActive = promo.IsActive,
                 IsExpired = promo.IsExpired
             });
+        }
+        catch (PostgresException ex) when (ex.SqlState == "42P01")
+        {
+            logger.LogWarning($"❌ Promotions feature unavailable: {ex.Message}");
+            return StatusCode(503, new { title = "Tính năng khuyến mãi tạm vô hiệu", status = 503, detail = "Bảng Promotions chưa tồn tại." });
         }
         catch (DbUpdateException dbEx)
         {
@@ -133,10 +157,17 @@ public class PromotionsController(AppDbContext db, ILogger<PromotionsController>
     [Authorize(Policy = "OwnerOnly")]
     public async Task<IActionResult> Delete(int id)
     {
-        var promo = await db.Promotions.Include(p => p.Place).FirstOrDefaultAsync(p => p.PromoId == id);
-        if (promo?.Place?.OwnerId != UserId) return Forbid();
-        promo.IsActive = false;
-        await db.SaveChangesAsync();
-        return NoContent();
+        try
+        {
+            var promo = await db.Promotions.Include(p => p.Place).FirstOrDefaultAsync(p => p.PromoId == id);
+            if (promo?.Place?.OwnerId != UserId) return Forbid();
+            promo.IsActive = false;
+            await db.SaveChangesAsync();
+            return NoContent();
+        }
+        catch (PostgresException ex) when (ex.SqlState == "42P01")
+        {
+            return NotFound();
+        }
     }
 }

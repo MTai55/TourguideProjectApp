@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System.Security.Claims;
 using TourGuideAPI.Data;
 using TourGuideAPI.Models;
@@ -98,20 +99,37 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
                 // .CountAsync(v => placeIds.Contains(v.PlaceId) &&
                 //             v.CheckInTime >= DateTime.UtcNow.AddDays(-30));
 
-            var pendingReviews = await db.Reviews
-                .Where(r => placeIds.Contains(r.PlaceId) && r.OwnerReply == null)
-                .CountAsync();
+            int pendingReviews;
+            try
+            {
+                pendingReviews = await db.Reviews
+                    .Where(r => placeIds.Contains(r.PlaceId) && r.OwnerReply == null)
+                    .CountAsync();
+            }
+            catch (PostgresException ex) when (ex.SqlState == "42P01")
+            {
+                pendingReviews = 0;
+            }
 
-            var activePromos = await db.Promotions
-                .Where(pr => placeIds.Contains(pr.PlaceId) &&
-                             pr.IsActive && pr.EndDate > DateTime.UtcNow)
-                .CountAsync();
+            int activePromos;
+            try
+            {
+                activePromos = await db.Promotions
+                    .Where(pr => placeIds.Contains(pr.PlaceId) &&
+                                 pr.IsActive && pr.EndDate > DateTime.UtcNow)
+                    .CountAsync();
+            }
+            catch (PostgresException ex) when (ex.SqlState == "42P01")
+            {
+                activePromos = 0;
+            }
 
             return Ok(new
             {
                 TotalPlaces = places.Count,
-                ActivePlaces = places.Count(p => p.Status == "Active"),
-                TotalVisits = visitsThisMonth,
+                ApprovedPlaces = places.Count(p => p.Status == "Active"),
+                TotalVisitsThisMonth = visitsThisMonth,
+                PendingPlaces = 0,
                 PendingReviews = pendingReviews,
                 ActivePromotions = activePromos,
                 AvgRating = places.Any() ? places.Average(p => p.AverageRating) : 0,
@@ -131,6 +149,26 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
     {
         try
         {
+            int totalReviews;
+            try
+            {
+                totalReviews = await db.Reviews.CountAsync();
+            }
+            catch (PostgresException ex) when (ex.SqlState == "42P01")
+            {
+                totalReviews = 0;
+            }
+
+            int hiddenReviews;
+            try
+            {
+                hiddenReviews = await db.Reviews.CountAsync(r => r.IsHidden);
+            }
+            catch (PostgresException ex) when (ex.SqlState == "42P01")
+            {
+                hiddenReviews = 0;
+            }
+
             return Ok(new
             {
                 TotalUsers = await db.Users.CountAsync(),
@@ -138,8 +176,8 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
                 TotalPlaces = await db.Places.CountAsync(p => p.IsActive),
                 PendingPlaces = await db.Places.CountAsync(p => p.Status == "Pending"),
                 ActivePlaces = await db.Places.CountAsync(p => p.Status == "Active"),
-                TotalReviews = await db.Reviews.CountAsync(),
-                HiddenReviews = await db.Reviews.CountAsync(r => r.IsHidden),
+                TotalReviews = totalReviews,
+                HiddenReviews = hiddenReviews,
                 // NOTE: VisitHistory table doesn't exist in Supabase - temporarily disabled
                 TotalVisitsToday = 0,   // await db.VisitHistory.CountAsync(v => v.CheckInTime >= DateTime.UtcNow.Date),
                 AvgRating = await db.Places

@@ -146,8 +146,6 @@
         @foreach (var (c, a, icon, label) in new (string,string,string,string)[] {
           ("Dashboard",   "Index", "dashboard",    "Dashboard"),
           ("Places",      "Index", "storefront",   "Quán của tôi"),
-          ("Reviews",     "Index", "rate_review",  "Đánh giá"),
-          ("Promotions",  "Index", "local_offer",  "Khuyến mãi"),
         })
         {
           var isActive = ctrl == c && (c != "Places" || action != "Map");
@@ -305,7 +303,7 @@
         .withAutomaticReconnect().build();
 
       conn.on('NewCheckIn', d => showToast(`📍 ${d.message}`, 'info'));
-      conn.on('NewReview',  d => showToast(`⭐ ${d.message}`, 'success'));
+      // Review notifications removed
 
       conn.start().then(() => {
         document.getElementById('signalr-dot').className  = 'w-1.5 h-1.5 rounded-full bg-emerald-500';

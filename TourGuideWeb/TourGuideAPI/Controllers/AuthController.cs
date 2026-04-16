@@ -138,7 +138,8 @@ public class AuthController(IAuthService auth, AppDbContext db) : ControllerBase
         if (user == null) return NotFound();
 
         // Verify mật khẩu hiện tại
-        if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+        if (string.IsNullOrEmpty(user.PasswordHash) ||
+            !BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
             return BadRequest(new { message = "Mật khẩu hiện tại không đúng." });
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);

@@ -43,7 +43,8 @@ public class AuthService(AppDbContext db, IConfiguration config) : IAuthService
     {
         var user = await db.Users
             .FirstOrDefaultAsync(u => u.Email == dto.Email.ToLower() && u.IsActive);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        if (user == null || string.IsNullOrEmpty(user.PasswordHash) ||
+            !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return null;
 
         user.LastLoginAt = DateTime.UtcNow;

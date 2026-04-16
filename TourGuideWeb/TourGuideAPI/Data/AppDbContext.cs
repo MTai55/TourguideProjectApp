@@ -24,6 +24,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasKey(u => u.UserId);
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.Role).HasMaxLength(20).HasDefaultValue("User");
+            e.Property(u => u.PasswordHash).IsRequired(false);
         });
 
         mb.Entity<Category>(e => {

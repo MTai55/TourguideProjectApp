@@ -55,6 +55,34 @@ public class AccessSessionService
         return remaining > TimeSpan.Zero ? remaining : null;
     }
 
+    // ── Đăng ký thiết bị khi app khởi động ────────────────────────────────────
+
+    public async Task RegisterDeviceAsync()
+    {
+        try
+        {
+            var deviceId = GetDeviceId();
+            var platform = DeviceInfo.Platform == DevicePlatform.Android ? "Android" : "iOS";
+            var now      = DateTime.UtcNow;
+
+            // Upsert: tạo mới nếu chưa có, chỉ cập nhật LastSeenAt nếu đã có
+            await _supabase.From<TourGuideAPP.Data.Models.DeviceRegistration>()
+                .Upsert(new TourGuideAPP.Data.Models.DeviceRegistration
+                {
+                    DeviceId    = deviceId,
+                    Platform    = platform,
+                    FirstSeenAt = now,
+                    LastSeenAt  = now
+                });
+
+            System.Diagnostics.Debug.WriteLine($"✅ Device registered: {deviceId} ({platform})");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"⚠️ RegisterDevice failed (non-critical): {ex.Message}");
+        }
+    }
+
     // ── Lấy danh sách gói từ Supabase ─────────────────────────────────────────
 
     // Fallback nếu Supabase không có bảng AccessPackages

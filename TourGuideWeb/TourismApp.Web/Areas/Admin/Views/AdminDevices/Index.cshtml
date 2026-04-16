@@ -5,12 +5,6 @@
     var page       = (int)ViewBag.Page;
     var totalPages = (int)ViewBag.TotalPages;
     var total      = (int)ViewBag.Total;
-
-    string IsActive(DateTime? lastVisit)
-    {
-        if (lastVisit == null) return "no";
-        return (DateTime.UtcNow - lastVisit.Value).TotalDays <= 7 ? "yes" : "no";
-    }
 }
 
 <div class="pt-6 space-y-6">
@@ -19,19 +13,17 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
       <h2 class="text-xl font-extrabold text-on-surface">Người dùng thiết bị</h2>
-      <p class="text-sm text-on-surface-variant mt-0.5">@total thiết bị đã check-in qua GPS</p>
+      <p class="text-sm text-on-surface-variant mt-0.5">@total thiết bị đã mở app</p>
     </div>
     <form method="get" class="flex gap-2">
       <input name="search" value="@search" placeholder="Tìm Device ID..."
              class="border border-outline-variant rounded-xl px-4 py-2 text-sm bg-surface-container-low focus:outline-none focus:ring-2 focus:ring-primary/30 w-56" />
-      <button type="submit"
-              class="px-4 py-2 rounded-xl text-sm font-bold text-white"
-              style="background:linear-gradient(135deg,#954400,#fc8127)">
-        Tìm
-      </button>
+      <button type="submit" class="px-4 py-2 rounded-xl text-sm font-bold text-white"
+              style="background:linear-gradient(135deg,#954400,#fc8127)">Tìm</button>
       @if (!string.IsNullOrEmpty(search))
       {
-        <a href="/Admin/AdminDevices" class="px-4 py-2 rounded-xl text-sm font-bold text-on-surface-variant border border-outline-variant hover:bg-surface-container">Xóa</a>
+        <a href="/Admin/AdminDevices"
+           class="px-4 py-2 rounded-xl text-sm font-bold text-on-surface-variant border border-outline-variant hover:bg-surface-container">Xóa</a>
       }
     </form>
   </div>
@@ -42,41 +34,64 @@
       <thead>
         <tr class="bg-surface-container-low text-on-surface-variant text-xs font-bold uppercase tracking-wide">
           <th class="px-5 py-3.5 text-left">Device ID</th>
-          <th class="px-5 py-3.5 text-center">Lượt thăm</th>
-          <th class="px-5 py-3.5 text-center">POI đã ghé</th>
-          <th class="px-5 py-3.5 text-left">Lần đầu</th>
-          <th class="px-5 py-3.5 text-left">Lần cuối</th>
-          <th class="px-5 py-3.5 text-center">Active</th>
+          <th class="px-5 py-3.5 text-center">Nền tảng</th>
+          <th class="px-5 py-3.5 text-center">Lần mở đầu</th>
+          <th class="px-5 py-3.5 text-center">Lượt ghé POI</th>
+          <th class="px-5 py-3.5 text-center">POI khác nhau</th>
+          <th class="px-5 py-3.5 text-center">Gói cuối</th>
+          <th class="px-5 py-3.5 text-center">Trạng thái</th>
           <th class="px-5 py-3.5 text-center">Chi tiết</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-50">
-        @if (Model.Count == 0)
+        @if (!Model.Any())
         {
           <tr>
-            <td colspan="7" class="px-5 py-12 text-center text-on-surface-variant text-sm">
+            <td colspan="8" class="px-5 py-12 text-center text-on-surface-variant text-sm">
               <span class="material-symbols-outlined text-4xl block mb-2 text-outline-variant">smartphone</span>
-              Chưa có dữ liệu thiết bị nào
+              Chưa có thiết bị nào mở app
             </td>
           </tr>
         }
         @foreach (var d in Model)
         {
-          var active = IsActive(d.LastVisit);
           <tr class="hover:bg-surface-container-lowest transition-colors">
             <td class="px-5 py-3.5">
-              <span class="font-mono font-bold text-on-surface text-sm tracking-wider bg-surface-container-low px-2.5 py-1 rounded-lg">@d.DeviceId</span>
+              <span class="font-mono font-bold text-on-surface text-sm tracking-wider bg-surface-container-low px-2.5 py-1 rounded-lg">
+                @d.DeviceId
+              </span>
+            </td>
+            <td class="px-5 py-3.5 text-center">
+              @if (d.Platform == "Android")
+              {
+                <span class="text-xs font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">Android</span>
+              }
+              else if (d.Platform == "iOS")
+              {
+                <span class="text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">iOS</span>
+              }
+              else
+              {
+                <span class="text-xs text-on-surface-variant">—</span>
+              }
+            </td>
+            <td class="px-5 py-3.5 text-center text-xs text-on-surface-variant">
+              @(d.FirstSeenAt.HasValue ? d.FirstSeenAt.Value.ToLocalTime().ToString("dd/MM/yyyy") : "—")
             </td>
             <td class="px-5 py-3.5 text-center font-bold text-on-surface">@d.VisitCount</td>
             <td class="px-5 py-3.5 text-center font-bold text-on-surface">@d.PoiCount</td>
-            <td class="px-5 py-3.5 text-on-surface-variant text-xs">
-              @(d.FirstVisit.HasValue ? d.FirstVisit.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "—")
-            </td>
-            <td class="px-5 py-3.5 text-on-surface-variant text-xs">
-              @(d.LastVisit.HasValue ? d.LastVisit.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "—")
+            <td class="px-5 py-3.5 text-center">
+              @if (!string.IsNullOrEmpty(d.LastPackage))
+              {
+                <span class="text-xs font-bold text-primary bg-orange-50 px-2 py-0.5 rounded-full">@d.LastPackage.ToUpper()</span>
+              }
+              else
+              {
+                <span class="text-xs text-on-surface-variant">—</span>
+              }
             </td>
             <td class="px-5 py-3.5 text-center">
-              @if (active == "yes")
+              @if (d.HasActive)
               {
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Active
@@ -85,12 +100,13 @@
               else
               {
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-500 border border-slate-100">
-                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300 inline-block"></span> Inactive
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300 inline-block"></span> Hết hạn
                 </span>
               }
             </td>
             <td class="px-5 py-3.5 text-center">
-              <a asp-area="Admin" asp-controller="AdminDevices" asp-action="Detail" asp-route-deviceId="@d.DeviceId"
+              <a asp-area="Admin" asp-controller="AdminDevices" asp-action="Detail"
+                 asp-route-deviceId="@d.DeviceId"
                  class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-colors">
                 <span class="material-symbols-outlined text-sm">open_in_new</span> Xem
               </a>
@@ -111,9 +127,7 @@
         <a href="?page=@i&search=@search"
            class="w-9 h-9 flex items-center justify-center rounded-xl text-sm font-bold transition-all
                   @(isCurrentPage ? "text-white shadow" : "text-on-surface-variant border border-outline-variant hover:bg-surface-container")"
-           style="@(isCurrentPage ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">
-          @i
-        </a>
+           style="@(isCurrentPage ? "background:linear-gradient(135deg,#954400,#fc8127)" : "")">@i</a>
       }
     </div>
   }

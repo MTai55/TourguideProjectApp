@@ -275,11 +275,16 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
 
     public class DeviceStatItem
     {
-        [JsonProperty("deviceId")]   public string DeviceId { get; set; } = string.Empty;
-        [JsonProperty("visitCount")] public int VisitCount { get; set; }
-        [JsonProperty("poiCount")]   public int PoiCount { get; set; }
-        [JsonProperty("firstVisit")] public DateTime? FirstVisit { get; set; }
-        [JsonProperty("lastVisit")]  public DateTime? LastVisit { get; set; }
+        [JsonProperty("deviceId")]    public string DeviceId { get; set; } = string.Empty;
+        [JsonProperty("platform")]    public string? Platform { get; set; }
+        [JsonProperty("firstSeenAt")] public DateTime? FirstSeenAt { get; set; }
+        [JsonProperty("lastSeenAt")]  public DateTime? LastSeenAt { get; set; }
+        [JsonProperty("visitCount")]  public int VisitCount { get; set; }
+        [JsonProperty("poiCount")]    public int PoiCount { get; set; }
+        [JsonProperty("firstVisit")]  public DateTime? FirstVisit { get; set; }
+        [JsonProperty("lastVisit")]   public DateTime? LastVisit { get; set; }
+        [JsonProperty("hasActive")]   public bool HasActive { get; set; }
+        [JsonProperty("lastPackage")] public string? LastPackage { get; set; }
     }
 
     public class DeviceVisitDto

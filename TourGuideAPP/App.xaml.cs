@@ -23,6 +23,9 @@ public partial class App : Application
 
         if (_accessService.IsAccessValid())
             _accessService.StartExpiryTimer();
+
+        // Đăng ký thiết bị ngay khi app khởi động (fire-and-forget)
+        _ = _accessService.RegisterDeviceAsync();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

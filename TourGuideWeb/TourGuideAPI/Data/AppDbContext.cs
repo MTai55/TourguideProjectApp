@@ -18,7 +18,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
     public DbSet<Subscription>     Subscriptions     { get; set; }
     public DbSet<DevicePoiVisit>   DevicePoiVisits   { get; set; }
-    public DbSet<AccessPackage>    AccessPackages    { get; set; }
+    public DbSet<AccessPackage>      AccessPackages      { get; set; }
+    public DbSet<DeviceRegistration> DeviceRegistrations { get; set; }
     protected override void OnModelCreating(ModelBuilder mb)
     {
         mb.Entity<User>(e => {
@@ -141,6 +142,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         mb.Entity<AccessPackage>(e => {
             e.ToTable("AccessPackages");
             e.HasKey(p => p.PackageId);
+        });
+
+        mb.Entity<DeviceRegistration>(e => {
+            e.ToTable("DeviceRegistrations");
+            e.HasKey(d => d.DeviceId);
         });
 
         mb.Entity<Message>().ToTable("Messages").HasKey(m => m.MessageId);

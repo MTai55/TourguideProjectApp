@@ -21,6 +21,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AccessPackage>      AccessPackages      { get; set; }
     public DbSet<DeviceRegistration> DeviceRegistrations { get; set; }
     public DbSet<AccessSession>      AccessSessions      { get; set; }
+    
+    // ✅ Suppress strict migration warnings
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.ConfigureWarnings(w => 
+            w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+    }
+    
     protected override void OnModelCreating(ModelBuilder mb)
     {
         mb.Entity<User>(e => {

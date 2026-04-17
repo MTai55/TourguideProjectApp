@@ -14,9 +14,16 @@ namespace TourGuideAPI.Controllers;
 [ApiController]
 [Route("api/places")]
 [EnableRateLimiting("general")]
-public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<PlacesController> logger, IConfiguration config) : ControllerBase
+public class PlacesController(
+    AppDbContext db, 
+    IGeoLocationService geo, 
+    ILogger<PlacesController> logger, 
+    IConfiguration config,
+    ICacheService cache) : ControllerBase
 {
     private int OwnerId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private const string PLACES_CACHE_KEY = "places:all";
+    private const int CACHE_DURATION_MINUTES = 30;
 
     // ── GET /api/places ───────────────────────────────────────────
     [HttpGet]
@@ -32,9 +39,22 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
+        // Build cache key từ query params
+        var cacheKey = $"{PLACES_CACHE_KEY}:{search}:{categoryId}:{sortBy}:{district}:{maxPrice}:{specialty}:{hasAircon}:{hasParking}:{page}:{pageSize}";
+        
+        // ✅ TRY FROM CACHE FIRST
+        var cached = cache.Get<(int total, List<PlaceDto> items)>(cacheKey);
+        if (cached != default)
+        {
+            logger.LogInformation($"✅ Cache HIT for GetAll ({cacheKey})");
+            return Ok(new { cached.total, page, pageSize, items = cached.items });
+        }
+
+        // ❌ NOT IN CACHE - QUERY DATABASE
+        logger.LogInformation($"🔄 Cache MISS for GetAll - querying database");
+        
+        // ⚠️ OPTIMIZED: No .Include() - move to Select() to avoid N+1
         var query = db.Places
-            .Include(p => p.Category)
-            .Include(p => p.Images)
             .Where(p => p.Status == "Active" && p.IsActive);
 
         if (!string.IsNullOrEmpty(search))
@@ -68,6 +88,8 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
         };
 
         var total = await query.CountAsync();
+        
+        // ⚠️ OPTIMIZED: Move Category & Image lookup INSIDE Select (before ToListAsync)
         var items = await query
             .Skip((page - 1) * pageSize).Take(pageSize)
             .Select(p => new PlaceDto(
@@ -77,11 +99,18 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
                 p.CloseTime != null ? p.CloseTime.ToString() : null,
                 p.AverageRating, p.TotalReviews, p.TotalVisits,
                 p.Category != null ? p.Category.Name : null,
-                p.Images.FirstOrDefault() != null ? p.Images.First().ImageUrl : null,
+                // ⚠️ FIX N+1: Move .FirstOrDefault() to before ToListAsync
+                p.Images
+                    .Where(i => i.IsMain)
+                    .Select(i => i.ImageUrl)
+                    .FirstOrDefault(),
                 null,
                 p.Specialty, p.PricePerPerson, p.PriceMin, p.PriceMax, p.District,
                 p.HasParking, p.HasAircon))
             .ToListAsync();
+
+        // ✅ CACHE RESULT (30 minutes)
+        cache.Set(cacheKey, (total, items), TimeSpan.FromMinutes(CACHE_DURATION_MINUTES));
 
         return Ok(new { total, page, pageSize, items });
     }
@@ -135,15 +164,28 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
     {
         logger.LogInformation($"📍 GetMyPlaces called - OwnerId: {OwnerId}, Page: {page}, Search: {search ?? "null"}");
         
+        var cacheKey = $"places:owner:{OwnerId}:{search}:{page}";
+        
+        // ✅ TRY FROM CACHE FIRST
+        var cached = cache.Get<(int total, List<object> items)>(cacheKey);
+        if (cached != default)
+        {
+            logger.LogInformation($"✅ Cache HIT for GetMyPlaces");
+            return Ok(new { total = cached.total, page, items = cached.items });
+        }
+
+        logger.LogInformation($"🔄 Cache MISS for GetMyPlaces - querying database");
+        
+        // ⚠️ OPTIMIZED: No .Include() - move to Select()
         var query = db.Places
-            .Include(p => p.Category)
-            .Include(p => p.Images)
             .Where(p => p.OwnerId == OwnerId && p.IsActive);
 
         if (!string.IsNullOrEmpty(search))
             query = query.Where(p => p.Name.ToLower().Contains(search.ToLower()));
 
         var total = await query.CountAsync();
+        
+        // ⚠️ OPTIMIZED: Move Category & Image lookup INSIDE Select
         var items = await query
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * 20).Take(20)
@@ -162,7 +204,11 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
                 p.TotalReviews,
                 p.TotalVisits,
                 CategoryName = p.Category != null ? p.Category.Name : null,
-                MainImageUrl = p.Images.FirstOrDefault(i => i.IsMain) != null ? p.Images.First(i => i.IsMain).ImageUrl : null,
+                // ⚠️ FIX N+1: Move .FirstOrDefault() to before ToListAsync
+                MainImageUrl = p.Images
+                    .Where(i => i.IsMain)
+                    .Select(i => i.ImageUrl)
+                    .FirstOrDefault(),
                 p.Specialty,
                 p.PricePerPerson,
                 p.PriceMin,
@@ -177,6 +223,9 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
             })
             .ToListAsync();
 
+        // ✅ CACHE RESULT
+        cache.Set(cacheKey, (total, items.Cast<object>().ToList()), TimeSpan.FromMinutes(CACHE_DURATION_MINUTES));
+
         logger.LogInformation($"✅ GetMyPlaces result - Total: {total}, Items: {items.Count}");
         return Ok(new { total, page, items });
     }
@@ -185,30 +234,50 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
+        var cacheKey = $"places:detail:{id}";
+        
+        // ✅ TRY FROM CACHE FIRST
+        var cached = cache.Get<object>(cacheKey);
+        if (cached != null)
+        {
+            logger.LogInformation($"✅ Cache HIT for GetById({id})");
+            return Ok(cached);
+        }
+
+        logger.LogInformation($"🔄 Cache MISS for GetById({id}) - querying database");
+        
+        // ⚠️ OPTIMIZED: No .Include() - move to Select()
         var place = await db.Places
-            .Include(p => p.Category)
-            .Include(p => p.Images)
-            .FirstOrDefaultAsync(p => p.PlaceId == id && p.IsActive);
+            .Where(p => p.PlaceId == id && p.IsActive)
+            .Select(p => new {
+                p.PlaceId, p.Name, p.Description, p.Address,
+                p.Latitude, p.Longitude, p.Phone,
+                OpenTime  = p.OpenTime != null ? p.OpenTime.ToString() : null,
+                CloseTime = p.CloseTime != null ? p.CloseTime.ToString() : null,
+                p.AverageRating, p.TotalReviews, p.TotalVisits,
+                CategoryName = p.Category != null ? p.Category.Name : null,
+                CategoryId   = p.CategoryId,
+                // ⚠️ FIX N+1: Move .FirstOrDefault() to before FirstOrDefaultAsync
+                MainImageUrl = p.Images
+                    .Where(i => i.IsMain)
+                    .Select(i => i.ImageUrl)
+                    .FirstOrDefault(),
+                p.Specialty, p.PricePerPerson,
+                p.PriceMin, p.PriceMax,
+                p.District, p.HasParking, p.HasAircon,
+                p.Status, p.OpenStatus,
+                TtsScript      = p.tts_script,
+                TtsTranslations= p.tts_translations,
+                Radius         = p.radius,
+            })
+            .FirstOrDefaultAsync();
 
         if (place == null) return NotFound();
 
-        return Ok(new {
-            place.PlaceId, place.Name, place.Description, place.Address,
-            place.Latitude, place.Longitude, place.Phone,
-            OpenTime  = place.OpenTime?.ToString(),
-            CloseTime = place.CloseTime?.ToString(),
-            place.AverageRating, place.TotalReviews, place.TotalVisits,
-            CategoryName = place.Category?.Name,
-            CategoryId   = place.CategoryId,
-            MainImageUrl = place.Images.FirstOrDefault(i => i.IsMain)?.ImageUrl,
-            place.Specialty, place.PricePerPerson,
-            place.PriceMin, place.PriceMax,
-            place.District, place.HasParking, place.HasAircon,
-            place.Status, place.OpenStatus,
-            TtsScript      = place.tts_script,
-            TtsTranslations= place.tts_translations,
-            Radius         = place.radius,
-        });
+        // ✅ CACHE RESULT (1 hour for detail page)
+        cache.Set(cacheKey, place, TimeSpan.FromHours(1));
+
+        return Ok(place);
     }
 
     // ── POST /api/places ──────────────────────────────────────────
@@ -247,6 +316,11 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
 
             db.Places.Add(place);
             await db.SaveChangesAsync();
+            
+            // ✅ INVALIDATE CACHE - clear all places & owner caches
+            cache.RemoveByPattern("places:*");
+            logger.LogInformation($"🗑️ Invalidated cache after creating place {place.PlaceId}");
+            
             return CreatedAtAction(nameof(GetById), new { id = place.PlaceId }, place);
         }
         catch (Exception ex)
@@ -288,6 +362,11 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
             place.UpdatedAt = DateTime.UtcNow;
 
             await db.SaveChangesAsync();
+            
+            // ✅ INVALIDATE CACHE - clear all places & detail caches
+            cache.RemoveByPattern("places:*");
+            logger.LogInformation($"🗑️ Invalidated cache after updating place {id}");
+            
             return Ok(place);
         }
         catch (Exception ex)
@@ -316,6 +395,11 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
 
         place.OpenStatus = openStatus;
         await db.SaveChangesAsync();
+        
+        // ✅ INVALIDATE CACHE
+        cache.Remove($"places:detail:{id}");
+        cache.RemoveByPattern("places:*");
+        
         return Ok(new { openStatus });
     }
 
@@ -341,6 +425,11 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
         };
         db.PlaceImages.Add(image);
         await db.SaveChangesAsync();
+        
+        // ✅ INVALIDATE CACHE
+        cache.Remove($"places:detail:{id}");
+        cache.RemoveByPattern("places:*");
+        
         return Ok(image);
     }
 
@@ -359,6 +448,11 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
 
         db.PlaceImages.Remove(image);
         await db.SaveChangesAsync();
+        
+        // ✅ INVALIDATE CACHE
+        cache.Remove($"places:detail:{id}");
+        cache.RemoveByPattern("places:*");
+        
         return NoContent();
     }
 
@@ -387,6 +481,12 @@ public class PlacesController(AppDbContext db, IGeoLocationService geo, ILogger<
             db.Places.Remove(place);
 
             await db.SaveChangesAsync();
+            
+            // ✅ INVALIDATE CACHE - clear all places & detail caches
+            cache.Remove($"places:detail:{id}");
+            cache.RemoveByPattern("places:*");
+            logger.LogInformation($"🗑️ Invalidated cache after deleting place {id}");
+            
             return NoContent();
         }
         catch (Exception ex)

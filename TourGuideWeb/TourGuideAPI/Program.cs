@@ -24,6 +24,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGeoLocationService, GeoLocationService>();
 builder.Services.AddScoped<ITrackingService, TrackingService>();
 
+// ── Cache Service ──────────────────────────────────────────
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICacheService, MemoryCacheService>();
+
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 builder.Services.AddRateLimiting();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

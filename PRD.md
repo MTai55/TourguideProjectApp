@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## TourGuideAPP — Ứng dụng Hướng dẫn Du lịch Thông minh TP.HCM
 
-**Phiên bản:** 2.2  
+**Phiên bản:** 2.3  
 **Ngày cập nhật:** Tháng 4, 2026  
 **Trạng thái:** Đang phát triển  
 
@@ -43,8 +43,8 @@ Tự động phát thuyết minh đúng lúc — khi người dùng đi đến g
 | | Chi tiết |
 |---|---|
 | **Đặc điểm** | Nhân viên vận hành, quản lý nội dung địa điểm và gói dịch vụ |
-| **Nhu cầu** | Kích hoạt gói cho khách sau khi nhận thanh toán, cập nhật thông tin địa điểm |
-| **Công cụ** | Supabase Dashboard + SQL function `activate_session()` |
+| **Nhu cầu** | Kích hoạt/hủy gói cho khách sau khi nhận thanh toán, chỉnh giá gói, xem thống kê thiết bị |
+| **Công cụ** | Web Admin UI (`/Admin/Sessions`, `/Admin/Packages`, `/Admin/Devices`) |
 
 ---
 
@@ -54,26 +54,35 @@ Tự động phát thuyết minh đúng lúc — khi người dùng đi đến g
 
 | Actor | Use Case |
 |---|---|
-| **Khách du lịch** | Chọn & thanh toán gói sử dụng |
-| | Xem bản đồ & marker địa điểm |
+| **Khách du lịch** | Chọn ngôn ngữ giao diện |
+| | Chọn gói & thanh toán QR |
+| | Xem bản đồ & POI markers |
+| | Chỉ đường đến địa điểm |
+| | Nghe thuyết minh tự động (TTS) |
 | | Tìm kiếm & lọc địa điểm |
 | | Xem chi tiết địa điểm |
-| | Chỉ đường đến địa điểm |
-| | Nghe thuyết minh tự động khi đến gần POI |
-| | Chọn ngôn ngữ thuyết minh |
 | | Xem & theo tour có sẵn |
-| **Owner** | Đăng ký / Đăng nhập |
-| | Quản lý địa điểm (thêm, sửa, xoá) |
-| | Cập nhật trạng thái mở/đóng cửa |
-| | Cập nhật nội dung TTS script |
-| | Quản lý khuyến mãi |
-| | Xem & trả lời đánh giá |
-| | Xem thống kê địa điểm |
-| **Admin** | Kích hoạt gói sử dụng cho khách |
-| | Duyệt / từ chối địa điểm |
-| | Ẩn / hiện đánh giá vi phạm |
-| | Khoá / mở tài khoản người dùng |
-| | Xem thống kê toàn hệ thống |
+| | Xem lịch sử ghé thăm |
+| | Chọn ngôn ngữ TTS |
+| **Owner** | Đăng nhập / Đăng ký |
+| | Xem dashboard tổng quan |
+| | Quản lý địa điểm (thêm, sửa, xóa) |
+| | Quản lý ảnh địa điểm |
+| | Cập nhật & dịch TTS script |
+| | Xem / sửa profile & đổi mật khẩu |
+| | Đăng ký & xem lịch sử subscription |
+| **Admin** | Xem thống kê & bản đồ hệ thống |
+| | Quản lý user (khóa/mở, đổi role) |
+| | Duyệt / suspend địa điểm |
+| | Kích hoạt / thu hồi / hủy session thanh toán |
+| | Chỉnh giá & cấu hình gói truy cập |
+| | Xem danh sách thiết bị đã cài app |
+| | Xem lịch sử POI visit theo thiết bị |
+| **Hệ thống** | Đăng ký thiết bị tự động |
+| | Polling xác nhận thanh toán |
+| | Tự động khóa session khi hết hạn |
+| | Phát TTS theo GPS (geofence + debounce) |
+| | Ghi nhận lượt ghé POI |
 
 ### Use Case Diagram
 
@@ -85,27 +94,41 @@ graph LR
     System(["⚙️ Hệ thống"])
 
     subgraph APP["  TourGuideAPP (Mobile)  "]
-        UC1(["Chọn gói truy cập"])
-        UC2(["Thanh toán VietQR"])
-        UC3(["Xem bản đồ & POI"])
-        UC4(["Tìm kiếm & lọc địa điểm"])
-        UC5(["Xem chi tiết địa điểm"])
-        UC6(["Chỉ đường đến địa điểm"])
-        UC7(["Nghe thuyết minh tự động"])
-        UC8(["Chọn ngôn ngữ thuyết minh"])
-        UC9(["Xem & theo tour"])
-        UC10(["Gọi điện / mở website"])
-        UC13(["Polling xác nhận thanh toán"])
-        UC14(["Tự động khóa khi hết hạn"])
-        UC15(["Phát thuyết minh theo GPS"])
+        UC1(["Chọn ngôn ngữ"])
+        UC2(["Chọn gói & thanh toán QR"])
+        UC3(["Xem bản đồ & POI markers"])
+        UC4(["Chỉ đường đến địa điểm"])
+        UC5(["Nghe thuyết minh tự động"])
+        UC6(["Tìm kiếm & lọc địa điểm"])
+        UC7(["Xem chi tiết địa điểm"])
+        UC8(["Xem & theo tour có sẵn"])
+        UC9(["Xem lịch sử ghé thăm"])
+        UC10(["Chọn ngôn ngữ TTS"])
+        UC11(["Đăng ký thiết bị tự động"])
+        UC12(["Polling xác nhận thanh toán"])
+        UC13(["Tự động khóa khi hết hạn"])
+        UC14(["Phát TTS theo GPS"])
+        UC15(["Ghi nhận lượt ghé POI"])
     end
 
-    subgraph WEB["  TourGuideAPI (Web)  "]
-        UC11(["Kích hoạt phiên truy cập"])
-        UC12(["Quản lý địa điểm & TTS"])
-        UC16(["Duyệt / từ chối địa điểm"])
-        UC17(["Quản lý tài khoản người dùng"])
-        UC18(["Xem thống kê hệ thống"])
+    subgraph WEB_OWNER["  Web Owner  "]
+        UC16(["Đăng nhập / Đăng ký"])
+        UC17(["Xem dashboard tổng quan"])
+        UC18(["Quản lý địa điểm"])
+        UC19(["Quản lý ảnh địa điểm"])
+        UC20(["Cập nhật & dịch TTS script"])
+        UC21(["Xem/sửa profile & đổi mật khẩu"])
+        UC22(["Đăng ký & xem lịch sử subscription"])
+    end
+
+    subgraph WEB_ADMIN["  Web Admin  "]
+        UC23(["Xem thống kê & bản đồ"])
+        UC24(["Quản lý user"])
+        UC25(["Duyệt / suspend địa điểm"])
+        UC26(["Kích hoạt / Thu hồi / Hủy session"])
+        UC27(["Chỉnh giá & cấu hình gói"])
+        UC28(["Xem danh sách thiết bị"])
+        UC29(["Xem lịch sử visit theo thiết bị"])
     end
 
     Tourist --> UC1
@@ -119,22 +142,35 @@ graph LR
     Tourist --> UC9
     Tourist --> UC10
 
-    Owner --> UC12
+    Owner --> UC16
+    Owner --> UC17
+    Owner --> UC18
+    Owner --> UC19
+    Owner --> UC20
+    Owner --> UC21
+    Owner --> UC22
 
-    Admin --> UC11
-    Admin --> UC16
-    Admin --> UC17
-    Admin --> UC18
+    Admin --> UC23
+    Admin --> UC24
+    Admin --> UC25
+    Admin --> UC26
+    Admin --> UC27
+    Admin --> UC28
+    Admin --> UC29
 
+    System --> UC11
+    System --> UC12
     System --> UC13
     System --> UC14
     System --> UC15
 
     UC1 -. include .-> UC2
-    UC6 -. include .-> UC3
-    UC7 -. include .-> UC15
-    UC2 -. include .-> UC13
-    UC13 -. include .-> UC11
+    UC2 -. include .-> UC12
+    UC4 -. include .-> UC3
+    UC5 -. include .-> UC14
+    UC14 -. include .-> UC15
+    UC11 -. include .-> UC2
+    UC12 -. extend .-> UC26
 ```
 
 ---
@@ -147,20 +183,27 @@ graph LR
 - **Pattern:** Layered Architecture + Code-behind (không dùng MVVM)
 - **Dependency Injection:** Microsoft.Extensions.DependencyInjection — Services là Singleton, Pages là Transient
 
-### Backend & Database
-- **Database:** PostgreSQL qua Supabase (không có backend riêng — app gọi trực tiếp REST API)
-- **Client:** postgrest-csharp — map C# model sang Supabase table qua `[Column]` attribute
-- **Local storage:** MAUI Preferences — lưu session token, DeviceId, settings
+### Backend & Database (Mobile)
+- **Database:** PostgreSQL qua Supabase
+- **Client:** postgrest-csharp — map C# model sang Supabase table qua `[Column]` / `[Table]` attribute
+- **Local storage:** MAUI Preferences — lưu ExpiresAt, DeviceId, SessionId, TTS locale
 
-### Thư viện bên thứ ba
-| Thư viện | Phiên bản | Mục đích |
-|---|---|---|
-| Mapsui | 5.x | Bản đồ tương tác (CartoDB Voyager tiles) |
-| BruTile | - | Tile source provider cho Mapsui |
-| OSRM API | - | Tính toán & vẽ tuyến đường |
-| MAUI TextToSpeech | built-in | Text-to-Speech đa ngôn ngữ |
-| SkiaSharp | - | Render marker POI tùy chỉnh |
-| postgrest-csharp | - | ORM giao tiếp Supabase |
+### Web Admin
+- **Framework:** ASP.NET Core MVC + Web API (cùng project)
+- **ORM:** Entity Framework Core + Npgsql (kết nối cùng Supabase PostgreSQL)
+- **Auth:** JWT Bearer (API) + Cookie Session (MVC)
+- **UI:** Razor Views + Tailwind CSS + Material Symbols icons
+
+### Thư viện bên thứ ba (Mobile)
+| Thư viện | Mục đích |
+|---|---|
+| Mapsui 5.x | Bản đồ tương tác (CartoDB Voyager tiles) |
+| BruTile | Tile source provider cho Mapsui |
+| OSRM public API | Tính toán & vẽ tuyến đường |
+| MAUI TextToSpeech | Text-to-Speech đa ngôn ngữ (built-in) |
+| SkiaSharp | Render marker POI tùy chỉnh |
+| postgrest-csharp | ORM giao tiếp Supabase |
+| ZXing.Net.MAUI | Quét mã QR (QRScanPage) |
 
 ---
 
@@ -171,124 +214,165 @@ graph LR
 
 **Luồng hoạt động:**
 ```
-Mở app → Kiểm tra Preferences (còn session hợp lệ không?)
-  ├── Còn hạn → Vào app bình thường, khởi động timer
-  └── Hết hạn / chưa có → Hiện SubscriptionPage
+Mở app
+  → RegisterDeviceAsync() [fire-and-forget] → UPSERT DeviceRegistrations
+  → IsAccessValid() kiểm tra Preferences
+    ├── Còn hạn → AppShell + StartExpiryTimer()
+    └── Hết hạn → LanguageSelectionPage → SubscriptionPage
 
-SubscriptionPage → Chọn gói → PaymentQRPage
-  → Hiện QR VietQR (chuyển khoản ngân hàng)
-  → App polling Supabase mỗi 5 giây
-  → Admin kích hoạt → app nhận ExpiresAt → lưu Preferences → vào app
+SubscriptionPage.OnAppearing()
+  → GetPackagesAsync() → SELECT AccessPackages (IsActive=true, ORDER SortOrder)
+  → Fallback về giá hardcode nếu lỗi DB
+  → Hiện 4 gói với giá từ DB
+
+Chọn gói → PaymentQRPage
+  → CreatePendingSessionAsync(packageId, durationHours, priceVnd)
+  → INSERT AccessSessions (IsActive=false) → trả về SessionId (string)
+  → Hiện QR VietQR (bank VIB, 310822005, nội dung = DeviceId)
+  → StartPollingForActivation(sessionId, onActivated) — poll Supabase mỗi 5s
+
+Admin kích hoạt trên /Admin/Sessions
+  → Poll detect IsActive=true → lưu ExpiresAt Preferences
+  → StartExpiryTimer() → AppShell (vào app)
 
 Timer background (mỗi 60 giây):
-  → Kiểm tra DateTime.UtcNow < ExpiresAt
-  → Hết hạn → Alert → về SubscriptionPage
+  → IsAccessValid() → hết hạn → ClearLocalSession() → AccessExpired event
+  → App.OnAccessExpired() → LanguageSelectionPage
 ```
 
-**Gói sử dụng:**
-| Gói | Thời lượng | Giá |
+**Gói sử dụng (bảng `AccessPackages`, Admin có thể chỉnh):**
+| PackageId | DurationHours | Giá mặc định |
 |---|---|---|
-| Cơ bản | 1 tiếng | 10.000đ |
-| Phổ biến | 2 tiếng | 18.000đ |
-| Ngày | 1 ngày (24h) | 50.000đ |
-| Dài ngày | 3 ngày (72h) | 120.000đ |
-
-**Bảng DB:** `AccessSessions` | **Services:** `AccessSessionService` | **Views:** `SubscriptionPage`, `PaymentQRPage`
+| 1h | 1 | 10.000đ |
+| 2h | 2 | 18.000đ |
+| 1day | 24 | 50.000đ |
+| 3day | 72 | 120.000đ |
 
 ---
 
 ### 5.2 GPS & Định vị thời gian thực
-**Mục tiêu:** Theo dõi vị trí người dùng liên tục, chính xác, kể cả khi tắt màn hình
-
-**Luồng hoạt động:**
-- **Android:** Foreground Service chạy nền — nhận vị trí từ platform → bắn event `LocationChanged`
+- **Android:** Foreground Service (`LocationForegroundService`) — GPS chạy khi app background, bắn `LocationUpdated` static event → `LocationService.OnBackgroundLocationUpdated()`
 - **iOS:** Polling `Geolocation.GetLocationAsync()` mỗi 3 giây
-- Reverse geocoding hiển thị tên đường hiện tại (cache 15 giây, không gọi lại nếu dưới 30m)
-
-**Services:** `LocationService`, `LocationForegroundService` (Android)
+- `LocationService.LocationChanged` event — subscriber chính là `MapPage.StartGPS()` (chỉ đăng ký 1 lần nhờ `_gpsStarted` flag)
+- Reverse geocoding: `GetAddressAsync()` — cache 15s / dưới 30m không gọi lại
 
 ---
 
 ### 5.3 Geofence & Thuyết minh tự động (TTS)
-**Mục tiêu:** Tự động phát thuyết minh khi người dùng tiến đến gần địa điểm — tính năng cốt lõi
+**Thuật toán `GeofenceEngine.FindNearestPOI()`:**
+```
+1. Lọc candidates:
+   - GetDistance(user, place) <= (place.Radius ?? 50m)
+   - (DateTime.Now - place.LastPlayedAt) >= (place.CooldownMinutes ?? 30) phút
+   (không filter theo HasTtsScript — mọi place đều đủ điều kiện)
 
-**Thuật toán:**
+2. Nếu candidates rỗng → reset _pendingPlaceId, _pendingFirstSeenAt → return null
+
+3. Lấy top = candidates[0] (sort: Priority DESC, Distance ASC)
+
+4. Debounce:
+   - Nếu top.PlaceId != _pendingPlaceId → gán _pendingPlaceId = topId, _pendingFirstSeenAt = now → return null
+   - Nếu (now - _pendingFirstSeenAt) < 2000ms → return null
+   - Đủ debounce → return top (KHÔNG reset _pendingPlaceId)
+```
+
+**Luồng trong `MapPage.StartGPS()` callback:**
 ```
 GPS update → GeofenceEngine.FindNearestPOI()
-  → Lọc POI có TtsScript, trong bán kính, chưa hết cooldown
-  → Sắp xếp: Priority cao trước, cùng Priority → gần hơn trước
-  → Debounce 2 giây (phải ở trong vùng liên tục)
-  → Trả về POI ưu tiên nhất
 
-MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
-  → NarrationService.SpeakAsync(TtsScript, TtsLocale)
-  → Cập nhật LastPlayedAt → bắt đầu cooldown
+nearest != null:
+  → Cập nhật NearestPOILabel
+  → Nếu nearest.PlaceId != _lastSpokenPlaceId:
+      _lastSpokenPlaceId = nearestId
+      _lastSpokenPlace = nearest
+      nearest.LastPlayedAt = DateTime.Now
+      NarrationService.SpeakFromGpsAsync(nearest.GetScriptForLocale(locale))
+        [SpeakFromGpsAsync: nếu (now - _lastGpsTtsAt) < 60s → return; không đọc]
+      UserProfileService.AddHistoryByGpsAsync(nearest)
+        → AddHistoryAsync(place, "GPS") [lưu local Preferences]
+        → RecordDevicePoiVisitAsync(place, "GPS") [INSERT DevicePoiVisits Supabase]
+
+nearest == null:
+  → NearestPOILabel = "Không có địa điểm gần"
+  → Nếu _lastSpokenPlace != null:
+      distToLast = GetDistance(user, _lastSpokenPlace)
+      Nếu distToLast > (_lastSpokenPlace.Radius ?? 50):
+        _lastSpokenPlaceId = null
+        _lastSpokenPlace = null
+      (Nếu còn trong bán kính → giữ nguyên _lastSpokenPlaceId, cooldown đang active)
+
+Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 ```
-
-**Cấu hình per-place (trong DB):**
-| Tham số | Mặc định | Mô tả |
-|---|---|---|
-| radius | 50m | Bán kính phát hiện |
-| cooldown_minutes | 10 phút | Thời gian chờ trước khi đọc lại |
-| priority | 1 | Độ ưu tiên khi nhiều POI trong vùng |
-| tts_locale | vi-VN | Ngôn ngữ đọc (vi-VN, en-US, zh-CN...) |
-
-**Services:** `GeofenceEngine`, `NarrationService`
 
 ---
 
 ### 5.4 Bản đồ tương tác
-**Mục tiêu:** Hiển thị toàn bộ địa điểm trên bản đồ, hỗ trợ chỉ đường
+**Map layers (thứ tự add):**
+- `"BaseMap"` — CartoDB Voyager tiles (https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png)
+- `"POIsGlow"` — vòng glow đỏ mờ (ARGB 45,233,69,96), chỉ visual
+- `"POIs"` — chấm đặc đỏ (ARGB 255,233,69,96) + viền trắng, dùng cho hit-test `OnMapInfo`
+- `"UserLocationGlow"` — vòng glow xanh mờ (ARGB 45,0,140,255)
+- `"UserLocationDot"` — chấm xanh đặc (ARGB 255,30,144,255) + viền trắng
+- `"Route"` — LineString OSRM (#E94560) — chỉ khi đang chỉ đường
+- `"Destination"` — marker điểm đến — chỉ khi đang chỉ đường
 
-**Tính năng:**
-- Render POI markers 2 lớp (SkiaSharp): glow đỏ mờ + chấm đặc có viền trắng
-- Marker người dùng: glow xanh mờ + chấm xanh có viền trắng
-- Tap marker → bottom card nổi lên (Google Maps style): tên, rating, khoảng cách, 4 nút hành động
-- Nút hành động: **Chỉ đường** / **Thuyết minh** / **Gọi điện** / **Chi tiết**
-- Chỉ đường: gọi OSRM API → vẽ polyline lên bản đồ → hiện panel hủy route
-- Auto-follow GPS (flag `_followUserLocation`) — tự tắt khi user kéo map
+**Map center mặc định:** lon=106.6820, lat=10.7600, zoom=14
 
-**Views:** `MapPage` | **External API:** OSRM (`router.project-osrm.org`)
+**Bottom card:**
+- Tap marker → `OnMapInfo` → `GetCachedPlaces().FirstOrDefault(p => p.PlaceId == id)` → `ShowPlaceCard(place)`
+- 4 nút: BtnDirections (gold, primary), BtnNarrate, BtnCall, BtnDetail (secondary)
+- Hover: `PointerGestureRecognizer` + `ReferenceEquals(btn, BtnDirections)` để phân biệt primary/secondary
 
 ---
 
 ### 5.5 Danh sách địa điểm nổi bật
-**Mục tiêu:** Duyệt và tìm kiếm địa điểm theo danh mục, không cần mở bản đồ
-
-**Tính năng:**
-- Hiển thị card: ảnh đại diện, tên, rating sao, khoảng giá, giờ mở cửa
-- Tìm kiếm realtime theo: tên, địa chỉ, mô tả, đặc sản
-- Lọc nhanh theo danh mục: Tất cả / Cà phê / Cơm / Nhậu / Trà sữa
-- Dữ liệu được cache in-memory sau lần load đầu (không gọi Supabase lại khi chuyển tab)
-
-**Views:** `MainPage` | **Services:** `PlaceService`
+- Card: ảnh (ImageUrl từ PlaceImages.IsMain), tên, rating sao, khoảng giá, giờ mở cửa
+- Tìm kiếm realtime theo Name / Address / Specialty
+- Lọc nhanh theo chip danh mục
+- Cache in-memory (`PlaceService._cachedPlaces`) — không reload khi chuyển tab
 
 ---
 
 ### 5.6 Chi tiết địa điểm
-**Mục tiêu:** Xem đầy đủ thông tin một địa điểm, thực hiện hành động nhanh
-
-**Tính năng:**
-- Gallery ảnh cuộn ngang (từ bảng `PlaceImages`)
-- Hiển thị: địa chỉ, giờ mở/đóng, trạng thái mở-đóng thời gian thực, giá, số điện thoại, website
-- Nút **Chỉ đường**: set `MapPage.PendingRoute` → chuyển sang tab Bản đồ → tự động tính route
-- Nút **Gọi điện**: mở dialer với số điện thoại địa điểm
-- Nút **Thuyết minh**: phát TTS ngay lập tức
-
-**Views:** `PlaceDetailPage`
+- Gallery ảnh cuộn ngang từ `PlaceImages`
+- Hiển thị: địa chỉ, giờ mở/đóng, trạng thái mở-đóng realtime, giá, số điện thoại, website
+- TTS script: dùng `place.GetScriptForLocale(locale)` (không phải `place.TtsScript` trực tiếp)
+- **Chỉ đường:** `MapPage.PendingRoute = (lat, lon, name)` → `Shell.GoToAsync("//MainTabs/MapPage")`
 
 ---
 
 ### 5.7 Tour có sẵn
-**Mục tiêu:** Gợi ý lộ trình tour theo chủ đề, người dùng theo từng điểm dừng
+- `ToursPage.RebuildTours()`: tạo 3 TourCard từ cùng 1 pool places (IsActive && IsApproved)
+  - tour-quick: 2 stops, tour-balanced: 3 stops, tour-full: 4 stops
+- Filters: query text, budget slider (k), duration picker, low-walking toggle
+- Bắt đầu tour: `MapPage.PendingRoute = first stop` → `GoToAsync MapPage`
 
-**Tính năng:**
-- Danh sách tour: tên, mô tả, số điểm dừng
-- Chi tiết tour: danh sách điểm dừng theo thứ tự với tên và mô tả ngắn
-- Tap điểm dừng → xem PlaceDetailPage
-- Khi di chuyển thực tế: geofence tự đọc thuyết minh tại từng điểm (không cần thao tác thêm)
+---
 
-**Views:** `ToursPage`, `TourDetailPage` | **Services:** `POIService`
+### 5.8 Web Admin — Quản lý thanh toán (Sessions)
+- Route: `/Admin/Sessions` | API: `GET|POST /api/admin/sessions`
+- Stats: Chờ kích hoạt / Đang active / Tổng / Doanh thu (chỉ tính sessions IsActive=true)
+- Filter tabs: pending / active / expired / all
+- Tìm kiếm theo Device ID
+- **Kích hoạt:** `POST /api/admin/sessions/{id}/activate` → IsActive=true, ActivatedAt=now, ExpiresAt=now+DurationHours
+- **Hủy (pending):** `POST /Admin/Sessions/Cancel` → `DELETE /api/admin/sessions/{id}` (chỉ session chưa IsActive)
+- **Thu hồi (active):** `POST /Admin/Sessions/Deactivate` → IsActive=false, ExpiresAt=now
+- Phân trang 20 items/trang
+
+---
+
+### 5.9 Web Admin — Quản lý gói truy cập (Packages)
+- Route: `/Admin/Packages` | API: `GET /api/access-packages`, `PUT /api/access-packages/{id}`
+- 4 card gói với form chỉnh: PriceVnd, DurationHours, SortOrder, IsActive
+- App tự load giá mới khi user mở `SubscriptionPage.OnAppearing()`
+
+---
+
+### 5.10 Web Admin — Theo dõi thiết bị (Devices)
+- Route: `/Admin/Devices` | API: `GET /api/admin/devices`, `GET /api/admin/devices/{id}/visits`
+- Nguồn: `DeviceRegistrations` (tất cả device đã mở app) LEFT JOIN `DevicePoiVisits`, `AccessSessions`
+- Mỗi row: DeviceId, Platform, FirstSeenAt, LastSeenAt, VisitCount, PoiCount, HasActive session, LastPackage
+- Chi tiết: `/Admin/Devices/{deviceId}` → lịch sử 50 visits gần nhất
 
 ---
 
@@ -297,45 +381,91 @@ MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
 ### Bảng `Places`
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
-| PlaceId | int | Khóa chính |
-| Name | text | Tên địa điểm |
-| Description | text | Mô tả |
-| Address | text | Địa chỉ |
-| Latitude / Longitude | float | Tọa độ GPS |
-| Phone | text | Số điện thoại |
-| OpenTime / CloseTime | text | Định dạng HH:mm |
-| PriceMin / PriceMax | decimal | VND |
-| AverageRating | float | 0.0 – 5.0 |
-| TotalReviews | int | Số lượt đánh giá |
-| Specialty | text | Tags, phân cách dấu phẩy |
-| IsActive / IsApproved | bool | Chỉ hiện khi cả hai = true |
-| tts_script | text | Nội dung thuyết minh TTS |
-| tts_locale | text | Ngôn ngữ TTS (mặc định vi-VN) |
-| radius | float | Bán kính geofence (m) |
-| cooldown_minutes | int | Cooldown giữa 2 lần đọc |
-| priority | int | Độ ưu tiên geofence |
+| PlaceId | int PK | |
+| Name | text | |
+| Description | text? | |
+| Address | text? | |
+| Latitude / Longitude | double | WGS84 |
+| Phone / Website | text? | |
+| OpenTime / CloseTime | text? | Format "HH:mm" |
+| PriceMin / PriceMax | decimal? | VND |
+| AverageRating | float? | 0–5 |
+| TotalReviews | int? | |
+| TotalVisits | int | Auto-increment qua Supabase trigger |
+| Specialty | text? | Tags, phân cách dấu phẩy |
+| IsActive / IsApproved | bool | |
+| CategoryId / OwnerId | int? | FK |
+| tts_script | text? | Legacy fallback TTS |
+| audio_file_url | text? | Chưa dùng |
+| radius | double? | Bán kính geofence (m), default 50 |
+| cooldown_minutes | int? | Cooldown TTS (phút), default 30 |
+| priority | int? | Geofence priority, default 1 |
+| PricePerPerson / District / HasParking / HasAircon | - | Ít dùng / web only |
+
+**Runtime (không có [Column]):** `LastPlayedAt`, `TtsLocale`, `ImageUrl`, `TtsContents`
 
 ### Bảng `PlaceImages`
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
-| ImageId | int | Khóa chính |
-| PlaceId | int | FK → Places |
-| ImageUrl | text | URL ảnh |
-| IsMain | bool | Ảnh đại diện chính |
-| SortOrder | int | Thứ tự hiển thị |
+| ImageId | int PK | |
+| PlaceId | int FK | |
+| ImageUrl | text | |
+| IsMain | bool | PlaceService chỉ load IsMain=true |
+| SortOrder | int | |
+
+### Bảng `PlaceTtsContents`
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| Id | int PK | |
+| PlaceId | int FK | |
+| Locale | text | "vi-VN", "en-US", v.v. |
+| Script | text | Nội dung TTS |
+
+**Priority `GetScriptForLocale(locale)`:**
+1. `TtsContents[locale]` (ngôn ngữ user chọn)
+2. `TtsContents["vi-VN"]` (fallback tiếng Việt)
+3. `TtsScript` (legacy field)
+4. `"Đây là địa điểm {Name}."` (mặc định cuối cùng)
 
 ### Bảng `AccessSessions`
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
-| SessionId | UUID | Khóa chính (auto gen) |
-| DeviceId | text | Mã thiết bị 10 ký tự |
-| PackageId | text | 1h / 2h / 1day / 3day |
-| DurationHours | numeric | Thời lượng (giờ) |
-| PriceVnd | int | Giá thanh toán |
-| CreatedAt | timestamptz | Thời điểm tạo session |
-| ActivatedAt | timestamptz | Thời điểm admin kích hoạt |
-| ExpiresAt | timestamptz | Thời điểm hết hạn |
-| IsActive | bool | Đã kích hoạt chưa |
+| SessionId | uuid PK | Map sang `string` (Supabase app) / `Guid` (EF Core web) |
+| DeviceId | text | 10 ký tự uppercase |
+| PackageId | text | FK → AccessPackages |
+| DurationHours | numeric | Giá trị tại thời điểm mua (audit trail) |
+| PriceVnd | int | Giá tại thời điểm mua |
+| CreatedAt / ActivatedAt / ExpiresAt | timestamptz? | |
+| IsActive | bool | Admin set true khi kích hoạt |
+
+### Bảng `AccessPackages`
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| PackageId | text PK | "1h", "2h", "1day", "3day" |
+| DurationHours | numeric | |
+| PriceVnd | int | Có thể sửa qua Admin UI |
+| IsActive | bool | Bật/tắt gói trên SubscriptionPage |
+| SortOrder | int | Thứ tự hiển thị |
+
+### Bảng `DeviceRegistrations`
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| DeviceId | text PK | 10 ký tự uppercase |
+| Platform | text? | "Android" / "iOS" |
+| FirstSeenAt | timestamptz? | Lần đầu mở app |
+| LastSeenAt | timestamptz? | Upsert mỗi lần khởi động |
+
+### Bảng `DevicePoiVisits`
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| VisitId | bigint PK | Auto gen |
+| DeviceId | text | |
+| PlaceId | int | |
+| PlaceName | text? | Denormalized |
+| VisitMethod | text | "GPS" (geofence) hoặc "QR" |
+| VisitedAt | timestamptz? | |
+
+> Supabase trigger `on_device_poi_visit_insert` → tăng `Places.TotalVisits` khi INSERT vào `DevicePoiVisits`.
 
 ---
 
@@ -343,50 +473,50 @@ MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
 
 ### Kịch bản 1: Lần đầu dùng app — đăng ký gói
 ```
-1. Mở app → hiện trang chọn gói (không thể bỏ qua)
-2. Chọn "2 Tiếng - 18.000đ"
-3. Hiện QR chuyển khoản VietQR + Mã thiết bị (VD: A3F8B2C1D4)
-4. Mở app ngân hàng → quét QR → điền mã thiết bị vào nội dung CK
-5. Chuyển khoản 18.000đ
-6. Admin thấy tiền → vào Supabase → chạy: SELECT activate_session('A3F8B2C1D4')
-7. App phát hiện IsActive = true → lưu ExpiresAt → mở app chính
-8. Sau 2 tiếng → hiện alert "Hết hạn" → về trang chọn gói gia hạn
+1. Mở app → RegisterDeviceAsync() ghi DeviceId lên DeviceRegistrations
+2. IsAccessValid() = false → LanguageSelectionPage
+3. Chọn ngôn ngữ → SubscriptionPage load giá từ AccessPackages
+4. Chọn "2 Tiếng - 18.000đ" → PaymentQRPage
+5. Hiện QR VietQR (VIB 310822005, nội dung = DeviceId A3F8B2C1D4)
+6. Mở app ngân hàng → chuyển khoản 18.000đ, ghi DeviceId vào nội dung
+7. Admin vào /Admin/Sessions → ấn "Kích hoạt" session chờ
+8. Poll 5s detect IsActive=true → lưu ExpiresAt → vào AppShell
+9. Sau 2 tiếng → timer detect hết hạn → Alert → về LanguageSelectionPage
 ```
 
-### Kịch bản 2: Khám phá bản đồ & chỉ đường
+### Kịch bản 2: Thuyết minh tự động khi đi bộ
 ```
-1. Vào tab Bản đồ → thấy các marker đỏ (POI) và marker xanh (vị trí mình)
-2. Tap marker "Nhà thờ Đức Bà" → hiện bottom card
-3. Bấm "Chỉ đường" → OSRM tính route → vẽ đường trên bản đồ
-4. Bấm "Chi tiết" → PlaceDetailPage với gallery ảnh và thông tin đầy đủ
-5. Từ PlaceDetailPage bấm "Chỉ đường" → tự chuyển sang MapPage và route
-```
-
-### Kịch bản 3: Thuyết minh tự động khi đi bộ
-```
-1. Bật GPS → đi bộ trên đường Đồng Khởi
-2. Đi qua Nhà hát Lớn (trong bán kính 50m)
-3. Đứng 2 giây → app tự đọc: "Chào mừng bạn đến Nhà hát Thành phố..."
-4. Đi tiếp → vào bán kính Bưu điện Trung tâm
-5. App đọc thuyết minh Bưu điện (Nhà hát đang trong cooldown 10 phút)
+1. GPS update → FindNearestPOI → candidates = [Nhà hát Lớn (priority=1, 30m)]
+2. _pendingPlaceId = null → set _pendingPlaceId = "3", _pendingFirstSeenAt = now → return null
+3. GPS update 1s sau → topId == _pendingPlaceId, elapsed = 1s < 2s → return null
+4. GPS update 2s sau → elapsed = 2s >= 2s → return Place "Nhà hát Lớn"
+5. _lastSpokenPlaceId = null → khác nearestId → set _lastSpokenPlaceId = "3"
+6. SpeakFromGpsAsync: (now - _lastGpsTtsAt) > 60s → đọc script
+7. AddHistoryByGpsAsync → INSERT DevicePoiVisits → trigger tăng TotalVisits
+8. 5 phút sau: user vẫn đứng đó → FindNearestPOI → candidates = [] (cooldown 30 phút chưa qua)
+9. nearest = null → distToLast < 50m → giữ nguyên _lastSpokenPlaceId (cooldown active)
+10. User đi khỏi → distToLast > 50m → reset _lastSpokenPlaceId = null, _lastSpokenPlace = null
 ```
 
-### Kịch bản 4: Tìm quán cà phê gần đây
+### Kịch bản 3: Khám phá bản đồ & chỉ đường
 ```
-1. Vào tab Nổi bật → bấm chip "Cà phê"
-2. Danh sách lọc còn toàn quán cà phê
-3. Gõ "Bệt" → tìm thấy "Cà Phê Bệt Nguyễn Huệ"
-4. Tap card → xem ảnh, giờ mở cửa, giá, địa chỉ
-5. Bấm "Chỉ đường" → navigate về MapPage, tự route đến quán
+1. Tap marker đỏ → OnMapInfo → ShowPlaceCard(place)
+2. Bottom card: tên, rating, giờ mở/đóng, tags, địa chỉ
+3. BtnDirections → OnCardDirections → ShowRouteToDestinationAsync
+4. OSRM /route/v1/driving → GeoJSON polyline → vẽ Route layer + Destination layer
+5. Zoom to bounds → CancelRoutePanel.IsVisible = true
+6. GPS callback: CancelRoutePanel.IsVisible → early return (không ghi đè label)
+7. Bấm Hủy → xóa Route + Destination layers → CancelRoutePanel.IsVisible = false
 ```
 
-### Kịch bản 5: Theo tour Quận 1 - Di tích lịch sử
+### Kịch bản 4: Admin kích hoạt thanh toán
 ```
-1. Vào tab Tour → chọn "Tour Di tích Quận 1"
-2. Xem 5 điểm dừng theo thứ tự: Dinh Thống Nhất → Nhà thờ Đức Bà → ...
-3. Bấm điểm dừng 1 → xem chi tiết, bấm "Chỉ đường"
-4. Di chuyển thực tế → đến gần Dinh Thống Nhất → app tự đọc thuyết minh
-5. Tiếp tục đến điểm dừng tiếp theo
+1. Admin vào /Admin/Sessions → tab "Chờ kích hoạt"
+2. Thấy session: DeviceId=A3F8B2C1D4, gói 2h, giá 18.000đ, tạo lúc 14:30
+3. Kiểm tra chuyển khoản → xác nhận → ấn "Kích hoạt"
+4. POST /api/admin/sessions/{guid}/activate
+5. IsActive=true, ActivatedAt=now, ExpiresAt=now+2h
+6. App của khách poll nhận → vào AppShell → dùng được 2 tiếng
 ```
 
 ---
@@ -398,25 +528,26 @@ MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
 |---|---|
 | Khởi động app | < 3 giây |
 | Load danh sách Places lần đầu | < 2 giây |
-| Geofence trigger từ lúc vào vùng | < 5 giây |
+| Geofence debounce trước khi trigger | 2 giây liên tục |
 | Polling xác nhận thanh toán | Mỗi 5 giây |
 | Timer kiểm tra hết hạn | Mỗi 60 giây |
-| Cache Places in-memory | Không load lại khi chuyển tab |
+| GPS TTS cooldown toàn cục | 60 giây (NarrationService._lastGpsTtsAt) |
 
 ### 8.2 Độ tin cậy
-- GPS foreground service không bị Android kill khi chạy nền
+- GPS Foreground Service không bị Android kill khi chạy nền
 - Polling tự retry khi mất mạng (try/catch + delay)
 - Session lưu local Preferences — không mất khi tắt/mở lại app
-- Supabase timeout: app hiện thông báo lỗi thay vì crash
+- `GetPackagesAsync()` có fallback về giá hardcode nếu DB lỗi
+- `AddHistoryByGpsAsync` non-blocking (lỗi chỉ log, không ảnh hưởng TTS)
 
 ### 8.3 Bảo mật
-- Supabase Anon Key nhúng trong build (giới hạn bởi RLS trên Supabase)
-- DeviceId là GUID ngẫu nhiên — không liên kết thông tin cá nhân
+- Supabase Anon Key nhúng trong build (bảo vệ bởi RLS Supabase)
+- DeviceId: 10 ký tự uppercase random từ GUID — không liên kết thông tin cá nhân
 - Không lưu thông tin thanh toán trong app
-- Session expiry check phía client (độ trễ tối đa 60 giây)
+- Web Admin API: JWT với Policy "AdminOnly"
 
 ### 8.4 Khả năng sử dụng
-- Giao diện Dark Gold theme — đọc tốt ngoài trời
+- Dark Gold theme — đọc tốt ngoài trời
 - Toàn bộ thao tác chính thực hiện được bằng 1 tay
 - Không yêu cầu tạo tài khoản — dùng ngay sau thanh toán
 - TTS tự động — không cần bấm gì khi đang đi bộ
@@ -425,7 +556,7 @@ MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
 
 ## 9. Thiết kế giao diện
 
-### Bảng màu (Dark Gold Theme)
+### Bảng màu — Mobile App (Dark Gold Theme)
 | Tên | Hex | Dùng cho |
 |---|---|---|
 | Background | `#0F0E0D` | Nền trang |
@@ -435,15 +566,18 @@ MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
 | Primary text | `#F0E6D3` | Tiêu đề, tên địa điểm |
 | Secondary text | `#5A4A3A` | Mô tả, subtitle |
 | Gold accent | `#C8A96E` | Nút chính, label, sao rating |
-| Red accent | `#E94560` | Marker POI, trạng thái đóng cửa |
+| Red accent | `#E94560` | Marker POI, trạng thái đóng cửa, route line |
 | Blue | `#1E90FF` | Marker vị trí người dùng |
 | Green | `#4CAF50` | Trạng thái đang mở cửa |
 
-### Nguyên tắc thiết kế
-- **Location-First:** Mọi thao tác đều có thể bắt đầu từ bản đồ
-- **Tự động hóa tối đa:** Geofence + TTS không cần bấm nút
-- **Thông tin tối giản:** Chỉ hiển thị những gì cần thiết tại thời điểm đó
-- **Một tay:** Tất cả nút hành động trong tầm với ngón cái
+### Bảng màu — Web Admin (Orange Gradient Theme)
+| Dùng cho | Style |
+|---|---|
+| Nút / tab active | `linear-gradient(135deg, #954400, #fc8127)` |
+| Stats card amber | Tailwind amber-50/600/100 |
+| Stats card emerald | Tailwind emerald-50/600/100 |
+| Stats card blue | Tailwind blue-50/600/100 |
+| Stats card orange | Tailwind orange-50 + primary |
 
 ---
 
@@ -451,99 +585,87 @@ MapPage nhận POI → kiểm tra _lastSpokenPlaceId (tránh đọc lại)
 
 | Rủi ro | Khả năng | Mức ảnh hưởng | Giải pháp |
 |---|---|---|---|
-| GPS không chính xác trong tòa nhà / ngõ hẻm | Cao | Trung bình | Cho phép cấu hình bán kính per-place, debounce 2 giây giảm false trigger |
-| TTS tiếng Việt chất lượng thấp trên một số máy | Trung bình | Thấp | Hướng dẫn user bật Google Neural TTS trong cài đặt |
-| Android kill foreground service khi pin yếu | Trung bình | Cao | Request quyền `FOREGROUND_SERVICE`, hiển thị notification thường trực |
-| Mất kết nối khi polling kích hoạt session | Cao | Cao | Retry tự động mỗi 5 giây, hiện trạng thái "Đang kết nối lại..." |
-| User chỉnh giờ máy để kéo dài session | Thấp | Trung bình | Chấp nhận ở phiên bản hiện tại, sửa bằng server time ở giai đoạn sau |
-| Người dùng không muốn trả phí vì có Google Maps miễn phí | Cao | Cao | Nhấn mạnh tính năng TTS tự động — Google Maps không có |
-| Supabase free tier giới hạn 500MB storage | Thấp | Thấp | Ảnh địa điểm lưu URL ngoài (Google Photos, CDN), không lưu file trực tiếp |
+| GPS không chính xác trong tòa nhà / ngõ hẻm | Cao | Trung bình | radius per-place, debounce 2s giảm false trigger |
+| TTS tiếng Việt chất lượng thấp trên một số máy | Trung bình | Thấp | Hướng dẫn user bật Google Neural TTS |
+| Android kill foreground service khi pin yếu | Trung bình | Cao | Request `FOREGROUND_SERVICE`, notification thường trực |
+| Mất kết nối khi polling kích hoạt session | Cao | Cao | Retry tự động mỗi 5 giây |
+| User chỉnh giờ máy để kéo dài session | Thấp | Trung bình | Chấp nhận ở v hiện tại, sửa bằng server time sau |
+| GpsTTS 60s cooldown quá dài hoặc quá ngắn | Trung bình | Thấp | Có thể config trong NarrationService |
+| Supabase free tier giới hạn 500MB storage | Thấp | Thấp | Ảnh lưu URL ngoài, không lưu file trực tiếp |
 
 ---
 
-## 11. Đối thủ cạnh tranh
+## 11. Hằng số kỹ thuật
 
-| Ứng dụng | Điểm mạnh | Thiếu gì so với TourGuideAPP |
+| Hằng số | Giá trị | Nguồn trong code |
 |---|---|---|
-| Google Maps | Bản đồ chính xác, routing toàn cầu | Không có thuyết minh, không tự động |
-| TripAdvisor | Review và rating phong phú | Không có GPS geofence, không tự trigger |
-| Klook / GetYourGuide | Đặt tour chuyên nghiệp | Không có app hướng dẫn realtime |
-| Izi.travel | App audio tour | Phải bấm thủ công, UX phức tạp |
-
-**Lợi thế cạnh tranh của TourGuideAPP:**
-- **Tự động 100%** — geofence trigger TTS, không cần bấm nút
-- **Không cần tài khoản** — thanh toán xong dùng ngay
-- **Gói linh hoạt** — từ 1 tiếng đến 3 ngày, phù hợp nhiều nhu cầu
-- **Địa phương hóa** — nội dung tập trung TP.HCM, chi tiết hơn app toàn cầu
-
----
-
-## 12. Hằng số kỹ thuật (Key Constants)
-
-| Hằng số | Giá trị | Vị trí trong code |
-|---|---|---|
-| Geofence Radius | 50m (mặc định, per-place) | `GeofenceEngine.cs` |
-| Geofence Cooldown | 10 phút | `GeofenceEngine.cs` |
-| Geofence Debounce | 2 giây | `GeofenceEngine.cs` |
-| Geofence Priority | 1 (mặc định) | `Places.Priority` |
-| Polling kích hoạt | 5 giây | `AccessSessionService.cs` |
-| Timer hết hạn | 60 giây | `AccessSessionService.cs` |
-| Reverse geocode cache | 20 giây | `MainPage.cs` |
-| OSRM Endpoint | `router.project-osrm.org` | `MapPage.xaml.cs` |
-| Map Center | 10.7615, 106.7033 (TP.HCM) | `MapPage.xaml.cs` |
-| Map Tile | CartoDB Voyager | `MapPage.xaml.cs` |
-| TTS Locale mặc định | `vi-VN` | `NarrationService.cs` |
-| TTS Locales hỗ trợ | vi-VN, en-US, zh-CN, ko-KR, ja-JP, fr-FR, th-TH | `NarrationService.cs` |
-| Supabase Region | ap-southeast-1 (Singapore) | `MauiProgram.cs` |
-| Session DeviceId | GUID 10 ký tự | `AccessSessionService.cs` |
-| Gói ngắn nhất | 1 tiếng — 10.000đ | `SubscriptionPage.xaml` |
-| Gói dài nhất | 3 ngày — 120.000đ | `SubscriptionPage.xaml` |
-| Bank VietQR | MB Bank | `Constants.cs` |
+| Geofence Radius mặc định | 50m | `GeofenceEngine` (`p.Radius ?? 50`) |
+| Geofence Cooldown mặc định | 30 phút | `GeofenceEngine` (`p.CooldownMinutes ?? 30`) |
+| Geofence Debounce | 2000ms | `GeofenceEngine.DebounceMs` |
+| GPS TTS global cooldown | 60s | `NarrationService.GpsMinGapSeconds` |
+| Polling kích hoạt | 5000ms | `AccessSessionService.StartPollingForActivation` |
+| Timer hết hạn | 60000ms | `AccessSessionService.StartExpiryTimer` |
+| Reverse geocode cache | 15s / 30m | `LocationService.GetAddressAsync` |
+| History tối đa | 100 items | `UserProfileService.AddHistoryAsync` |
+| OSRM Endpoint | `router.project-osrm.org/route/v1/driving` | `MapPage` |
+| Map Center mặc định | lat=10.7600, lon=106.6820 | `MapPage.SetupMap` |
+| Map Tile | CartoDB Voyager | `MapPage.SetupMap` |
+| Map Zoom mặc định | Level 14 | `MapPage.SetupMap` |
+| TTS Locale mặc định | `vi-VN` | `NarrationService.DefaultLocale` |
+| TTS Locales hỗ trợ | 7 ngôn ngữ | `NarrationService.SupportedLocales` |
+| Preferences key DeviceId | `"access_device_id"` | `AccessSessionService` |
+| Preferences key ExpiresAt | `"access_expires_at"` | `AccessSessionService` |
+| Preferences key SessionId | `"access_session_id"` | `AccessSessionService` |
+| Preferences key TTS locale | `"tts_preferred_locale"` | `NarrationService` |
+| Bank VietQR | VIB — 310822005 — NGUYEN HUY TOAN | `Constants.cs` |
+| Sessions per page (Admin) | 20 | `AccessSessionsController` |
+| Devices per page (Admin) | 20 | `DeviceAnalyticsController` |
+| Visit history limit | 50 | `DeviceAnalyticsController.GetDeviceVisitHistory` |
 
 ---
 
-## 13. Lộ trình phát triển
+## 12. Lộ trình phát triển
 
-### Giai đoạn 1 — MVP (Q2 2026) ✅ Hoàn thành
+### Giai đoạn 1 — MVP Mobile (Q2 2026) ✅ Hoàn thành
 - ✅ Kiểm soát truy cập theo gói thời gian (VietQR + polling)
 - ✅ GPS Foreground Service (Android) + định vị realtime
 - ✅ Geofence + TTS tự động (debounce, cooldown, priority)
-- ✅ Bản đồ Mapsui CartoDB Voyager + marker POI tùy chỉnh SkiaSharp
+- ✅ Global GPS TTS cooldown 60s để tránh đọc liên tục khi nhiều handler
+- ✅ Bản đồ Mapsui CartoDB Voyager + marker POI tùy chỉnh (SkiaSharp)
 - ✅ Chỉ đường OSRM + polyline
 - ✅ Danh sách địa điểm + tìm kiếm/lọc theo danh mục
 - ✅ Chi tiết địa điểm + gallery ảnh
-- ✅ Tour có sẵn + chi tiết điểm dừng
+- ✅ Tour có sẵn + chi tiết điểm dừng (3 tour tự tạo từ Places)
 - ✅ TTS đa ngôn ngữ 7 ngôn ngữ (bảng PlaceTtsContents)
+- ✅ Quét QR check-in (ZXing.Net.MAUI)
 
-### Giai đoạn 2 — Dữ liệu thật & Admin (Q3 2026)
-- [ ] Script enrich dữ liệu từ Google Places API (ảnh, rating, giờ mở cửa thật)
-- [ ] Giao diện admin web kích hoạt session (thay vì SQL thủ công)
+### Giai đoạn 2 — Admin Web + Tracking (Q2–Q3 2026) ✅ Hoàn thành
+- ✅ Web Admin UI quản lý sessions (kích hoạt / hủy / thu hồi)
+- ✅ Web Admin UI quản lý gói truy cập (chỉnh giá động)
+- ✅ App load gói từ AccessPackages DB thay vì hardcode
+- ✅ DeviceRegistrations — ghi nhận mọi thiết bị cài app khi khởi động
+- ✅ DevicePoiVisits — ghi nhận lượt ghé POI theo GPS
+- ✅ Web Admin UI xem danh sách thiết bị + lịch sử visit
+- ✅ Supabase trigger tự tăng `Places.TotalVisits`
+- ✅ Cấu hình ngân hàng VietQR: VIB — 310822005 — NGUYEN HUY TOAN
+
+### Giai đoạn 3 — Nội dung thật (Q3 2026)
+- [ ] Enrich dữ liệu từ Google Places API (ảnh, rating, giờ mở cửa thật)
 - [ ] Nội dung TTS cho tất cả địa điểm, đủ 7 ngôn ngữ
-- [ ] Hỗ trợ audio file MP3 thật thay vì TTS tổng hợp
+- [ ] Hỗ trợ audio file MP3 thật (`audio_file_url`) thay vì TTS tổng hợp
+- [ ] Xóa dead code: `TrackingController`, `TrackingService`, `UserTracking` (dead code B2B legacy)
 
-### Giai đoạn 3 — Bảo mật & Offline (Q4 2026)
-
-**Bảo mật:**
+### Giai đoạn 4 — Bảo mật & Offline (Q4 2026)
 - [ ] Xác thực session bằng server time (chống chỉnh giờ máy)
-- [ ] Rate limiting trên Supabase RLS
-- [ ] API key rotation cho Supabase Anon Key
-
-**Offline:**
 - [ ] Cache map tiles Mapsui khi còn mạng để dùng offline
-- [ ] Cache Places in-memory persist khi tắt app (local JSON)
-- [ ] Background sync khi có mạng trở lại
-
-**Tính năng mở rộng:**
-- [ ] Hệ thống đánh giá địa điểm (1–5 sao) tích hợp web
 - [ ] Tối ưu pin: giảm tần suất GPS khi không di chuyển
-- [ ] Mở rộng khu vực: Quận 1, Quận 7, Thủ Đức
-- [ ] Push notification khi gần POI mới chưa từng ghé
+- [ ] Hệ thống đánh giá địa điểm (1–5 sao) tích hợp web
 
 ---
 
-## 14. UML Diagrams
+## 13. UML Diagrams
 
-### 13.1 ER Diagram — Toàn bộ Database
+### 13.1 ER Diagram
 
 ```mermaid
 erDiagram
@@ -554,7 +676,6 @@ erDiagram
         string Phone
         string PasswordHash
         string Role
-        string AvatarUrl
         bool IsActive
         datetime CreatedAt
         datetime LastLoginAt
@@ -580,25 +701,19 @@ erDiagram
         string CloseTime
         decimal PriceMin
         decimal PriceMax
-        string Specialty
-        string District
-        bool HasParking
-        bool HasAircon
-        double AverageRating
+        float AverageRating
         int TotalReviews
         int TotalVisits
-        string Status
-        string OpenStatus
+        string Specialty
         bool IsActive
+        bool IsApproved
         int CategoryId FK
         int OwnerId FK
-        string TtsScript
-        string TtsLocale
-        float Radius
-        int CooldownMinutes
-        int Priority
-        datetime CreatedAt
-        datetime UpdatedAt
+        string tts_script
+        string audio_file_url
+        double radius
+        int cooldown_minutes
+        int priority
     }
 
     PlaceImages {
@@ -609,6 +724,13 @@ erDiagram
         int SortOrder
     }
 
+    PlaceTtsContents {
+        int Id PK
+        int PlaceId FK
+        string Locale
+        string Script
+    }
+
     Reviews {
         int ReviewId PK
         int UserId FK
@@ -616,11 +738,7 @@ erDiagram
         int Rating
         string Comment
         string OwnerReply
-        int TasteRating
-        int PriceRating
-        int SpaceRating
         bool IsHidden
-        string HiddenNote
         datetime CreatedAt
     }
 
@@ -629,16 +747,7 @@ erDiagram
         int UserId FK
         string Token UK
         datetime ExpiresAt
-        datetime CreatedAt
         bool IsRevoked
-        string DeviceInfo
-    }
-
-    PlaceTtsContents {
-        int Id PK
-        int PlaceId FK
-        string Locale
-        string Script
     }
 
     Promotions {
@@ -651,22 +760,37 @@ erDiagram
         datetime StartDate
         datetime EndDate
         bool IsActive
-        datetime CreatedAt
     }
 
-    UserTracking {
-        long TrackId PK
-        int UserId FK
-        double Latitude
-        double Longitude
-        double Accuracy
-        datetime RecordedAt
+    SubscriptionPlans {
+        int PlanId PK
+        string Name
+        int PriceVnd
+        int DurationDays
+        bool IsActive
+    }
+
+    Subscriptions {
+        int SubId PK
+        int OwnerId FK
+        int PlanId FK
+        datetime StartDate
+        datetime EndDate
+        bool IsActive
+    }
+
+    AccessPackages {
+        string PackageId PK
+        double DurationHours
+        int PriceVnd
+        bool IsActive
+        int SortOrder
     }
 
     AccessSessions {
-        string SessionId PK
+        uuid SessionId PK
         string DeviceId
-        string PackageId
+        string PackageId FK
         double DurationHours
         int PriceVnd
         datetime CreatedAt
@@ -675,15 +799,36 @@ erDiagram
         bool IsActive
     }
 
+    DeviceRegistrations {
+        string DeviceId PK
+        string Platform
+        datetime FirstSeenAt
+        datetime LastSeenAt
+    }
+
+    DevicePoiVisits {
+        long VisitId PK
+        string DeviceId FK
+        int PlaceId FK
+        string PlaceName
+        string VisitMethod
+        datetime VisitedAt
+    }
+
     Users ||--o{ Places : "owns (OwnerId)"
     Users ||--o{ Reviews : "writes"
     Users ||--o{ RefreshTokens : "has"
-    Users ||--o{ UserTracking : "generates"
+    Users ||--o{ Subscriptions : "subscribes (OwnerId)"
     Categories ||--o{ Places : "classifies"
-    Places ||--o{ PlaceImages : "has (Cascade)"
+    Places ||--o{ PlaceImages : "has"
     Places ||--o{ Reviews : "receives"
-    Places ||--o{ Promotions : "has (Cascade)"
+    Places ||--o{ Promotions : "has"
     Places ||--o{ PlaceTtsContents : "has scripts"
+    Places ||--o{ DevicePoiVisits : "visited via"
+    SubscriptionPlans ||--o{ Subscriptions : "defines"
+    AccessPackages ||--o{ AccessSessions : "references"
+    DeviceRegistrations ||--o{ AccessSessions : "creates"
+    DeviceRegistrations ||--o{ DevicePoiVisits : "generates"
 ```
 
 ---
@@ -695,27 +840,31 @@ classDiagram
     class Place {
         +int PlaceId
         +string Name
-        +string Address
+        +string? Description
+        +string? Address
         +double Latitude
         +double Longitude
-        +string Phone
-        +string OpenTime
-        +string CloseTime
-        +decimal PriceMin
-        +decimal PriceMax
-        +float AverageRating
-        +int TotalReviews
-        +string Specialty
+        +string? Phone
+        +string? Website
+        +string? OpenTime
+        +string? CloseTime
+        +decimal? PriceMin
+        +decimal? PriceMax
+        +float? AverageRating
+        +int? TotalReviews
         +bool IsActive
         +bool IsApproved
-        +string TtsScript
-        +string TtsLocale
-        +float Radius
-        +int CooldownMinutes
-        +int Priority
+        +string? TtsScript
+        +double? Radius
+        +int? CooldownMinutes
+        +int? Priority
+        +DateTime? LastPlayedAt
         +string ImageUrl
-        +DateTime LastPlayedAt
+        +Dictionary~string,string~ TtsContents
         +GetScriptForLocale(locale) string
+        +OpenTimeDisplay string
+        +RatingDisplay string
+        +PriceDisplay string
     }
 
     class PlaceImage {
@@ -726,58 +875,132 @@ classDiagram
         +int SortOrder
     }
 
+    class PlaceTtsContent {
+        +int Id
+        +int PlaceId
+        +string Locale
+        +string Script
+    }
+
     class AccessSession {
         +string SessionId
         +string DeviceId
         +string PackageId
         +double DurationHours
         +int PriceVnd
-        +DateTime CreatedAt
-        +DateTime ActivatedAt
-        +DateTime ExpiresAt
+        +DateTime? CreatedAt
+        +DateTime? ActivatedAt
+        +DateTime? ExpiresAt
         +bool IsActive
+    }
+
+    class AccessPackage {
+        +string PackageId
+        +double DurationHours
+        +int PriceVnd
+        +bool IsActive
+        +int SortOrder
+    }
+
+    class DeviceRegistration {
+        +string DeviceId
+        +string? Platform
+        +DateTime? FirstSeenAt
+        +DateTime? LastSeenAt
+    }
+
+    class DevicePoiVisit {
+        +long VisitId
+        +string DeviceId
+        +int PlaceId
+        +string? PlaceName
+        +string VisitMethod
+        +DateTime? VisitedAt
     }
 
     class PlaceService {
         -Supabase.Client _supabase
-        -List~Place~ _cache
+        -List~Place~ _cachedPlaces
         +GetAllPlacesAsync() Task~List~Place~~
         +GetCachedPlaces() List~Place~
     }
 
-    class LocationService {
-        +event Action~Location~ LocationChanged
-        +StartAsync() Task
-        +StopAsync() Task
-    }
-
     class GeofenceEngine {
-        +FindNearestPOI(lat, lon, places) Place
-        -Haversine(lat1, lon1, lat2, lon2) double
-        -IsInCooldown(place) bool
+        -const int DebounceMs = 2000
+        -string? _pendingPlaceId
+        -DateTime _pendingFirstSeenAt
+        +FindNearestPOI(userLat, userLon, places) Place?
+        +GetDistance(lat1, lon1, lat2, lon2) double
+        -ToRad(deg) double
     }
 
     class NarrationService {
-        +static List SupportedLocales
+        -const string DefaultLocale = "vi-VN"
+        -const int GpsMinGapSeconds = 60
+        -CancellationTokenSource? _cts
+        -bool _isSpeaking
+        -DateTime _lastGpsTtsAt
         +string PreferredLocale
-        +SpeakAsync(text) Task
-        +StopAsync() Task
+        +static IReadOnlyList SupportedLocales
+        +bool IsSpeaking
+        +SpeakAsync(text, placeLocale?) Task
+        +SpeakFromGpsAsync(text) Task
+        +Stop() void
     }
 
     class AccessSessionService {
+        -const string DeviceIdKey
+        -const string ExpiresAtKey
+        -const string SessionIdKey
         -Supabase.Client _supabase
+        -static List~AccessPackage~ _fallbackPackages
+        +event Action? AccessExpired
         +GetDeviceId() string
         +IsAccessValid() bool
-        +CreatePendingSessionAsync(pkg) Task~AccessSession~
-        +StartPollingForActivation(sessionId) void
+        +GetRemainingTime() TimeSpan?
+        +RegisterDeviceAsync() Task
+        +GetPackagesAsync() Task~List~AccessPackage~~
+        +CreatePendingSessionAsync(packageId, durationHours, priceVnd) Task~string~
+        +StartPollingForActivation(sessionId, onActivated) void
+        +StopPolling() void
         +StartExpiryTimer() void
         +ClearLocalSession() void
-        +event Action AccessExpired
+    }
+
+    class LocationService {
+        +Location? LastKnownLocation
+        +event Action~Location~ LocationChanged
+        +StartAsync() Task
+        +StopAsync() Task
+        +GetAddressAsync(location) Task~string~
     }
 
     class AuthService {
-        +GetLocalEmail() string
-        +SaveLocalEmail(email) void
+        -Supabase.Client _supabase
+        +bool IsLoggedIn
+        +string? CurrentUserId
+        +string? CurrentUserEmail
+        +LoginAsync(email, password) Task~bool~
+        +RegisterAsync(email, password, fullName) Task~bool~
+        +LogoutAsync() Task
+    }
+
+    class UserProfileService {
+        -Supabase.Client _supabase
+        -AuthService _authService
+        -AccessSessionService _accessSessionService
+        +GetTripHistoryAsync() Task~List~TripHistoryItem~~
+        +GetNotesAsync() Task~List~PlaceNote~~
+        +AddHistoryAsync(place, method) Task
+        +AddHistoryByGpsAsync(place) Task
+        +AddHistoryByQRAsync(place) Task
+        +AddHistoryByBookingAsync(place) Task
+        +AddNoteAsync(placeId, name, content) Task
+        +RemoveNoteAsync(note) Task
+        +ClearHistoryAsync() Task
+        +ClearAllAsync() Task
+        +GetCurrentUserIdAsync() Task~int?~
+        -RecordDevicePoiVisitAsync(place, method) Task
     }
 
     class POIService {
@@ -786,43 +1009,45 @@ classDiagram
         +GetCachedPlaces() List~Place~
     }
 
-    class MainPage {
-        -PlaceService _placeService
+    class MapPage {
         -LocationService _locationService
+        -PlaceService _placeService
         -GeofenceEngine _geofenceEngine
         -NarrationService _narrationService
         -AuthService _authService
-        -List~Place~ _allPlaces
-        -string _selectedCategory
-        +LoadPlaces() Task
-        +ApplyFilters() void
-        +SelectCategory(cat) void
-    }
-
-    class MapPage {
-        -PlaceService _placeService
-        -LocationService _locationService
-        -GeofenceEngine _geofenceEngine
-        -NarrationService _narrationService
+        -UserProfileService _userProfileService
+        -string? _lastSpokenPlaceId
+        -Place? _lastSpokenPlace
+        -bool _mapInfoHooked
         -bool _followUserLocation
         -bool _programmaticNav
+        -bool _gpsStarted
+        -Place? _selectedPlace
         +static PendingRoute
-        +ShowRouteToDestinationAsync(lat, lon) Task
+        +SetupMap() void
+        +LoadPOIsAsync() Task
+        +StartGPS() void
         +ShowPlaceCard(place) void
+        +ShowRouteToDestinationAsync(dest) Task
+        -OnMapInfo(sender, e) void
+        -UpdateUserMarker(lat, lon) void
     }
 
     class PlaceDetailPage {
         -Place _place
         -AuthService _authService
         -LocationService _locationService
+        -GeofenceEngine _geofenceEngine
         -NarrationService _narrationService
+        -UserProfileService _userProfileService
         +LoadPlaceDetail() void
         +OnDirectionsClicked() void
+        +OnNarrateClicked() void
+        +OnCallClicked() void
     }
 
     class ToursPage {
         -List~Place~ _places
-        -TourFilters _filters
         +ObservableCollection~TourCard~ Tours
         +RebuildTours() void
     }
@@ -831,35 +1056,44 @@ classDiagram
         -TourCard _tour
         -LocationService _locationService
         -NarrationService _narrationService
+        -UserProfileService _userProfileService
     }
 
     class SubscriptionPage {
         -AccessSessionService _accessService
+        -List~AccessPackage~ _packages
+        +LoadPackagesAsync() Task
         +OnPackageSelected(pkg) void
     }
 
     class PaymentQRPage {
         -AccessSessionService _accessService
-        -AccessSession _session
+        -AccessPackage _package
+        -string? _sessionId
         +StartPolling() void
     }
 
-    PlaceService "1" --> "*" Place : loads
-    PlaceService "1" --> "*" PlaceImage : loads
+    PlaceService --> Place : loads
+    PlaceService --> PlaceImage : loads
+    PlaceService --> PlaceTtsContent : loads
     POIService --> PlaceService : wraps
     GeofenceEngine ..> Place : analyzes
-    NarrationService ..> Place : reads TtsScript
+    NarrationService ..> Place : reads script
     AccessSessionService --> AccessSession : manages
-    MainPage --> PlaceService
-    MainPage --> LocationService
-    MainPage --> GeofenceEngine
-    MainPage --> NarrationService
+    AccessSessionService --> AccessPackage : loads
+    AccessSessionService --> DeviceRegistration : registers
+    UserProfileService --> DevicePoiVisit : inserts
+    UserProfileService --> AccessSessionService : gets deviceId
     MapPage --> PlaceService
     MapPage --> LocationService
     MapPage --> GeofenceEngine
     MapPage --> NarrationService
-    PlaceDetailPage --> NarrationService
+    MapPage --> UserProfileService
+    MapPage --> AuthService
     PlaceDetailPage --> Place
+    PlaceDetailPage --> NarrationService
+    PlaceDetailPage --> LocationService
+    PlaceDetailPage --> UserProfileService
     ToursPage ..> TourDetailPage : navigates
     TourDetailPage --> NarrationService
     SubscriptionPage --> AccessSessionService
@@ -868,50 +1102,56 @@ classDiagram
 
 ---
 
-### 13.3 Class Diagram — Web API (TourGuideAPI)
+### 13.3 Class Diagram — Web (TourGuideAPI + TourismApp.Web)
 
 ```mermaid
 classDiagram
+    class AppDbContext {
+        +DbSet~User~ Users
+        +DbSet~Place~ Places
+        +DbSet~PlaceImage~ PlaceImages
+        +DbSet~Category~ Categories
+        +DbSet~Review~ Reviews
+        +DbSet~RefreshToken~ RefreshTokens
+        +DbSet~Promotion~ Promotions
+        +DbSet~SubscriptionPlan~ SubscriptionPlans
+        +DbSet~Subscription~ Subscriptions
+        +DbSet~DevicePoiVisit~ DevicePoiVisits
+        +DbSet~AccessPackage~ AccessPackages
+        +DbSet~DeviceRegistration~ DeviceRegistrations
+        +DbSet~AccessSession~ AccessSessions
+        +DbSet~UserTracking~ UserTracking
+        +DbSet~VisitHistory~ VisitHistory
+    }
+
     class AuthController {
-        -IAuthService _auth
         +Register(RegisterDto) Task~ActionResult~
         +Login(LoginDto) Task~ActionResult~
-        +Refresh(RefreshTokenRequestDto) Task~ActionResult~
+        +Refresh(token) Task~ActionResult~
         +Revoke() Task~ActionResult~
         +Me() Task~ActionResult~
-        +DebugLogin(userId) Task~ActionResult~
     }
 
     class PlacesController {
-        -AppDbContext _db
-        -IGeoLocationService _geo
         +GetAll(filters) Task~ActionResult~
-        +GetNearby(NearbyQueryDto) Task~ActionResult~
-        +GetMine(search, page) Task~ActionResult~
         +GetById(id) Task~ActionResult~
-        +Create(CreatePlaceDto) Task~ActionResult~
-        +Update(id, UpdatePlaceDto) Task~ActionResult~
+        +GetNearby(dto) Task~ActionResult~
+        +GetMine(search, page) Task~ActionResult~
+        +Create(dto) Task~ActionResult~
+        +Update(id, dto) Task~ActionResult~
         +UpdateStatus(id, status) Task~ActionResult~
-        +AddImage(id, AddImageDto) Task~ActionResult~
+        +AddImage(id, dto) Task~ActionResult~
         +DeleteImage(id, imageId) Task~ActionResult~
         +Delete(id) Task~ActionResult~
     }
 
     class ReviewsController {
-        -AppDbContext _db
-        -INotificationService _notify
         +GetByPlace(placeId, page) Task~ActionResult~
-        +Create(CreateReviewDto) Task~ActionResult~
+        +Create(dto) Task~ActionResult~
         +Reply(id, reply) Task~ActionResult~
     }
 
-    class TrackingController {
-        -ITrackingService _tracking
-        +LogLocation(LocationDto) Task~ActionResult~
-    }
-
     class AdminController {
-        -AppDbContext _db
         +GetUsers(search, role) Task~ActionResult~
         +ToggleLock(id) Task~ActionResult~
         +ChangeRole(id, role) Task~ActionResult~
@@ -923,518 +1163,665 @@ classDiagram
         +GetStats() Task~ActionResult~
     }
 
-    class IAuthService {
-        <<interface>>
-        +RegisterAsync(dto) Task~AuthResponseDto~
-        +LoginAsync(dto) Task~AuthResponseDto~
-        +RefreshAsync(token) Task~AuthResponseDto~
-        +RevokeAsync(token) Task
-        +GenerateTokenAsync(userId) Task~AuthResponseDto~
+    class AccessSessionsController {
+        +GetSessions(status, page, pageSize, search) Task~ActionResult~
+        +Activate(sessionId Guid) Task~ActionResult~
+        +Deactivate(sessionId Guid) Task~ActionResult~
+        +Delete(sessionId Guid) Task~ActionResult~
+        +GetStats() Task~ActionResult~
     }
 
-    class AuthService {
-        -AppDbContext _db
-        -IConfiguration _config
-        +RegisterAsync(dto) Task~AuthResponseDto~
-        +LoginAsync(dto) Task~AuthResponseDto~
-        +RefreshAsync(token) Task~AuthResponseDto~
-        -BuildResponse(user) AuthResponseDto
-        -GenerateJwt(user) string
+    class AccessPackagesController {
+        +GetAll() Task~ActionResult~
+        +Update(id, UpdatePackageDto) Task~ActionResult~
     }
 
-    class IGeoLocationService {
-        <<interface>>
-        +GetNearbyAsync(dto) Task~List~PlaceDto~~
-        +DetectNearestPlaceAsync(lat, lng, radius) Task~Place~
-        +CalcDistanceKm(lat1, lng1, lat2, lng2) double
+    class DeviceAnalyticsController {
+        +GetDeviceStats(page, pageSize, search) Task~ActionResult~
+        +GetDeviceVisitHistory(deviceId, limit) Task~ActionResult~
     }
 
-    class GeoLocationService {
-        -AppDbContext _db
-        +GetNearbyAsync(dto) Task~List~PlaceDto~~
-        +DetectNearestPlaceAsync(lat, lng, radius) Task~Place~
-        +CalcDistanceKm(lat1, lng1, lat2, lng2) double
+    class AdminSessionsController_MVC {
+        -ApiService _api
+        +Index(status, page, search) Task~IActionResult~
+        +Activate(sessionId Guid, returnStatus) Task~IActionResult~
+        +Cancel(sessionId Guid) Task~IActionResult~
+        +Deactivate(sessionId Guid, returnStatus) Task~IActionResult~
     }
 
-    class ITrackingService {
-        <<interface>>
-        +LogLocationAsync(userId, dto) Task
+    class AdminPackagesController_MVC {
+        -ApiService _api
+        +Index() Task~IActionResult~
+        +Update(packageId, dto) Task~IActionResult~
     }
 
-    class TrackingService {
-        -AppDbContext _db
-        -IGeoLocationService _geo
-        -INotificationService _notify
+    class AdminDevicesController_MVC {
+        -ApiService _api
+        +Index(page, search) Task~IActionResult~
+        +Detail(deviceId) Task~IActionResult~
     }
 
-    class INotificationService {
-        <<interface>>
-        +SendNewCheckIn(ownerId, placeName, userName) Task
-        +SendNewReview(ownerId, placeName, rating) Task
+    class ApiService {
+        +GetSessionsAsync(status, page, search) Task
+        +GetSessionStatsAsync() Task
+        +ActivateSessionAsync(sessionId Guid) Task
+        +DeactivateSessionAsync(sessionId Guid) Task
+        +DeleteSessionAsync(sessionId Guid) Task
+        +GetAccessPackagesAsync() Task
+        +UpdateAccessPackageAsync(id, dto) Task
+        +GetDeviceStatsAsync(page, search) Task
+        +GetDeviceVisitsAsync(deviceId) Task
     }
 
-    class NotificationHub {
-        +JoinOwnerGroup(ownerId) Task
-        +LeaveOwnerGroup(ownerId) Task
-    }
-
-    class AppDbContext {
-        +DbSet~User~ Users
-        +DbSet~Place~ Places
-        +DbSet~PlaceImage~ PlaceImages
-        +DbSet~Category~ Categories
-        +DbSet~Review~ Reviews
-        +DbSet~RefreshToken~ RefreshTokens
-        +DbSet~Promotion~ Promotions
-        +DbSet~UserTracking~ UserTracking
-        +DbSet~PlaceTtsContent~ PlaceTtsContents
-        +OnModelCreating(builder) void
-    }
-
-    AuthController --> IAuthService
+    AccessSessionsController --> AppDbContext
+    AccessPackagesController --> AppDbContext
+    DeviceAnalyticsController --> AppDbContext
     PlacesController --> AppDbContext
-    PlacesController --> IGeoLocationService
     ReviewsController --> AppDbContext
-    ReviewsController --> INotificationService
-    TrackingController --> ITrackingService
     AdminController --> AppDbContext
-    IAuthService <|.. AuthService
-    IGeoLocationService <|.. GeoLocationService
-    ITrackingService <|.. TrackingService
-    TrackingService --> IGeoLocationService
-    TrackingService --> INotificationService
-    AuthService --> AppDbContext
-    GeoLocationService --> AppDbContext
+    AuthController --> AppDbContext
+    AdminSessionsController_MVC --> ApiService
+    AdminPackagesController_MVC --> ApiService
+    AdminDevicesController_MVC --> ApiService
+    ApiService ..> AccessSessionsController : HTTP calls
+    ApiService ..> AccessPackagesController : HTTP calls
+    ApiService ..> DeviceAnalyticsController : HTTP calls
 ```
 
 ---
 
 ### 13.4 Sequence Diagrams — Mobile App
 
-#### 13.4.1 Chọn & thanh toán gói sử dụng
+#### 13.4.1 Onboarding & Truy cập (UC1, UC2, UC11, UC12, UC13)
 
 ```mermaid
 sequenceDiagram
     actor User
     actor Admin
     participant App
-    participant SubscriptionPage
-    participant PaymentQRPage
-    participant AccessSessionService
+    participant ASS as AccessSessionService
+    participant Prefs as Preferences
     participant Supabase
-    participant Preferences
-    participant AppShell as Main App
+    participant SubPage as SubscriptionPage
+    participant QRPage as PaymentQRPage
+    participant Shell as AppShell
 
-    Note over User,App: Bước 1 — Mở app, kiểm tra session
     User->>App: Mở ứng dụng
-    App->>AccessSessionService: IsAccessValid()
-    AccessSessionService->>Preferences: Đọc ExpiresAt
-    Preferences-->>AccessSessionService: DateTime
+    App->>ASS: RegisterDeviceAsync() [fire-and-forget]
+    ASS->>Supabase: UPSERT DeviceRegistrations {DeviceId, Platform, LastSeenAt}
+
+    App->>ASS: IsAccessValid()
+    ASS->>Prefs: Get("access_expires_at")
     alt Session còn hạn
-        AccessSessionService-->>App: true
-        App->>AppShell: Vào giao diện chính
-        App->>AccessSessionService: StartExpiryTimer()
-    else Hết hạn hoặc chưa có
-        AccessSessionService-->>App: false
-        App->>SubscriptionPage: Hiện trang chọn gói
+        ASS-->>App: true
+        App->>Shell: new AppShell()
+        App->>ASS: StartExpiryTimer() [loop 60s]
+    else Hết hạn / chưa có
+        ASS-->>App: false
+        App-->>User: LanguageSelectionPage → chọn ngôn ngữ vi/en
+        App->>SubPage: Navigate SubscriptionPage
     end
 
-    Note over User,PaymentQRPage: Bước 2 — Chọn gói & tạo QR
-    User->>SubscriptionPage: Chọn gói (1h / 2h / 1day / 3day)
-    SubscriptionPage->>PaymentQRPage: Navigate(package)
-    PaymentQRPage->>AccessSessionService: CreatePendingSessionAsync(package)
-    AccessSessionService->>Preferences: Lấy hoặc tạo DeviceId
-    Preferences-->>AccessSessionService: DeviceId
-    AccessSessionService->>Supabase: INSERT AccessSessions (IsActive=false)
-    Supabase-->>AccessSessionService: SessionId
-    AccessSessionService-->>PaymentQRPage: AccessSession (SessionId, DeviceId)
-    PaymentQRPage-->>User: Hiện mã QR VietQR
+    SubPage->>ASS: GetPackagesAsync()
+    ASS->>Supabase: SELECT AccessPackages WHERE IsActive=true ORDER BY SortOrder
+    alt DB OK
+        Supabase-->>ASS: Packages[]
+    else Lỗi DB
+        ASS-->>SubPage: _fallbackPackages (giá hardcode)
+    end
+    SubPage-->>User: Hiện 4 gói với giá từ DB
 
-    Note over User,AppShell: Bước 3 — Polling & kích hoạt
-    User->>PaymentQRPage: Chuyển khoản theo mã QR
-    PaymentQRPage->>AccessSessionService: StartPollingForActivation(sessionId)
-    Note over AccessSessionService,Supabase: Nội bộ — poll mỗi 5 giây
-    Admin->>Supabase: UPDATE IsActive=true, ExpiresAt=NOW+duration
-    AccessSessionService->>Supabase: SELECT session (internal poll)
-    Supabase-->>AccessSessionService: IsActive=true, ExpiresAt
-    AccessSessionService->>Preferences: Lưu ExpiresAt, SessionId
-    AccessSessionService-->>PaymentQRPage: OnActivated callback
-    PaymentQRPage->>AccessSessionService: StartExpiryTimer()
-    PaymentQRPage->>AppShell: Application.MainPage = new AppShell()
-    AppShell-->>User: Vào giao diện chính
+    User->>SubPage: Chọn gói (vd: "2h - 18.000đ")
+    SubPage->>QRPage: Navigate(AccessPackage)
+    QRPage->>ASS: CreatePendingSessionAsync(packageId, durationHours, priceVnd)
+    ASS->>Supabase: INSERT AccessSessions {DeviceId, PackageId, IsActive=false}
+    Supabase-->>ASS: SessionId (uuid)
+    ASS->>Prefs: Set("access_session_id", sessionId)
+    QRPage-->>User: Hiện QR VietQR (VIB, 310822005, memo=DeviceId)
+    QRPage->>ASS: StartPollingForActivation(sessionId) [poll 5s]
 
-    Note over App,AppShell: Bước 4 — Timer tự động khóa khi hết hạn
-    Note over AccessSessionService: StartExpiryTimer() chạy ngầm sau khi kích hoạt
-    loop Nội bộ — mỗi 60 giây
-        AccessSessionService->>Preferences: Đọc ExpiresAt
-        AccessSessionService->>AccessSessionService: IsAccessValid()
+    User->>User: Chuyển khoản ngân hàng
+    Admin->>Supabase: POST /api/admin/sessions/{id}/activate
+    Note over Supabase: IsActive=true, ActivatedAt=now, ExpiresAt=now+DurationHours
+
+    loop Poll mỗi 5s
+        ASS->>Supabase: SELECT AccessSessions WHERE SessionId=id
+        Supabase-->>ASS: {IsActive, ExpiresAt}
+    end
+    ASS->>Prefs: Set("access_expires_at", expiresAt)
+    ASS->>Shell: Application.Current.MainPage = new AppShell()
+    Shell-->>User: Vào giao diện chính
+
+    loop Mỗi 60s (background)
+        ASS->>ASS: IsAccessValid()
         alt Hết hạn
-            AccessSessionService->>App: AccessExpired event
-            App->>User: Alert "Gói đã hết hạn"
-            App->>SubscriptionPage: Quay về trang chọn gói
+            ASS->>App: AccessExpired event
+            App-->>User: Alert "Gói đã hết hạn"
+            App-->>User: LanguageSelectionPage
         end
     end
 ```
 
 ---
 
-#### 13.4.2 Tìm kiếm & lọc địa điểm
+#### 13.4.2 Bản đồ & POI & Chỉ đường (UC3, UC4)
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant MapPage
+    participant PlaceService
+    participant LS as LocationService
+    participant Mapsui
+    participant OSRM
+
+    MapPage->>PlaceService: GetCachedPlaces()
+    PlaceService-->>MapPage: places[]
+    MapPage->>Mapsui: Vẽ POIsGlow + POIs layers (SkiaSharp marker đỏ)
+    MapPage-->>User: Bản đồ CartoDB Voyager với marker POI
+
+    User->>Mapsui: Tap marker POI
+    Mapsui->>MapPage: OnMapInfo(feature["id"])
+    MapPage->>PlaceService: GetCachedPlaces().FirstOrDefault(p.PlaceId == id)
+    PlaceService-->>MapPage: Place
+    MapPage-->>User: Bottom card: tên, status mở/đóng, rating, địa chỉ, tags, giờ
+
+    User->>MapPage: Tap "Chỉ đường"
+    MapPage->>LS: LastKnownLocation
+    LS-->>MapPage: (userLat, userLon)
+    MapPage->>OSRM: GET /route/v1/driving/{origin};{dest}?overview=full&geometries=geojson
+    OSRM-->>MapPage: GeoJSON polyline
+    MapPage->>Mapsui: Vẽ "Route" layer (#E94560) + "Destination" marker
+    MapPage->>Mapsui: Zoom to route bounds
+    MapPage->>MapPage: CancelRoutePanel.IsVisible = true
+    MapPage-->>User: Đường đi hiển thị + nút Hủy
+
+    User->>MapPage: Tap "Hủy route"
+    MapPage->>Mapsui: Xóa layer "Route" + "Destination"
+    MapPage->>MapPage: CancelRoutePanel.IsVisible = false
+    MapPage-->>User: Bản đồ bình thường
+
+    Note over MapPage,OSRM: Chỉ đường từ PlaceDetailPage hoặc TourDetailPage
+    MapPage->>MapPage: OnAppearing → đọc PendingRoute (static)
+    MapPage->>OSRM: GET /route/v1/driving/...
+    OSRM-->>MapPage: Polyline
+    MapPage-->>User: Route + CancelRoutePanel
+```
+
+---
+
+#### 13.4.3 TTS tự động — Geofence (UC5, UC14, UC15)
+
+```mermaid
+sequenceDiagram
+    participant OS as Hệ điều hành
+    participant LS as LocationService
+    participant MapPage
+    participant GE as GeofenceEngine
+    participant NS as NarrationService
+    participant UPS as UserProfileService
+    participant Supabase
+
+    OS->>LS: GPS update (Android FG Service / iOS polling 3s)
+    LS->>MapPage: LocationChanged event (lat, lon)
+    Note over MapPage: _gpsStarted flag — chỉ 1 handler duy nhất
+
+    MapPage->>MapPage: UpdateUserMarker(lat, lon)
+    MapPage->>LS: GetAddressAsync() [cache 15s / dưới 30m bỏ qua]
+    LS-->>MapPage: Địa chỉ hiện tại
+
+    alt CancelRoutePanel.IsVisible == true
+        MapPage->>MapPage: return early (đang chỉ đường)
+    else
+        MapPage->>GE: FindNearestPOI(lat, lon, cachedPlaces)
+
+        alt candidates rỗng (ngoài radius hoặc đang cooldown)
+            GE->>GE: reset _pendingPlaceId
+            GE-->>MapPage: null
+            alt _lastSpokenPlace != null
+                MapPage->>GE: GetDistance(user, _lastSpokenPlace)
+                alt dist > Radius → user đã rời đi
+                    MapPage->>MapPage: _lastSpokenPlaceId = null
+                    MapPage->>MapPage: _lastSpokenPlace = null
+                else dist <= Radius → cooldown đang active
+                    MapPage->>MapPage: giữ nguyên _lastSpokenPlaceId
+                end
+            end
+        else candidates có POI
+            GE->>GE: top = sort Priority DESC, Distance ASC
+            alt POI mới khác _pendingPlaceId
+                GE->>GE: _pendingPlaceId = topId, _pendingFirstSeenAt = now
+                GE-->>MapPage: null (chờ debounce 2s)
+            else elapsed < 2000ms
+                GE-->>MapPage: null
+            else elapsed >= 2000ms
+                GE-->>MapPage: Place (đủ debounce)
+            end
+        end
+
+        alt nearest != null && nearest.PlaceId != _lastSpokenPlaceId
+            MapPage->>MapPage: _lastSpokenPlaceId = nearestId
+            MapPage->>MapPage: _lastSpokenPlace = nearest
+            MapPage->>MapPage: nearest.LastPlayedAt = DateTime.Now
+            MapPage->>NS: SpeakFromGpsAsync(place.GetScriptForLocale(locale))
+            alt (now - _lastGpsTtsAt) < 60s
+                NS-->>MapPage: return (global GPS cooldown)
+            else
+                NS->>NS: _lastGpsTtsAt = now → TTS phát audio
+            end
+            MapPage->>UPS: AddHistoryByGpsAsync(nearest)
+            UPS->>UPS: AddHistoryAsync(place, "GPS") [local Prefs, max 100]
+            UPS->>Supabase: INSERT DevicePoiVisits {DeviceId, PlaceId, "GPS", now}
+            Note over Supabase: Trigger on_device_poi_visit_insert → Places.TotalVisits++
+        end
+    end
+```
+
+---
+
+#### 13.4.4 Khám phá địa điểm (UC6, UC7)
 
 ```mermaid
 sequenceDiagram
     actor User
     participant MainPage
     participant PlaceService
-    participant Cache as In-memory Cache
     participant Supabase
+    participant PDP as PlaceDetailPage
+    participant NS as NarrationService
+    participant MapPage
 
-    Note over MainPage,Supabase: Bước 1 — Tải dữ liệu vào cache
     MainPage->>PlaceService: GetAllPlacesAsync()
-    PlaceService->>Cache: Kiểm tra _cache.Count > 0
-    alt Cache trống
-        PlaceService->>Supabase: SELECT Places (IsActive, IsApproved)
-        Supabase-->>PlaceService: Places[]
-        PlaceService->>Supabase: SELECT PlaceImages
-        Supabase-->>PlaceService: PlaceImages[]
-        PlaceService->>Cache: Lưu vào _cache
-    end
-    PlaceService-->>MainPage: Places[]
-    MainPage-->>User: Hiện danh sách đầy đủ
+    PlaceService->>Supabase: SELECT Places
+    PlaceService->>Supabase: SELECT PlaceImages WHERE IsMain=true
+    PlaceService->>Supabase: SELECT PlaceTtsContents
+    Supabase-->>PlaceService: Places + Images + TtsContents
+    PlaceService-->>MainPage: _cachedPlaces
+    MainPage-->>User: Danh sách (ảnh, tên, rating, giá, giờ mở/đóng)
 
-    Note over User,MainPage: Bước 2 — Tìm kiếm theo tên
-    User->>MainPage: Nhập từ khoá vào SearchBar
-    MainPage->>MainPage: Lọc theo Name.Contains(keyword)
-    MainPage-->>User: Cập nhật danh sách
+    User->>MainPage: Nhập từ khoá tìm kiếm
+    MainPage->>MainPage: Filter Name / Address / Specialty.Contains
+    MainPage-->>User: Kết quả realtime
 
-    Note over User,MainPage: Bước 3 — Lọc theo loại / khu vực
-    User->>MainPage: Chọn chip lọc
-    MainPage->>MainPage: Lọc thêm theo CategoryId / District
-    MainPage-->>User: Cập nhật danh sách
+    User->>MainPage: Chọn chip danh mục
+    MainPage->>MainPage: Filter theo chip
+    MainPage-->>User: Danh sách đã lọc
+
+    User->>MainPage: Tap vào địa điểm
+    MainPage->>PDP: Navigate(Place, services)
+    PDP-->>User: Gallery ảnh, địa chỉ, giờ mở/đóng, giá, mô tả, tags, TTS script
+
+    User->>PDP: Tap "Nghe thuyết minh"
+    PDP->>NS: SpeakAsync(place.GetScriptForLocale(locale))
+    NS->>NS: TTS phát audio
+
+    User->>PDP: Tap "Gọi điện"
+    PDP->>PDP: PhoneDialer.Open(phone)
+
+    User->>PDP: Tap "Chỉ đường"
+    PDP->>MapPage: PendingRoute = (lat, lon, name)
+    PDP->>PDP: Shell.GoToAsync("//MainTabs/MapPage")
 ```
 
 ---
 
-#### 13.4.3 Xem bản đồ & marker địa điểm
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant MapPage
-    participant PlaceService
-    participant LocationService
-    participant Mapsui
-
-    Note over User,Mapsui: Bước 1 — Hiển thị bản đồ
-    User->>MapPage: Mở tab Bản đồ
-    MapPage->>PlaceService: GetCachedPlaces()
-    PlaceService-->>MapPage: Places[]
-    MapPage->>LocationService: Lấy vị trí hiện tại
-    LocationService-->>MapPage: (lat, lon)
-    MapPage->>Mapsui: Vẽ marker POI đỏ + marker user xanh
-    Mapsui-->>User: Hiển thị bản đồ + vị trí
-
-    Note over User,MapPage: Bước 2 — Tap marker xem thông tin
-    User->>Mapsui: Tap marker POI
-    Mapsui->>MapPage: OnMapInfo(e)
-    MapPage->>PlaceService: GetCachedPlaces().Find(PlaceId)
-    PlaceService-->>MapPage: Place
-    MapPage-->>User: Hiện bottom card (tên, ảnh, giờ, nút chỉ đường)
-```
-
----
-
-#### 13.4.4 Chỉ đường đến địa điểm
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant MapPage
-    participant PlaceDetailPage
-    participant LocationService
-    participant OSRM
-
-    Note over User,OSRM: Luồng 1 — Chỉ đường từ bottom card bản đồ
-    User->>MapPage: Bấm "Chỉ đường" trên card
-    MapPage->>LocationService: Lấy vị trí hiện tại
-    LocationService-->>MapPage: (lat, lon) origin
-    MapPage->>OSRM: GET /route origin → destination
-    OSRM-->>MapPage: GeoJSON polyline
-    MapPage->>MapPage: Vẽ polyline + zoom vào route
-    MapPage-->>User: Hiển thị đường đi + nút Hủy
-
-    User->>MapPage: Bấm "Hủy route"
-    MapPage->>MapPage: Xóa polyline, ẩn CancelRoutePanel
-
-    Note over User,OSRM: Luồng 2 — Chỉ đường từ PlaceDetailPage
-    User->>PlaceDetailPage: Bấm "Chỉ đường"
-    PlaceDetailPage->>MapPage: PendingRoute = (lat, lon, name)
-    PlaceDetailPage->>PlaceDetailPage: Shell.GoToAsync("//MainTabs/MapPage")
-    MapPage->>MapPage: OnAppearing() — đọc PendingRoute
-    MapPage->>LocationService: Lấy vị trí hiện tại
-    LocationService-->>MapPage: (lat, lon) origin
-    MapPage->>OSRM: GET /route origin → destination
-    OSRM-->>MapPage: Polyline
-    MapPage-->>User: Hiển thị đường đi
-```
-
----
-
-#### 13.4.5 Nghe thuyết minh tự động (Geofence + TTS)
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant OS as Hệ điều hành
-    participant LocationService
-    participant MapPage
-    participant GeofenceEngine
-    participant NarrationService
-    participant Preferences
-    participant AccountPage
-
-    Note over OS,NarrationService: Bước 1 — Phát hiện POI gần vị trí
-    OS->>LocationService: Vị trí GPS mới
-    LocationService->>MapPage: LocationChanged event
-    MapPage->>GeofenceEngine: FindNearestPOI(lat, lon, places)
-    GeofenceEngine->>GeofenceEngine: Lọc POI trong radius + cooldown
-    GeofenceEngine->>GeofenceEngine: Sắp xếp Priority ↓, Distance ↑
-    GeofenceEngine->>GeofenceEngine: Debounce 2 giây
-    alt Tìm được POI phù hợp
-        GeofenceEngine-->>MapPage: Place (nearest)
-        MapPage->>NarrationService: SpeakAsync(place.GetScriptForLocale(locale))
-        NarrationService-->>User: Phát thuyết minh tự động
-        MapPage->>MapPage: Ghi _lastSpokenPlaceId, LastPlayedAt
-    else Không có POI
-        GeofenceEngine-->>MapPage: null
-    end
-
-    Note over User,Preferences: Bước 2 — Chọn ngôn ngữ thuyết minh
-    User->>AccountPage: Mở tab Cài đặt
-    AccountPage->>NarrationService: SupportedLocales
-    NarrationService-->>AccountPage: 7 ngôn ngữ
-    AccountPage->>Preferences: Get tts_preferred_locale
-    Preferences-->>AccountPage: locale hiện tại
-    AccountPage-->>User: Hiện Picker ngôn ngữ
-
-    User->>AccountPage: Chọn ngôn ngữ mới (vd: en-US)
-    AccountPage->>NarrationService: PreferredLocale = "en-US"
-    NarrationService->>Preferences: Set tts_preferred_locale = "en-US"
-    AccountPage-->>User: Cập nhật hiển thị
-```
-
----
-
-#### 13.4.6 Xem & theo tour có sẵn
+#### 13.4.5 Tour có sẵn (UC8)
 
 ```mermaid
 sequenceDiagram
     actor User
     participant ToursPage
-    participant TourDetailPage
+    participant PlaceService
+    participant TDP as TourDetailPage
     participant MapPage
-    participant LocationService
     participant OSRM
 
-    Note over User,ToursPage: Bước 1 — Xem danh sách tour
     User->>ToursPage: Mở tab Tour
-    ToursPage->>ToursPage: EnsurePlacesLoadedAsync()
-    ToursPage->>ToursPage: RebuildTours() — tạo 3 tour từ Places
-    ToursPage-->>User: Hiện danh sách (Quick / Balanced / Full)
+    ToursPage->>PlaceService: GetAllPlacesAsync()
+    PlaceService-->>ToursPage: Places[]
+    ToursPage->>ToursPage: Lọc IsActive && IsApproved
+    ToursPage->>ToursPage: RebuildTours() → 3 TourCard (quick 2/balanced 3/full 4 stops)
+    ToursPage-->>User: 3 tour card với tags, budget, stops, duration
 
-    Note over User,TourDetailPage: Bước 2 — Xem chi tiết tour
-    User->>ToursPage: Chọn tour
-    ToursPage->>TourDetailPage: Navigate(TourCard)
-    TourDetailPage-->>User: Danh sách điểm dừng theo thứ tự
+    User->>ToursPage: Điều chỉnh filter (budget / duration / low-walking)
+    ToursPage->>ToursPage: RebuildTours() lại theo filter
+    ToursPage-->>User: Tour đã lọc
 
-    Note over User,OSRM: Bước 3 — Bắt đầu theo tour
-    User->>TourDetailPage: Bấm "Bắt đầu tour"
-    TourDetailPage->>MapPage: PendingRoute = điểm dừng đầu tiên
-    TourDetailPage->>TourDetailPage: Shell.GoToAsync("//MainTabs/MapPage")
-    MapPage->>MapPage: OnAppearing() — đọc PendingRoute
-    MapPage->>LocationService: Lấy vị trí hiện tại
-    LocationService-->>MapPage: (lat, lon) origin
-    MapPage->>OSRM: GET /route origin → điểm dừng 1
+    User->>ToursPage: Chọn 1 tour
+    ToursPage->>TDP: Navigate(TourCard, services)
+    TDP-->>User: Danh sách điểm dừng theo thứ tự
+
+    User->>TDP: Tap "Chỉ đường" cho stop bất kỳ
+    TDP->>MapPage: PendingRoute = (stop.lat, stop.lon, stop.name)
+    TDP->>TDP: Shell.GoToAsync("//MainTabs/MapPage")
+    MapPage->>OSRM: GET /route/v1/driving/...
     OSRM-->>MapPage: Polyline
-    MapPage-->>User: Hiển thị đường đi đến điểm dừng 1
+    MapPage-->>User: Route đến stop đó
+
+    User->>TDP: Tap "Bắt đầu tour"
+    TDP->>MapPage: PendingRoute = (stop1.lat, stop1.lon, stop1.name)
+    TDP->>TDP: Shell.GoToAsync("//MainTabs/MapPage")
+    MapPage->>OSRM: GET /route/v1/driving/...
+    OSRM-->>MapPage: Polyline
+    MapPage-->>User: Route đến điểm dừng đầu tiên
 ```
 
 ---
 
-#### 13.4.7 Xem chi tiết địa điểm
+#### 13.4.6 Tài khoản Mobile (UC9, UC10)
 
 ```mermaid
 sequenceDiagram
     actor User
-    participant MainPage
-    participant MapPage
-    participant PlaceDetailPage
-    participant PlaceService
-    participant NarrationService
-    participant LocationService
-    participant OSRM
+    participant AccountPage
+    participant UPS as UserProfileService
+    participant NS as NarrationService
+    participant Prefs as Preferences
 
-    Note over User,PlaceService: Bước 1 — Mở chi tiết
-    User->>MainPage: Tap địa điểm trong danh sách
-    MainPage->>PlaceDetailPage: Navigation.PushAsync(PlaceDetailPage)
-    PlaceDetailPage->>PlaceService: GetCachedPlaces().Find(PlaceId)
-    PlaceService-->>PlaceDetailPage: Place + PlaceImages
-    PlaceDetailPage-->>User: Hiện tên, ảnh, giờ mở cửa, giá, đánh giá
+    User->>AccountPage: Mở tab Tài khoản
+    AccountPage->>UPS: GetTripHistoryAsync()
+    UPS->>Prefs: Get("trip_history") → deserialize JSON
+    Prefs-->>UPS: List~TripHistoryItem~
+    UPS-->>AccountPage: Tối đa 30 items gần nhất
+    AccountPage-->>User: Danh sách lịch sử (tên, method GPS/QR, thời gian)
 
-    Note over User,NarrationService: Bước 2 — Nghe thuyết minh
-    User->>PlaceDetailPage: Bấm "Thuyết minh"
-    PlaceDetailPage->>NarrationService: SpeakAsync(GetScriptForLocale(locale))
-    NarrationService-->>User: Đọc thuyết minh theo ngôn ngữ đã chọn
+    User->>AccountPage: Chọn ngôn ngữ TTS (Picker)
+    AccountPage->>NS: PreferredLocale = selectedLocale
+    NS->>Prefs: Set("tts_preferred_locale", locale)
+    AccountPage-->>User: Xác nhận đã đổi ngôn ngữ TTS
 
-    Note over User,MapPage: Bước 3 — Chỉ đường từ chi tiết
-    User->>PlaceDetailPage: Bấm "Chỉ đường"
-    PlaceDetailPage->>MapPage: PendingRoute = (lat, lon, name)
-    PlaceDetailPage->>PlaceDetailPage: Shell.GoToAsync("//MainTabs/MapPage")
-    MapPage->>MapPage: OnAppearing() — đọc PendingRoute
-    MapPage->>LocationService: Lấy vị trí hiện tại
-    LocationService-->>MapPage: (lat, lon) origin
-    MapPage->>OSRM: GET /route origin → destination
-    OSRM-->>MapPage: Polyline
-    MapPage-->>User: Hiển thị đường đi
+    User->>AccountPage: Tap "Xóa lịch sử"
+    AccountPage->>UPS: ClearHistoryAsync()
+    UPS->>Prefs: Remove("trip_history")
+    AccountPage-->>User: Danh sách trống
 ```
 
 ---
 
-### 13.5 Sequence Diagrams — Web API
+### 13.5 Sequence Diagrams — Web
 
-#### 13.5.1 Đăng ký và đăng nhập
+#### 13.5.1 Xác thực Web — Đăng ký & Đăng nhập (UC16)
 
 ```mermaid
 sequenceDiagram
-    actor Client
-    participant AuthController
-    participant AuthService
-    participant AppDbContext
-    participant JWT
+    actor User
+    participant AuthMVC as AuthController (MVC)
+    participant API as ApiService
+    participant AuthAPI as AuthController (API)
+    participant DB as AppDbContext
 
-    Client->>AuthController: POST /api/auth/register
-    AuthController->>AuthService: RegisterAsync(dto)
-    AuthService->>AppDbContext: Kiểm tra email tồn tại
+    User->>AuthMVC: GET /Auth/Register
+    AuthMVC-->>User: Form đăng ký
+    User->>AuthMVC: POST /Auth/Register {fullName, email, password}
+    AuthMVC->>API: RegisterAsync(dto)
+    API->>AuthAPI: POST /api/auth/register
+    AuthAPI->>DB: SELECT User WHERE Email = email
     alt Email đã tồn tại
-        AppDbContext-->>AuthService: Đã tồn tại
-        AuthService-->>AuthController: Lỗi
-        AuthController-->>Client: 409 "Email đã được sử dụng"
-    else Email chưa tồn tại
-        AppDbContext-->>AuthService: Không tồn tại
-        AuthService->>AuthService: BCrypt hash password
-        AuthService->>AppDbContext: INSERT Users
-        AuthService->>JWT: GenerateJwt(user, 15min)
-        JWT-->>AuthService: AccessToken
-        AuthService->>AppDbContext: INSERT RefreshToken (7 ngày)
-        AuthService-->>AuthController: AuthResponseDto
-        AuthController-->>Client: 201 {accessToken, refreshToken}
+        AuthAPI-->>AuthMVC: 400
+        AuthMVC-->>User: "Email đã được sử dụng"
+    else OK
+        AuthAPI->>AuthAPI: BCrypt.HashPassword(password)
+        AuthAPI->>DB: INSERT User {Role="Owner", IsActive=true}
+        AuthAPI->>AuthAPI: GenerateJwt(user, 15min) + INSERT RefreshToken (7 ngày)
+        AuthAPI-->>API: 200 {accessToken, refreshToken}
+        AuthMVC->>AuthMVC: Lưu token + userInfo vào Session
+        AuthMVC-->>User: Redirect /Dashboard
     end
 
-    Client->>AuthController: POST /api/auth/login
-    AuthController->>AuthService: LoginAsync(dto)
-    AuthService->>AppDbContext: SELECT User WHERE Email
-    alt Email không tồn tại
-        AppDbContext-->>AuthService: null
-        AuthService-->>AuthController: Lỗi
-        AuthController-->>Client: 401 Unauthorized
-    else Email tồn tại
-        AppDbContext-->>AuthService: User
-        AuthService->>AuthService: BCrypt.Verify(password, hash)
-        alt Sai mật khẩu
-            AuthService-->>AuthController: Lỗi xác thực
-            AuthController-->>Client: 401 Unauthorized
-        else Đúng mật khẩu
-            AuthService->>JWT: GenerateJwt(user)
-            JWT-->>AuthService: AccessToken
-            AuthService->>AppDbContext: INSERT RefreshToken
-            AuthService-->>AuthController: AuthResponseDto
-            AuthController-->>Client: 200 {accessToken, refreshToken}
+    User->>AuthMVC: GET /Auth/Login
+    AuthMVC-->>User: Form đăng nhập
+    User->>AuthMVC: POST /Auth/Login {email, password}
+    AuthMVC->>API: LoginAsync(dto)
+    API->>AuthAPI: POST /api/auth/login
+    AuthAPI->>DB: SELECT User WHERE Email = email
+    alt Sai thông tin / tài khoản bị khóa
+        AuthAPI-->>AuthMVC: 401
+        AuthMVC-->>User: "Email hoặc mật khẩu không đúng"
+    else OK
+        AuthAPI->>AuthAPI: BCrypt.Verify + GenerateJwt + INSERT RefreshToken
+        AuthAPI-->>API: 200 {accessToken, refreshToken, role}
+        AuthMVC->>AuthMVC: Lưu token + role vào Session
+        alt Role = Admin
+            AuthMVC-->>User: Redirect /Admin/AdminDashboard
+        else Role = Owner
+            AuthMVC-->>User: Redirect /Dashboard
         end
     end
 ```
 
-#### 13.5.2 Refresh token và rotation
+---
 
-```mermaid
-sequenceDiagram
-    actor Client
-    participant AuthController
-    participant AuthService
-    participant AppDbContext
-    participant JWT
-
-    Client->>AuthController: POST /api/auth/refresh {refreshToken}
-    AuthController->>AuthService: RefreshAsync(token)
-    AuthService->>AppDbContext: SELECT RefreshToken WHERE Token
-    AppDbContext-->>AuthService: RefreshToken
-
-    alt Token hợp lệ và chưa hết hạn
-        AuthService->>AppDbContext: UPDATE IsRevoked=true (token cũ)
-        AuthService->>AppDbContext: INSERT RefreshToken mới (rotation)
-        AuthService->>JWT: GenerateJwt(user)
-        JWT-->>AuthService: AccessToken
-        AuthService-->>AuthController: AuthResponseDto mới
-        AuthController-->>Client: 200 {accessToken mới, refreshToken mới}
-    else Token không hợp lệ
-        AuthService-->>AuthController: null
-        AuthController-->>Client: 401 Unauthorized
-    end
-```
-
-#### 13.5.3 Tạo và duyệt địa điểm
+#### 13.5.2 Quản lý địa điểm — Owner (UC17, UC18, UC19, UC20)
 
 ```mermaid
 sequenceDiagram
     actor Owner
-    participant PlacesController
-    participant AppDbContext
-    participant AdminController
-    actor Admin
+    participant PlacesMVC as PlacesController (MVC)
+    participant API as ApiService
+    participant PlacesAPI as PlacesController (API)
+    participant DB as AppDbContext
+    participant Claude as Anthropic Claude API
 
-    Owner->>PlacesController: POST /api/places [Bearer token]
-    PlacesController->>AppDbContext: INSERT Places (Status="Pending")
-    AppDbContext-->>PlacesController: Place
-    PlacesController-->>Owner: 201 PlaceDto
+    Owner->>PlacesMVC: GET /Places
+    PlacesMVC->>API: GET /api/places/mine (paginated)
+    PlacesAPI->>DB: SELECT Places WHERE OwnerId = me
+    DB-->>PlacesMVC: Places[]
+    PlacesMVC-->>Owner: Danh sách địa điểm
 
-    Admin->>AdminController: GET /api/admin/places?pendingOnly=true
-    AdminController->>AppDbContext: SELECT Places WHERE Status="Pending"
-    AppDbContext-->>AdminController: Places[]
-    AdminController-->>Admin: Danh sách chờ duyệt
+    Owner->>PlacesMVC: GET /Places/Create → POST /Places/Create {Name, Address, Lat, Lon, ...}
+    PlacesMVC->>API: POST /api/places
+    PlacesAPI->>DB: INSERT Place {IsApproved=false, IsActive=false}
+    PlacesMVC-->>Owner: Redirect /Places/Detail/{id}
 
-    Admin->>AdminController: PUT /api/admin/places/{id}/approve
-    AdminController->>AppDbContext: UPDATE Status="Active", IsApproved=true
-    AppDbContext-->>AdminController: OK
-    AdminController-->>Admin: 200 "Đã duyệt"
+    Owner->>PlacesMVC: POST /Places/Edit/{id} {Name, Address, ...}
+    PlacesMVC->>API: PUT /api/places/{id}
+    PlacesAPI->>DB: UPDATE Place
+    PlacesMVC-->>Owner: "Đã cập nhật"
+
+    Owner->>PlacesMVC: POST /Places/AddImage/{placeId} {imageUrl, isMain}
+    PlacesMVC->>API: POST /api/places/{id}/images
+    PlacesAPI->>DB: INSERT PlaceImages
+    PlacesMVC-->>Owner: Ảnh đã thêm
+
+    Owner->>PlacesMVC: POST /Places/UpdateTts/{id} {locale, script}
+    PlacesMVC->>API: PUT /api/places/{id}/tts
+    PlacesAPI->>DB: UPSERT PlaceTtsContents {PlaceId, Locale, Script}
+    PlacesMVC-->>Owner: "Đã lưu TTS"
+
+    Owner->>PlacesMVC: POST /Places/TranslateTts/{id}
+    PlacesMVC->>API: POST /api/places/{id}/tts/translate
+    PlacesAPI->>Claude: Dịch script sang vi / en / zh / ko / ja / fr
+    Claude-->>PlacesAPI: Translations[6]
+    PlacesAPI->>DB: UPSERT PlaceTtsContents × 6 locale
+    PlacesMVC-->>Owner: "Đã dịch 6 ngôn ngữ"
 ```
 
+---
 
-#### 13.5.4 Theo dõi vị trí và auto check-in
+#### 13.5.3 Tài khoản & Subscription — Owner (UC21, UC22)
 
 ```mermaid
 sequenceDiagram
-    actor Client
-    participant TrackingController
-    participant TrackingService
-    participant GeoLocationService
-    participant AppDbContext
-    participant INotificationService
+    actor Owner
+    participant ProfileMVC as ProfileController (MVC)
+    participant SubMVC as SubscriptionController (MVC)
+    participant API as ApiService
+    participant AuthAPI as AuthController (API)
+    participant SubAPI as SubscriptionController (API)
+    participant DB as AppDbContext
 
-    Client->>TrackingController: POST /api/tracking/location {lat, lng}
-    TrackingController->>TrackingService: LogLocationAsync(userId, dto)
-    TrackingService->>AppDbContext: INSERT UserTracking
-    TrackingService->>GeoLocationService: DetectNearestPlaceAsync(lat, lng, 100m)
-    GeoLocationService->>AppDbContext: SELECT Places trong bounding box
-    GeoLocationService->>GeoLocationService: Haversine distance với từng place
-    GeoLocationService-->>TrackingService: Place gần nhất (nếu có)
+    Owner->>ProfileMVC: GET /Profile
+    ProfileMVC->>API: GET /api/auth/profile
+    AuthAPI->>DB: SELECT User WHERE Id = me
+    ProfileMVC-->>Owner: Trang profile (tên, email, phone)
 
-    alt Trong bán kính 100m
-        TrackingService->>INotificationService: SendNewCheckIn(ownerId, placeName, userName)
-        INotificationService->>INotificationService: SignalR → owner group
+    Owner->>ProfileMVC: POST /Profile/Edit {fullName, email, phone}
+    ProfileMVC->>API: PUT /api/auth/profile
+    AuthAPI->>DB: UPDATE User
+    ProfileMVC-->>Owner: "Đã cập nhật"
+
+    Owner->>ProfileMVC: POST /Profile/ChangePassword {oldPwd, newPwd}
+    ProfileMVC->>API: PUT /api/auth/change-password
+    AuthAPI->>AuthAPI: BCrypt.Verify(oldPwd)
+    alt Sai mật khẩu cũ
+        AuthAPI-->>ProfileMVC: 400
+        ProfileMVC-->>Owner: "Mật khẩu cũ không đúng"
+    else OK
+        AuthAPI->>DB: UPDATE PasswordHash
+        ProfileMVC-->>Owner: "Đã đổi mật khẩu"
     end
 
-    TrackingService-->>TrackingController: OK
-    TrackingController-->>Client: 200
+    Owner->>SubMVC: GET /Subscription/Plans
+    SubMVC->>API: GET /api/subscriptions/plans + GET /api/subscriptions/mine
+    SubAPI->>DB: SELECT SubscriptionPlans + Subscription hiện tại
+    SubMVC-->>Owner: Danh sách gói + trạng thái đang dùng
+
+    Owner->>SubMVC: POST /Subscription/Checkout {planId}
+    SubMVC->>API: POST /api/subscriptions {planId}
+    SubAPI->>DB: INSERT Subscription {IsActive=false}
+    SubAPI-->>SubMVC: paymentUrl (VNPay / MoMo / Stripe)
+    SubMVC-->>Owner: Redirect đến cổng thanh toán
+
+    Owner->>SubMVC: GET /Subscription/History
+    SubMVC->>API: GET /api/subscriptions/history
+    SubAPI->>DB: SELECT Subscriptions WHERE OwnerId=me ORDER BY StartDate DESC
+    SubMVC-->>Owner: Danh sách lịch sử gói
 ```
 
+---
+
+#### 13.5.4 Quản lý session thanh toán — Admin (UC26)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant SessionMVC as AdminSessionsController (MVC)
+    participant API as ApiService
+    participant SessionAPI as AccessSessionsController (API)
+    participant DB as AppDbContext
+
+    Admin->>SessionMVC: GET /Admin/Sessions?status=pending
+    SessionMVC->>API: GetSessionStatsAsync() + GetSessionsAsync("pending")
+    SessionAPI->>DB: COUNT pending/active/total + SUM revenue sessions IsActive
+    SessionAPI->>DB: SELECT AccessSessions WHERE pending ORDER BY CreatedAt DESC
+    DB-->>SessionMVC: stats + sessions[]
+    SessionMVC-->>Admin: Stats card + bảng pending sessions
+
+    Admin->>SessionMVC: POST /Admin/Sessions/Activate {sessionId}
+    SessionMVC->>API: POST /api/admin/sessions/{id}/activate
+    SessionAPI->>DB: FindAsync(sessionId)
+    alt Không tồn tại / đã active
+        SessionAPI-->>SessionMVC: 404 / 400
+        SessionMVC-->>Admin: Thông báo lỗi
+    else OK
+        SessionAPI->>DB: IsActive=true, ActivatedAt=now, ExpiresAt=now+DurationHours
+        SessionMVC-->>Admin: "Đã kích hoạt" → Redirect
+    end
+
+    Admin->>SessionMVC: POST /Admin/Sessions/Deactivate {sessionId}
+    SessionMVC->>API: POST /api/admin/sessions/{id}/deactivate
+    SessionAPI->>DB: IsActive=false, ExpiresAt=now
+    SessionMVC-->>Admin: "Đã thu hồi quyền truy cập"
+
+    Admin->>SessionMVC: POST /Admin/Sessions/Cancel {sessionId}
+    SessionMVC->>API: DELETE /api/admin/sessions/{id}
+    alt IsActive=true
+        SessionAPI-->>SessionMVC: 400 "Không thể hủy session đã active"
+    else Pending OK
+        SessionAPI->>DB: Remove(session)
+        SessionMVC-->>Admin: "Đã hủy session"
+    end
+```
+
+---
+
+#### 13.5.5 Quản lý nội dung — Admin (UC23, UC24, UC25)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant DashMVC as AdminDashboardController (MVC)
+    participant PlacesMVC as AdminPlacesController (MVC)
+    participant UsersMVC as AdminUsersController (MVC)
+    participant API as ApiService
+    participant AdminAPI as AdminController (API)
+    participant AnalyticsAPI as AnalyticsController (API)
+    participant DB as AppDbContext
+
+    Admin->>DashMVC: GET /Admin/AdminDashboard
+    DashMVC->>API: GET /api/analytics/admin/stats
+    AnalyticsAPI->>DB: COUNT users/places + SUM revenue active sessions
+    DB-->>DashMVC: {totalUsers, totalPlaces, totalRevenue, ...}
+    DashMVC-->>Admin: Dashboard thống kê + bản đồ tất cả địa điểm
+
+    Admin->>PlacesMVC: GET /Admin/AdminPlaces?pendingOnly=true
+    PlacesMVC->>API: GET /api/admin/places?pendingOnly=true
+    AdminAPI->>DB: SELECT Places WHERE IsApproved=false
+    PlacesMVC-->>Admin: Danh sách địa điểm chờ duyệt
+
+    Admin->>PlacesMVC: POST /Admin/AdminPlaces/Approve {placeId}
+    API->>AdminAPI: PUT /api/admin/places/{id}/approve
+    AdminAPI->>DB: IsApproved=true, IsActive=true
+    PlacesMVC-->>Admin: "Đã duyệt — hiện trên app"
+
+    Admin->>PlacesMVC: POST /Admin/AdminPlaces/Suspend {placeId}
+    API->>AdminAPI: PUT /api/admin/places/{id}/suspend
+    AdminAPI->>DB: IsActive=false
+    PlacesMVC-->>Admin: "Đã suspend"
+
+    Admin->>UsersMVC: GET /Admin/AdminUsers?search=...&role=...
+    UsersMVC->>API: GET /api/admin/users (paginated)
+    AdminAPI->>DB: SELECT Users (filter search/role)
+    UsersMVC-->>Admin: Danh sách user
+
+    Admin->>UsersMVC: POST /Admin/AdminUsers/ToggleLock {userId}
+    API->>AdminAPI: PUT /api/admin/users/{id}/lock
+    AdminAPI->>DB: IsActive = !IsActive
+    UsersMVC-->>Admin: "Đã khóa / mở tài khoản"
+
+    Admin->>UsersMVC: POST /Admin/AdminUsers/ChangeRole {userId, role}
+    API->>AdminAPI: PUT /api/admin/users/{id}/role
+    AdminAPI->>DB: UPDATE Role
+    UsersMVC-->>Admin: "Đã đổi role"
+```
+
+---
+
+#### 13.5.6 Cấu hình hệ thống — Admin (UC27, UC28, UC29)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant PkgMVC as AdminPackagesController (MVC)
+    participant DevMVC as AdminDevicesController (MVC)
+    participant API as ApiService
+    participant PkgAPI as AccessPackagesController (API)
+    participant DevAPI as DeviceAnalyticsController (API)
+    participant DB as AppDbContext
+
+    Admin->>PkgMVC: GET /Admin/AdminPackages
+    PkgMVC->>API: GET /api/access-packages
+    PkgAPI->>DB: SELECT AccessPackages ORDER BY SortOrder
+    DB-->>PkgMVC: 4 gói
+    PkgMVC-->>Admin: 4 card với form chỉnh giá / duration / IsActive
+
+    Admin->>PkgMVC: POST /Admin/AdminPackages/Update {packageId, PriceVnd, DurationHours, ...}
+    PkgMVC->>API: PUT /api/access-packages/{id}
+    PkgAPI->>DB: UPDATE AccessPackage
+    PkgMVC-->>Admin: "Đã cập nhật — app load giá mới khi vào SubscriptionPage"
+
+    Admin->>DevMVC: GET /Admin/AdminDevices?search=...
+    DevMVC->>API: GET /api/admin/devices
+    DevAPI->>DB: SELECT DeviceRegistrations LEFT JOIN DevicePoiVisits, AccessSessions
+    DB-->>DevMVC: [{DeviceId, Platform, FirstSeen, LastSeen, VisitCount, HasActive}]
+    DevMVC-->>Admin: Bảng thiết bị với thống kê
+
+    Admin->>DevMVC: GET /Admin/AdminDevices/{deviceId}
+    DevMVC->>API: GET /api/admin/devices/{deviceId}/visits
+    DevAPI->>DB: SELECT DevicePoiVisits WHERE DeviceId=id ORDER BY VisitedAt DESC LIMIT 50
+    DB-->>DevMVC: visits[]
+    DevMVC-->>Admin: Lịch sử 50 lượt ghé POI gần nhất
+```
 
 ---
 
@@ -1444,119 +1831,115 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A([Mở app]) --> B[Đọc Preferences]
-    B --> C{SessionId tồn tại?}
-    C -->|Không| D[Hiện SubscriptionPage]
-    C -->|Có| E{ExpiresAt > Now?}
-    E -->|Không| D
-    E -->|Có| F[Khởi động AppShell]
-    F --> G[Khởi động Timer 60s]
-    G --> H[Load Places từ Supabase]
-    H --> I[Render bản đồ + markers]
-    I --> J([App sẵn sàng])
+    A([Mở app]) --> B[RegisterDeviceAsync fire-and-forget\nUPSERT DeviceRegistrations]
+    B --> C[IsAccessValid\nĐọc access_expires_at Preferences]
+    C --> D{ExpiresAt tồn tại\nvà > UtcNow?}
+    D -->|Không| E[LanguageSelectionPage]
+    D -->|Có| F[new AppShell]
+    F --> G[StartExpiryTimer loop 60s]
+    G --> H[PlaceService.GetAllPlacesAsync\nPlaces + Images + TtsContents]
+    H --> I[MapPage.SetupMap\nCartoDB Voyager tiles]
+    I --> J[LoadPOIsAsync\nPOIsGlow + POIs layers]
+    J --> K[StartGPS → LocationChanged handler\n_gpsStarted=true]
+    K --> L([App sẵn sàng])
 
-    D --> K[Chọn gói]
-    K --> L[Tạo session Supabase]
-    L --> M[Hiện QR VietQR]
-    M --> N{Poll 5s: IsActive?}
-    N -->|Chưa| N
-    N -->|Có| O[Lưu ExpiresAt vào Preferences]
-    O --> F
+    E --> M[Chọn ngôn ngữ vi/en]
+    M --> N[SubscriptionPage.OnAppearing\nGetPackagesAsync → DB hoặc fallback]
+    N --> O[User chọn gói]
+    O --> P[PaymentQRPage\nCreatePendingSessionAsync\nINSERT AccessSessions IsActive=false]
+    P --> Q[Hiện QR VietQR]
+    Q --> R{Poll 5s: IsActive=true?}
+    R -->|Chưa| R
+    R -->|Có| S[Lưu ExpiresAt Preferences]
+    S --> F
 ```
 
-#### 13.6.2 Luồng Geofence + TTS
+#### 13.6.2 Luồng Geofence + TTS chi tiết
 
 ```mermaid
 flowchart TD
-    A([GPS update]) --> B[LocationService.LocationChanged]
-    B --> C[GeofenceEngine.FindNearestPOI]
-    C --> D{Có POI trong radius?}
-    D -->|Không| E[_lastSpokenPlaceId = null]
-    E --> Z([Kết thúc])
-    D -->|Có| F{POI trong cooldown?}
-    F -->|Có| G[Bỏ qua POI này]
-    G --> D
-    F -->|Không| H[Sắp xếp theo Priority + Distance]
-    H --> I{POI == _lastSpokenPlaceId?}
-    I -->|Có| Z
-    I -->|Không| J[Debounce 2 giây]
-    J --> K[NarrationService.SpeakAsync]
-    K --> L[Cập nhật _lastSpokenPlaceId]
-    L --> M[Cập nhật LastPlayedAt]
-    M --> Z
+    A([GPS LocationChanged event]) --> B[CancelRoutePanel.IsVisible?]
+    B -->|Có| Z([return - đang chỉ đường])
+    B -->|Không| C[GeofenceEngine.FindNearestPOI]
+    C --> D{candidates rỗng?}
+    D -->|Có| E[reset _pendingPlaceId\nreturn null]
+    E --> F{_lastSpokenPlace != null?}
+    F -->|Không| Z2([Kết thúc])
+    F -->|Có| G[GetDistance user → _lastSpokenPlace]
+    G --> H{dist > Radius?}
+    H -->|Có| I[_lastSpokenPlaceId = null\n_lastSpokenPlace = null\nuser đã rời đi]
+    H -->|Không| Z2
+    I --> Z2
+
+    D -->|Không| J{top.PlaceId == _pendingPlaceId?}
+    J -->|Không| K[_pendingPlaceId = topId\n_pendingFirstSeenAt = now\nreturn null]
+    K --> Z2
+    J -->|Có| L{elapsed >= 2000ms?}
+    L -->|Không| M[return null - chưa đủ debounce]
+    M --> Z2
+    L -->|Có| N[return top]
+    N --> O{nearest.PlaceId == _lastSpokenPlaceId?}
+    O -->|Có| Z2
+    O -->|Không| P[_lastSpokenPlaceId = nearestId\n_lastSpokenPlace = nearest\nnearest.LastPlayedAt = now]
+    P --> Q[SpeakFromGpsAsync - global 60s cooldown\nGetScriptForLocale locale]
+    Q --> R[AddHistoryByGpsAsync\nAddHistoryAsync local\nINSERT DevicePoiVisits Supabase\nTrigger TotalVisits++]
+    R --> Z2([Kết thúc])
 ```
 
-#### 13.6.3 Luồng thanh toán và kích hoạt
+#### 13.6.3 Luồng Admin kích hoạt session
 
 ```mermaid
 flowchart TD
-    A([User mở app lần đầu]) --> B[SubscriptionPage]
-    B --> C[Chọn gói thời gian]
-    C --> D[Tạo AccessSession - IsActive=false]
-    D --> E[Hiện QR VietQR + DeviceId]
-    E --> F[User chuyển khoản ngân hàng]
-    F --> G[App polling Supabase mỗi 5s]
-    G --> H{Admin thấy tiền}
-    H -->|Chưa| G
-    H -->|Có| I[Admin: activate_session DeviceId]
-    I --> J[Supabase: IsActive=true, ExpiresAt=Now+duration]
-    J --> K[App poll nhận IsActive=true]
-    K --> L[Lưu ExpiresAt vào Preferences]
-    L --> LA[StartExpiryTimer]
-    LA --> M[Application.MainPage = AppShell]
-    M --> N([Dùng app bình thường])
-    N --> O{Timer 60s kiểm tra}
-    O -->|Còn hạn| O
-    O -->|Hết hạn| P[Alert hết hạn]
-    P --> B
+    A([Admin vào /Admin/Sessions]) --> B[Load stats + pending sessions]
+    B --> C{Kiểm tra chuyển khoản?}
+    C -->|Chưa nhận tiền| D[Bấm Hủy - Cancel]
+    D --> E[DELETE /api/admin/sessions/id\nChỉ được xóa nếu NOT IsActive]
+    E --> F([Session bị xóa khỏi DB])
+    C -->|Đã nhận tiền| G[Bấm Kích hoạt - Activate]
+    G --> H[POST /api/admin/sessions/id/activate]
+    H --> I[IsActive=true\nActivatedAt=now\nExpiresAt=now+DurationHours]
+    I --> J([App poll nhận\nvào được giao diện chính])
 ```
 
-#### 13.6.4 Luồng duyệt địa điểm (Web)
+#### 13.6.4 Luồng duyệt địa điểm
 
 ```mermaid
 flowchart TD
-    A([Owner tạo Place]) --> B[Status = Pending]
-    B --> C[Admin vào /admin/places]
-    C --> D[Xem danh sách chờ duyệt]
-    D --> E{Quyết định}
-    E -->|Duyệt| F[PUT /approve → Status=Active]
-    E -->|Từ chối| G[PUT /suspend → Status=Suspended]
-    F --> H[Place hiện trên app mobile]
-    G --> I[Place bị ẩn]
-    H --> J{Owner cập nhật?}
-    J -->|Có| K[PUT /api/places/id]
-    K --> H
+    A([Owner tạo Place]) --> B[IsApproved=false\nIsActive=false]
+    B --> C[Admin GET /api/admin/places?pendingOnly=true]
+    C --> D{Quyết định}
+    D -->|Duyệt| E[PUT approve\nIsApproved=true\nIsActive=true]
+    D -->|Từ chối| F[PUT suspend\nIsActive=false]
+    E --> G[Place hiện trên app mobile\nMapPage + MainPage]
+    F --> H[Place bị ẩn]
+    G --> I{Owner cập nhật?}
+    I -->|Có| J[PUT /api/places/id]
+    J --> G
 ```
 
 #### 13.6.5 Luồng đăng nhập Web MVC
 
 ```mermaid
 flowchart TD
-    A([Truy cập trang có Auth]) --> B{Session có token?}
+    A([Truy cập route có AdminOnly filter]) --> B{Session cookie có JWT?}
     B -->|Không| C[Redirect /Auth/Login]
-    B -->|Có| D{Role đủ quyền?}
+    B -->|Có| D{JWT còn hạn và Role=Admin?}
     D -->|Không| E[Redirect /Auth/AccessDenied]
     D -->|Có| F[Tiếp tục request]
     C --> G[Nhập email + password]
-    G --> H[POST /Auth/Login]
+    G --> H[POST /Auth/Login\n→ POST /api/auth/login]
     H --> I{Credentials hợp lệ?}
     I -->|Không| J[Hiện lỗi]
     J --> G
-    I -->|Có| K[Lưu token vào Session]
+    I -->|Có| K[Lưu accessToken vào Session]
     K --> L{Role?}
-    L -->|Admin| M[Redirect /Admin]
+    L -->|Admin| M[Redirect /Admin/Dashboard]
     L -->|Owner| N[Redirect /Dashboard]
 ```
 
 ---
 
-**Tổng:** 1 ER + 2 Class + 11 Sequence + 5 Activity + 1 BFD + 1 Use Case = **21 diagrams**
-
----
-
 ### 13.7 BFD Bậc 1 — TourGuideAPP
-
-> **BFD (Biểu đồ phân rã chức năng)** — thể hiện toàn bộ chức năng hệ thống phân theo cấp bậc.
 
 ```mermaid
 graph LR
@@ -1568,40 +1951,49 @@ graph LR
     ROOT --> F4["4. Chỉ đường"]
     ROOT --> F5["5. Thuyết minh\ntự động"]
     ROOT --> F6["6. Quản lý Tour"]
+    ROOT --> F7["7. Web Admin"]
 
-    F1 --> F1_1["1.1 Kiểm tra phiên còn hạn"]
-    F1 --> F1_2["1.2 Chọn gói truy cập"]
-    F1 --> F1_3["1.3 Tạo QR thanh toán VietQR"]
-    F1 --> F1_4["1.4 Kích hoạt phiên sau thanh toán"]
-    F1 --> F1_5["1.5 Thông báo hết hạn phiên"]
+    F1 --> F1_1["1.1 Kiểm tra phiên còn hạn\nIsAccessValid → Preferences"]
+    F1 --> F1_2["1.2 Đăng ký thiết bị\nUPSERT DeviceRegistrations"]
+    F1 --> F1_3["1.3 Load gói từ AccessPackages\nfallback về giá hardcode"]
+    F1 --> F1_4["1.4 Tạo QR thanh toán VietQR\nVIB - 310822005"]
+    F1 --> F1_5["1.5 Polling kích hoạt mỗi 5s\nchờ IsActive=true"]
+    F1 --> F1_6["1.6 Timer hết hạn mỗi 60s\nAccessExpired event"]
 
-    F2 --> F2_1["2.1 Tải danh sách địa điểm"]
-    F2 --> F2_2["2.2 Tìm kiếm theo tên"]
-    F2 --> F2_3["2.3 Lọc theo loại / khu vực"]
-    F2 --> F2_4["2.4 Xem chi tiết địa điểm"]
-    F2 --> F2_5["2.5 Gọi điện và mở website"]
+    F2 --> F2_1["2.1 Load Places + Images + TTS\n3 bước riêng biệt"]
+    F2 --> F2_2["2.2 Tìm kiếm realtime\nName/Address/Specialty"]
+    F2 --> F2_3["2.3 Lọc theo danh mục chip"]
+    F2 --> F2_4["2.4 Xem chi tiết + gallery ảnh"]
+    F2 --> F2_5["2.5 Gọi điện / mở website"]
 
-    F3 --> F3_1["3.1 Hiển thị bản đồ OSM"]
-    F3 --> F3_2["3.2 Theo dõi vị trí GPS"]
-    F3 --> F3_3["3.3 Hiển thị marker POI"]
-    F3 --> F3_4["3.4 Tap marker xem thẻ thông tin"]
-    F3 --> F3_5["3.5 Tìm kiếm trên bản đồ"]
+    F3 --> F3_1["3.1 CartoDB Voyager tiles\n5 layers POI + User + Route"]
+    F3 --> F3_2["3.2 GPS realtime\nFG Service Android / polling iOS"]
+    F3 --> F3_3["3.3 Tap marker POI\nOnMapInfo → bottom card"]
+    F3 --> F3_4["3.4 Reverse geocoding\ncache 15s / 30m"]
 
-    F4 --> F4_1["4.1 Tính tuyến đường qua OSRM"]
-    F4 --> F4_2["4.2 Vẽ tuyến lên bản đồ"]
-    F4 --> F4_3["4.3 Hiển thị khoảng cách và ETA"]
-    F4 --> F4_4["4.4 Huỷ chỉ đường"]
+    F4 --> F4_1["4.1 OSRM /route/v1/driving\nGeoJSON overview=full"]
+    F4 --> F4_2["4.2 Vẽ Route + Destination layers\n#E94560"]
+    F4 --> F4_3["4.3 PendingRoute static\nPlaceDetailPage → MapPage"]
+    F4 --> F4_4["4.4 CancelRoutePanel\nGPS callback early return"]
 
-    F5 --> F5_1["5.1 Phát hiện POI gần vị trí"]
-    F5 --> F5_2["5.2 Lấy script TTS theo ngôn ngữ"]
-    F5 --> F5_3["5.3 Đọc thuyết minh bằng giọng nói"]
-    F5 --> F5_4["5.4 Chọn ngôn ngữ thuyết minh"]
-    F5 --> F5_5["5.5 Cooldown tránh đọc lại"]
+    F5 --> F5_1["5.1 GeofenceEngine.FindNearestPOI\nradius + cooldown + debounce 2s"]
+    F5 --> F5_2["5.2 GetScriptForLocale\nTtsContents → TtsScript → default"]
+    F5 --> F5_3["5.3 SpeakFromGpsAsync\nglobal cooldown 60s"]
+    F5 --> F5_4["5.4 SpeakAsync\ntìm locale trên thiết bị"]
+    F5 --> F5_5["5.5 _lastSpokenPlace\ntránh reset khi cooldown active"]
+    F5 --> F5_6["5.6 INSERT DevicePoiVisits\ntrigger TotalVisits++"]
 
-    F6 --> F6_1["6.1 Xem danh sách tour gợi ý"]
-    F6 --> F6_2["6.2 Xem chi tiết tour và điểm dừng"]
-    F6 --> F6_3["6.3 Chỉ đường theo tour"]
-    F6 --> F6_4["6.4 Thuyết minh từng điểm dừng"]
+    F6 --> F6_1["6.1 RebuildTours\n3 tour từ IsActive+IsApproved places"]
+    F6 --> F6_2["6.2 Filters: text/budget/duration/walking"]
+    F6 --> F6_3["6.3 TourDetailPage\nPendingRoute → MapPage"]
+
+    F7 --> F7_1["7.1 /Admin/Sessions\nstats + filter + paginate 20"]
+    F7 --> F7_2["7.2 Activate / Cancel / Deactivate\n3 POST actions"]
+    F7 --> F7_3["7.3 /Admin/Packages\nPUT /api/access-packages/id"]
+    F7 --> F7_4["7.4 /Admin/Devices\nDeviceRegistrations LEFT JOIN visits+sessions"]
+    F7 --> F7_5["7.5 Detail device\n50 visits gần nhất"]
+    F7 --> F7_6["7.6 Duyệt địa điểm\nIsApproved + IsActive"]
+    F7 --> F7_7["7.7 Quản lý tài khoản\nlock/role"]
 ```
 
 ---
@@ -1617,17 +2009,24 @@ graph LR
 | **POI** | Point of Interest — địa điểm du lịch đáng chú ý |
 | **Geofence** | Vùng địa lý ảo hình tròn, kích hoạt hành động khi người dùng vào trong |
 | **TTS** | Text-to-Speech — đọc văn bản thành giọng nói tổng hợp |
+| **Debounce** | Phải ở trong vùng liên tục 2 giây mới trigger TTS, tránh false trigger khi đi ngang |
+| **Cooldown per-POI** | `place.LastPlayedAt` — thời gian chờ tối thiểu trước khi đọc lại cùng 1 POI (default 30 phút) |
+| **Cooldown GPS global** | `NarrationService._lastGpsTtsAt` — 60 giây giữa bất kỳ 2 lần GPS TTS nào, dù khác POI |
 | **OSRM** | Open Source Routing Machine — engine tính toán tuyến đường mã nguồn mở |
-| **Debounce** | Kỹ thuật trì hoãn xử lý để tránh trigger liên tục khi điều kiện dao động |
-| **Cooldown** | Khoảng thời gian chờ tối thiểu giữa 2 lần kích hoạt cùng một sự kiện |
 | **MAUI** | Multi-platform App UI — framework .NET phát triển app đa nền tảng |
-| **Supabase** | Backend-as-a-Service mã nguồn mở, cung cấp PostgreSQL + REST API |
-| **Preferences** | Bộ nhớ key-value cục bộ trên thiết bị (SharedPreferences trên Android) |
+| **Supabase** | Backend-as-a-Service, cung cấp PostgreSQL + REST API + Auth |
+| **postgrest-csharp** | ORM client cho Supabase, map C# model qua `[Column]` attribute |
+| **Preferences** | Key-value store cục bộ trên thiết bị (SharedPreferences Android) |
 | **VietQR** | Chuẩn mã QR chuyển khoản ngân hàng tại Việt Nam |
-| **Foreground Service** | Tiến trình Android chạy nền với notification thường trực, không bị hệ thống kill |
+| **Foreground Service** | Tiến trình Android chạy nền với notification thường trực |
+| **DeviceId** | 10 ký tự uppercase random từ GUID, tạo lần đầu và lưu Preferences mãi mãi |
+| **AccessSession** | Phiên truy cập B2C của 1 thiết bị — lưu lịch sử thanh toán + thời hạn |
+| **AccessPackage** | Gói truy cập cấu hình trong DB — Admin chỉnh giá, app load động |
+| **DeviceRegistration** | Record ghi nhận mỗi thiết bị lần đầu và lần cuối mở app |
+| **DevicePoiVisit** | Record ghi nhận mỗi lượt GPS geofence trigger thành công |
 
 ---
 
 **Nhóm phát triển:** Sinh viên đồ án  
 **Cập nhật lần cuối:** Tháng 4, 2026  
-**Phiên bản:** 2.2 — Xóa QR Scan, Favorites, Wishlist, History, Notes; cập nhật thư viện bản đồ CartoDB Voyager
+**Phiên bản:** 2.3 — Cập nhật toàn bộ sơ đồ theo code thực tế: SpeakFromGpsAsync 60s cooldown, GeofenceEngine debounce logic chính xác, AccessSessionService methods đúng, AppDbContext đầy đủ DbSets, Web Admin controllers đúng routes

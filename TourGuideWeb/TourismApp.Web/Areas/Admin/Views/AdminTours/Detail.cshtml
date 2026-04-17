@@ -1,0 +1,143 @@
+@using TourismApp.Web.Models
+@model TourViewModel
+@{ ViewData["Title"] = "Chi tiết Tour"; }
+
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 pt-2">
+  <div>
+    <span class="font-bold text-sm tracking-widest uppercase mb-1 block" style="color:#954400">
+      Quản trị viên
+    </span>
+    <h1 class="text-4xl font-extrabold tracking-tight text-on-surface leading-tight">
+      Chi tiết Tour
+    </h1>
+  </div>
+  <div class="flex gap-3">
+    <a asp-action="Edit" asp-route-id="@Model.Id"
+       class="px-4 py-2 bg-amber-50 text-amber-700 font-bold rounded-xl text-sm hover:bg-amber-100 transition-colors">
+      ✏️ Chỉnh sửa
+    </a>
+    <a asp-action="Index"
+       class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-sm hover:bg-slate-200 transition-colors">
+      ← Quay lại
+    </a>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- Tour Info -->
+  <div class="lg:col-span-2 space-y-6">
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <div class="flex justify-between items-start mb-4">
+        <h2 class="text-2xl font-bold">@Model.Title</h2>
+        <span class="px-3 py-1 bg-secondary-container text-on-secondary-container font-bold rounded-lg">
+          @Model.Tag
+        </span>
+      </div>
+
+      <p class="text-slate-600 mb-6">@Model.Description</p>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center">
+          <div class="text-2xl font-black text-primary">@Model.Stops.Count</div>
+          <div class="text-xs text-slate-500 font-medium">Điểm dừng</div>
+        </div>
+        <div class="text-center">
+          <div class="text-lg font-bold text-slate-700">@Model.DurationText</div>
+          <div class="text-xs text-slate-500 font-medium">Thời gian</div>
+        </div>
+        <div class="text-center">
+          <div class="text-lg font-bold text-slate-700">@Model.BudgetText</div>
+          <div class="text-xs text-slate-500 font-medium">Ngân sách</div>
+        </div>
+        <div class="text-center">
+          <div class="text-lg font-bold text-slate-700">@Model.Id</div>
+          <div class="text-xs text-slate-500 font-medium">ID</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stops List -->
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <h3 class="text-xl font-bold mb-4">Các điểm dừng</h3>
+
+      @if (Model.Stops.Any())
+      {
+        <div class="space-y-4">
+          @for (int i = 0; i < Model.Stops.Count; i++)
+          {
+            var stop = Model.Stops[i];
+            <div class="flex items-start gap-4 p-4 bg-white rounded-lg border border-slate-100">
+              <div class="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold text-sm">
+                @(i + 1)
+              </div>
+              <div class="flex-1">
+                <h4 class="font-bold text-lg">@stop.Name</h4>
+                <p class="text-sm text-slate-600 mb-2">@stop.Address</p>
+                <div class="flex items-center gap-4 text-sm text-slate-500">
+                  @if (stop.Phone != null)
+                  {
+                    <span>📞 @stop.Phone</span>
+                  }
+                  <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">star</span>
+                    <span>@stop.AverageRating.ToString("F1")</span>
+                  </div>
+                </div>
+              </div>
+              @if (!string.IsNullOrEmpty(stop.MainImageUrl))
+              {
+                <img src="@stop.MainImageUrl" alt="@stop.Name"
+                     class="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
+              }
+            </div>
+          }
+        </div>
+      }
+      else
+      {
+        <div class="text-center py-8 text-slate-500">
+          <div class="text-4xl mb-2">📍</div>
+          <p>Chưa có thông tin điểm dừng</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Actions Sidebar -->
+  <div class="space-y-6">
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <h3 class="text-lg font-bold mb-4">Thao tác</h3>
+      <div class="space-y-3">
+        <a asp-action="Edit" asp-route-id="@Model.Id"
+           class="w-full px-4 py-3 bg-amber-50 text-amber-700 font-bold rounded-xl text-sm text-center hover:bg-amber-100 transition-colors block">
+          ✏️ Chỉnh sửa Tour
+        </a>
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Bạn có chắc muốn xóa tour này?')">
+          <button type="submit"
+                  class="w-full px-4 py-3 bg-red-50 text-red-700 font-bold rounded-xl text-sm hover:bg-red-100 transition-colors">
+            🗑️ Xóa Tour
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm">
+      <h3 class="text-lg font-bold mb-4">Thông tin kỹ thuật</h3>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-slate-600">ID:</span>
+          <span class="font-mono">@Model.Id</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-600">Số điểm dừng:</span>
+          <span>@Model.Stops.Count</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-600">Tag:</span>
+          <span>@Model.Tag</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

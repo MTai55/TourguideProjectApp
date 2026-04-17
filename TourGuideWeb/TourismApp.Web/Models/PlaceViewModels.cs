@@ -148,6 +148,43 @@ public class PlaceImageViewModel
     public bool IsMain { get; set; }
 }
 
+public class TourViewModel
+{
+    public string Id { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string DurationText { get; set; } = string.Empty;
+    public string BudgetText { get; set; } = string.Empty;
+    public string Tag { get; set; } = string.Empty;
+    public string StopsText { get; set; } = string.Empty;
+    public List<int> StopPlaceIds { get; set; } = new();
+    public List<PlaceViewModel> Stops { get; set; } = new();
+}
+
+public class CreateTourViewModel
+{
+    [Required(ErrorMessage = "Tiêu đề tour không được để trống")]
+    [MaxLength(100)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Mô tả tour không được để trống")]
+    [MaxLength(500)]
+    public string Description { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Thời gian không được để trống")]
+    public string DurationText { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Ngân sách không được để trống")]
+    public string BudgetText { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Tag không được để trống")]
+    public string Tag { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Phải chọn ít nhất 2 điểm dừng")]
+    [MinLength(2, ErrorMessage = "Phải chọn ít nhất 2 điểm dừng")]
+    public List<int> StopPlaceIds { get; set; } = new();
+}
+
 public class SubscriptionPlanViewModel
 {
     [Newtonsoft.Json.JsonProperty("planId")]

@@ -417,4 +417,27 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         [Newtonsoft.Json.JsonProperty("subId")]
         public int SubId { get; set; }
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // TOURS
+    // ══════════════════════════════════════════════════════════════
+    public Task<List<TourViewModel>?> GetToursAsync()
+        => GetAsync<List<TourViewModel>>("/api/tours");
+
+    public async Task<bool> PostAsync(string url, object body)
+    {
+        SetAuthHeader();
+        try
+        {
+            var content = new StringContent(
+                JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+            var res = await http.PostAsync(url, content);
+            return res.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"❌ Exception calling POST {url}: {ex.Message}");
+            return false;
+        }
+    }
 }

@@ -187,12 +187,34 @@ public class AccessSessionService
                 try { await Task.Delay(60_000, token); }
                 catch (TaskCanceledException) { return; }
 
+                // Check local trước
                 if (!IsAccessValid())
                 {
                     ClearLocalSession();
                     MainThread.BeginInvokeOnMainThread(() => AccessExpired?.Invoke());
                     return;
                 }
+
+                // Check server — phát hiện admin thu hồi
+                try
+                {
+                    var sessionId = Preferences.Get(SessionIdKey, string.Empty);
+                    if (!string.IsNullOrEmpty(sessionId))
+                    {
+                        var result = await _supabase
+                            .From<TourGuideAPP.Data.Models.AccessSession>()
+                            .Where(s => s.SessionId == sessionId)
+                            .Single();
+
+                        if (result == null || !result.IsActive)
+                        {
+                            ClearLocalSession();
+                            MainThread.BeginInvokeOnMainThread(() => AccessExpired?.Invoke());
+                            return;
+                        }
+                    }
+                }
+                catch { /* network error — bỏ qua, check lần sau */ }
             }
         }, token);
     }

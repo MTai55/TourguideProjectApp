@@ -39,7 +39,8 @@
           <th class="px-5 py-3.5 text-center">Lượt ghé POI</th>
           <th class="px-5 py-3.5 text-center">POI khác nhau</th>
           <th class="px-5 py-3.5 text-center">Gói cuối</th>
-          <th class="px-5 py-3.5 text-center">Trạng thái</th>
+          <th class="px-5 py-3.5 text-center">Kết nối</th>
+          <th class="px-5 py-3.5 text-center">Gói hiện tại</th>
           <th class="px-5 py-3.5 text-center">Chi tiết</th>
         </tr>
       </thead>
@@ -47,7 +48,7 @@
         @if (!Model.Any())
         {
           <tr>
-            <td colspan="8" class="px-5 py-12 text-center text-on-surface-variant text-sm">
+            <td colspan="9" class="px-5 py-12 text-center text-on-surface-variant text-sm">
               <span class="material-symbols-outlined text-4xl block mb-2 text-outline-variant">smartphone</span>
               Chưa có thiết bị nào mở app
             </td>
@@ -91,10 +92,38 @@
               }
             </td>
             <td class="px-5 py-3.5 text-center">
-              @if (d.HasActive)
+              @{
+                var isOnline = d.LastSeenAt.HasValue && (DateTime.UtcNow - d.LastSeenAt.Value).TotalSeconds <= 10;
+                var lastSeenLocal = d.LastSeenAt?.ToLocalTime();
+              }
+              @if (isOnline)
               {
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span> Active
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span> Đang dùng
+                </span>
+              }
+              else if (lastSeenLocal.HasValue)
+              {
+                var diff = DateTime.Now - lastSeenLocal.Value;
+                var ago  = diff.TotalMinutes < 60
+                           ? $"{(int)diff.TotalMinutes} phút trước"
+                           : diff.TotalHours < 24
+                             ? $"{(int)diff.TotalHours} giờ trước"
+                             : lastSeenLocal.Value.ToString("dd/MM HH:mm");
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-500 border border-slate-100" title="@lastSeenLocal.Value.ToString("dd/MM/yyyy HH:mm:ss")">
+                  <span class="w-1.5 h-1.5 rounded-full bg-slate-300 inline-block"></span> @ago
+                </span>
+              }
+              else
+              {
+                <span class="text-xs text-on-surface-variant">—</span>
+              }
+            </td>
+            <td class="px-5 py-3.5 text-center">
+              @if (d.HasActive)
+              {
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span> Active
                 </span>
               }
               else

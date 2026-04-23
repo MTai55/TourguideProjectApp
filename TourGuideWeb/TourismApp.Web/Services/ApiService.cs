@@ -6,8 +6,9 @@ using TourismApp.Web.Models;
 
 namespace TourismApp.Web.Services;
 
-public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<ApiService> logger)
+public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<ApiService> logger, IConfiguration config)
 {
+    private readonly string _baseUrl = config["ApiSettings:BaseUrl"] ?? "http://localhost:5010";
     private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
     {
         NullValueHandling = NullValueHandling.Ignore,
@@ -41,8 +42,9 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         SetAuthHeader();
         try
         {
-            logger.LogInformation($"📡 GET {url}");
-            var res = await http.GetAsync(url);
+            var fullUrl = $"{_baseUrl}{url}";
+            logger.LogInformation($"📡 GET {fullUrl}");
+            var res = await http.GetAsync(fullUrl);
             var json = await res.Content.ReadAsStringAsync();
             logger.LogInformation($"   Response: [{res.StatusCode}] {json.Substring(0, Math.Min(100, json.Length))}");
             if (!res.IsSuccessStatusCode)
@@ -63,9 +65,10 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     private async Task<(bool Success, T? Data, string Error)> PostAsync<T>(string url, object body)
     {
         SetAuthHeader();
+        var fullUrl = $"{_baseUrl}{url}";
         var content = new StringContent(
             JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-        var res = await http.PostAsync(url, content);
+        var res = await http.PostAsync(fullUrl, content);
         var json = await res.Content.ReadAsStringAsync();
         if (res.IsSuccessStatusCode)
             return (true, JsonConvert.DeserializeObject<T>(json, JsonSettings), string.Empty);
@@ -76,9 +79,10 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     private async Task<(bool Success, string Error)> PutAsync(string url, object body)
     {
         SetAuthHeader();
+        var fullUrl = $"{_baseUrl}{url}";
         var content = new StringContent(
             JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-        var res = await http.PutAsync(url, content);
+        var res = await http.PutAsync(fullUrl, content);
         return (res.IsSuccessStatusCode, await res.Content.ReadAsStringAsync());
     }
 
@@ -86,7 +90,8 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     private async Task<bool> DeleteAsync(string url)
     {
         SetAuthHeader();
-        var res = await http.DeleteAsync(url);
+        var fullUrl = $"{_baseUrl}{url}";
+        var res = await http.DeleteAsync(fullUrl);
         return res.IsSuccessStatusCode;
     }
 
@@ -185,6 +190,53 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         return (ok, err);
     }
 
+    // ── TTS Contents Management ──────────────────────────────────
+    public Task<PlaceTtsContentListResponse?> GetTtsContentsAsync(int placeId)
+        => GetAsync<PlaceTtsContentListResponse>($"/api/places/{placeId}/tts-contents");
+
+    public Task<PlaceTtsContentDto?> GetTtsContentByLocaleAsync(int placeId, string locale)
+        => GetAsync<PlaceTtsContentDto>($"/api/places/{placeId}/tts-contents/{locale}");
+
+    public async Task<(bool, PlaceTtsContentDto?, string)> CreateTtsContentAsync(int placeId, string locale, string script)
+    {
+        var body = new { locale, script };
+        var (success, content, error) = await PostAsync<PlaceTtsContentDto>(
+            $"/api/places/{placeId}/tts-contents", body);
+        return (success, content, error);
+    }
+
+    public async Task<(bool, PlaceTtsContentDto?, string)> UpdateTtsContentAsync(int placeId, int contentId, string script)
+    {
+        var body = new { script };
+        SetAuthHeader();
+        var fullUrl = $"{_baseUrl}/api/places/{placeId}/tts-contents/{contentId}";
+        var content = new StringContent(
+            JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+        var res = await http.PutAsync(fullUrl, content);
+        var json = await res.Content.ReadAsStringAsync();
+        if (res.IsSuccessStatusCode)
+            return (true, JsonConvert.DeserializeObject<PlaceTtsContentDto>(json, JsonSettings), string.Empty);
+        return (false, default, json);
+    }
+
+    public Task<bool> DeleteTtsContentAsync(int placeId, int contentId)
+        => DeleteAsync($"/api/places/{placeId}/tts-contents/{contentId}");
+
+    // ── DTO Classes ──────────────────────────────────────────────
+    public class PlaceTtsContentDto
+    {
+        [JsonProperty("id")] public int Id { get; set; }
+        [JsonProperty("placeId")] public int PlaceId { get; set; }
+        [JsonProperty("locale")] public string Locale { get; set; } = string.Empty;
+        [JsonProperty("script")] public string Script { get; set; } = string.Empty;
+    }
+
+    public class PlaceTtsContentListResponse
+    {
+        [JsonProperty("placeId")] public int PlaceId { get; set; }
+        [JsonProperty("contents")] public List<PlaceTtsContentDto> Contents { get; set; } = new();
+    }
+
     // ══════════════════════════════════════════════════════════════
     // ANALYTICS
     // ══════════════════════════════════════════════════════════════
@@ -268,7 +320,8 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
     private async Task<(bool, string)> PostAsync2(string url)
     {
         SetAuthHeader();
-        var res  = await http.PostAsync(url, null);
+        var fullUrl = $"{_baseUrl}{url}";
+        var res  = await http.PostAsync(fullUrl, null);
         var body = await res.Content.ReadAsStringAsync();
         return (res.IsSuccessStatusCode, body);
     }

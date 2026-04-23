@@ -36,6 +36,7 @@ public class Place
     public User? Owner { get; set; }
     public Category? Category { get; set; }
     public ICollection<PlaceImage> Images { get; set; } = [];
+    public ICollection<PlaceTtsContent> TtsContents { get; set; } = [];
     public ICollection<Review> Reviews { get; set; } = [];
     public ICollection<VisitHistory> VisitHistory { get; set; } = [];
     public ICollection<Message> Messages { get; set; } = [];

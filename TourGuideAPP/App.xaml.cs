@@ -26,6 +26,9 @@ public partial class App : Application
 
         // Đăng ký thiết bị ngay khi app khởi động (fire-and-forget)
         _ = _accessService.RegisterDeviceAsync();
+
+        // Gửi heartbeat định kỳ để web admin biết thiết bị đang online
+        _accessService.StartHeartbeatTimer();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
@@ -41,6 +44,21 @@ public partial class App : Application
             BarBackgroundColor = Color.FromArgb("#1A1410"),
             BarTextColor       = Color.FromArgb("#F0E6D3")
         });
+    }
+
+    protected override void OnSleep()
+    {
+        base.OnSleep();
+        // Dừng heartbeat → LastSeenAt không cập nhật → web sẽ hiện offline sau ngưỡng
+        _accessService.StopHeartbeat();
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
+        // Cập nhật ngay + khởi động lại heartbeat khi app quay lại foreground
+        _ = _accessService.RegisterDeviceAsync();
+        _accessService.StartHeartbeatTimer();
     }
 
     private void OnAccessExpired()

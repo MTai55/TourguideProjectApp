@@ -12,6 +12,7 @@ public class AccessSessionService
 
     private CancellationTokenSource? _pollCts;
     private CancellationTokenSource? _expiryCts;
+    private CancellationTokenSource? _heartbeatCts;
 
     // App.xaml.cs subscribe vào event này để xử lý hết hạn
     public event Action? AccessExpired;
@@ -219,12 +220,48 @@ public class AccessSessionService
         }, token);
     }
 
+    // ── Heartbeat — cập nhật LastSeenAt định kỳ ───────────────────────────────
+
+    public void StopHeartbeat() => _heartbeatCts?.Cancel();
+
+    public void StartHeartbeatTimer()
+    {
+        _heartbeatCts?.Cancel();
+        _heartbeatCts = new CancellationTokenSource();
+        var token = _heartbeatCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try { await Task.Delay(5_000, token); }
+                catch (TaskCanceledException) { return; }
+
+                await UpdateLastSeenAsync();
+            }
+        }, token);
+    }
+
+    private async Task UpdateLastSeenAsync()
+    {
+        try
+        {
+            var deviceId = GetDeviceId();
+            await _supabase.From<TourGuideAPP.Data.Models.DeviceRegistration>()
+                .Where(d => d.DeviceId == deviceId)
+                .Set(d => d.LastSeenAt!, DateTime.UtcNow)
+                .Update();
+        }
+        catch { /* non-critical */ }
+    }
+
     // ── Xóa session local (khi hết hạn hoặc reset) ────────────────────────────
 
     public void ClearLocalSession()
     {
         _pollCts?.Cancel();
         _expiryCts?.Cancel();
+        _heartbeatCts?.Cancel();
         Preferences.Remove(ExpiresAtKey);
         Preferences.Remove(SessionIdKey);
     }

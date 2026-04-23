@@ -1,10 +1,23 @@
 @model List<TourismApp.Web.Services.ApiService.DeviceStatItem>
 @{
     ViewData["Title"] = "Người dùng thiết bị";
+    ViewData["AutoRefresh"] = 15;
     var search     = ViewBag.Search as string ?? string.Empty;
     var page       = (int)ViewBag.Page;
     var totalPages = (int)ViewBag.TotalPages;
     var total      = (int)ViewBag.Total;
+}
+
+@section Scripts {
+<script>
+  let seconds = 15;
+  const el = document.getElementById('countdown');
+  const interval = setInterval(() => {
+    seconds--;
+    if (el) el.textContent = seconds;
+    if (seconds <= 0) { clearInterval(interval); location.reload(); }
+  }, 1000);
+</script>
 }
 
 <div class="pt-6 space-y-6">
@@ -13,7 +26,9 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
       <h2 class="text-xl font-extrabold text-on-surface">Người dùng thiết bị</h2>
-      <p class="text-sm text-on-surface-variant mt-0.5">@total thiết bị đã mở app</p>
+      <p class="text-sm text-on-surface-variant mt-0.5">@total thiết bị đã mở app
+        <span class="ml-2 text-xs text-slate-400">· tự làm mới sau <span id="countdown">15</span>s</span>
+      </p>
     </div>
     <form method="get" class="flex gap-2">
       <input name="search" value="@search" placeholder="Tìm Device ID..."
@@ -93,8 +108,13 @@
             </td>
             <td class="px-5 py-3.5 text-center">
               @{
-                var isOnline = d.LastSeenAt.HasValue && (DateTime.UtcNow - d.LastSeenAt.Value).TotalSeconds <= 10;
-                var lastSeenLocal = d.LastSeenAt?.ToLocalTime();
+                // Normalize về UTC để tránh lỗi DateTimeKind.Unspecified khi deserialize JSON
+                var lastSeenUtc = d.LastSeenAt.HasValue
+                    ? DateTime.SpecifyKind(d.LastSeenAt.Value, DateTimeKind.Utc)
+                    : (DateTime?)null;
+                var nowUtc    = DateTime.UtcNow;
+                var isOnline  = lastSeenUtc.HasValue && (nowUtc - lastSeenUtc.Value).TotalSeconds <= 15;
+                var lastSeenLocal = lastSeenUtc?.ToLocalTime();
               }
               @if (isOnline)
               {
@@ -104,7 +124,7 @@
               }
               else if (lastSeenLocal.HasValue)
               {
-                var diff = DateTime.Now - lastSeenLocal.Value;
+                var diff = nowUtc - lastSeenUtc!.Value;
                 var ago  = diff.TotalMinutes < 60
                            ? $"{(int)diff.TotalMinutes} phút trước"
                            : diff.TotalHours < 24

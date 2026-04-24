@@ -1838,8 +1838,9 @@ sequenceDiagram
     Admin->>DevMVC: GET /Admin/AdminDevices?search=...
     DevMVC->>API: GET /api/admin/devices
     DevAPI->>DB: SELECT DeviceRegistrations LEFT JOIN DevicePoiVisits, AccessSessions
-    DB-->>DevMVC: [{DeviceId, Platform, FirstSeen, LastSeenAt, VisitCount, HasActive}]
-    DevMVC-->>Admin: Bảng thiết bị + badge Kết nối (Đang dùng nếu LastSeenAt ≤ 15s)\nTrang tự reload mỗi 15s
+    DevAPI->>DB: COUNT DeviceRegistrations WHERE LastSeenAt >= UtcNow-15s (onlineCount)
+    DB-->>DevMVC: {total, onlineCount, items:[{DeviceId, Platform, FirstSeen, LastSeenAt, VisitCount, HasActive}]}
+    DevMVC-->>Admin: Bảng thiết bị + badge Kết nối (Đang dùng nếu LastSeenAt ≤ 15s)\ncounter "X đang hoạt động" trong header\nTrang tự reload mỗi 15s
 
     Admin->>DevMVC: GET /Admin/AdminDevices/{deviceId}
     DevMVC->>API: GET /api/admin/devices/{deviceId}/visits

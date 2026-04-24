@@ -1,7 +1,7 @@
 @model List<TourismApp.Web.Services.ApiService.SessionDto>
 @{
     ViewData["Title"] = "Quản lý thanh toán";
-    var status     = ViewBag.Status as string ?? "pending";
+    var status     = ViewBag.Status as string ?? "all";
     var search     = ViewBag.Search as string ?? string.Empty;
     var page       = (int)ViewBag.Page;
     var totalPages = (int)ViewBag.TotalPages;
@@ -40,7 +40,7 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div class="flex gap-1 bg-surface-container-low p-1 rounded-xl w-fit">
       @foreach (var (s, label) in new (string,string)[] {
-        ("pending","Chờ kích hoạt"), ("active","Đang active"), ("expired","Hết hạn"), ("all","Tất cả")
+        ("all","Tất cả"), ("pending","Chờ kích hoạt"), ("active","Đang active"), ("expired","Hết hạn")
       })
       {
         <a href="?status=@s&search=@search"

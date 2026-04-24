@@ -277,212 +277,81 @@
 <div id="tab-tts" class="tab-panel hidden">
   <div class="space-y-5">
 
-    <!-- Script chính -->
-    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-surface-container">
-        <div class="flex items-start gap-3">
-          <div class="p-2.5 bg-violet-100 text-violet-600 rounded-xl">
-            <span class="material-symbols-outlined">record_voice_over</span>
+    <!-- TTS Contents by Locale -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-surface-container flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-blue-100 text-blue-600 rounded-xl">
+            <span class="material-symbols-outlined">language</span>
           </div>
           <div>
-            <h3 class="font-bold text-base">TTS Narration Script</h3>
-            <p class="text-xs text-on-surface-variant mt-0.5">
-              Viết script bằng tiếng Việt, sau đó bấm <strong>Dịch tự động</strong>
-              để tạo bản dịch cho các ngôn ngữ khác.
-            </p>
+            <h3 class="font-bold text-base">TTS Scripts by Language</h3>
+            <p class="text-xs text-on-surface-variant mt-0.5">Quản lý nội dung TTS cho từng ngôn ngữ</p>
           </div>
         </div>
       </div>
-
-      <div class="p-6 space-y-4">
-        <!-- Tips -->
-        <div class="p-4 bg-violet-50 border border-violet-100 rounded-xl space-y-2">
-          <p class="text-xs font-bold text-violet-700 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-sm">lightbulb</span>
-            Gợi ý viết script hiệu quả
-          </p>
-          <ul class="text-xs text-violet-600 space-y-1 ml-5 list-disc">
-            <li>Ngắn gọn, súc tích — tối đa 200 từ</li>
-            <li>Bắt đầu bằng tên quán và điểm nổi bật nhất</li>
-            <li>Nêu món đặc trưng, giờ mở cửa, ưu đãi hiện tại</li>
-            <li>Tránh ký tự đặc biệt, viết tắt khó đọc</li>
-          </ul>
+      <div class="p-6">
+        <div id="ttsContentsContainer" class="space-y-4">
+          <div class="flex items-center justify-center py-8">
+            <div class="animate-spin">
+              <span class="material-symbols-outlined text-3xl text-slate-400">hourglass_empty</span>
+            </div>
+            <span class="text-slate-500 ml-2">Đang tải...</span>
+          </div>
         </div>
-
-        <form asp-action="UpdateTtsScript" asp-route-id="@ViewBag.PlaceId" method="post" id="tts-form">
-          @Html.AntiForgeryToken()
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <label class="block text-sm font-semibold">Nội dung script (Tiếng Việt) *</label>
-              <span id="char-count" class="text-xs text-on-surface-variant font-medium">0 / 1000 ký tự</span>
-            </div>
-            <textarea id="tts-textarea" name="ttsScript" rows="7"
-                      class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm focus:ring-2 focus:ring-violet-400/30 resize-none leading-relaxed"
-                      maxlength="1000"
-                      placeholder="Chào mừng bạn đến với... Chúng tôi tự hào phục vụ... Hẹn gặp bạn tại đây!">@ViewBag.TtsScript</textarea>
-
-            <!-- Preview box -->
-            <div id="preview-box" class="hidden p-4 bg-slate-900 rounded-xl">
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-sm text-violet-400">volume_up</span>
-                Đang phát...
-              </p>
-              <p id="preview-text" class="text-sm text-white leading-relaxed"></p>
-              <button type="button" onclick="stopPreview()"
-                      class="mt-3 text-xs text-slate-400 hover:text-white font-semibold flex items-center gap-1">
-                <span class="material-symbols-outlined text-sm">stop_circle</span> Dừng
-              </button>
-            </div>
-
-            <div class="flex flex-wrap gap-2 pt-1">
-              <button type="button" onclick="previewTts('vi')"
-                      class="flex items-center gap-1.5 px-4 py-2.5 bg-violet-50 text-violet-700 font-bold rounded-xl text-sm hover:bg-violet-100 transition-colors">
-                <span class="material-symbols-outlined text-sm">play_circle</span> Nghe thử
-              </button>
-              <button type="button" onclick="clearScript()"
-                      class="flex items-center gap-1.5 px-4 py-2.5 bg-surface-container-low text-on-surface-variant font-bold rounded-xl text-sm hover:bg-surface-container-high transition-colors">
-                <span class="material-symbols-outlined text-sm">clear</span> Xóa
-              </button>
-              <button type="submit"
-                      class="flex items-center gap-1.5 px-6 py-2.5 text-white font-bold rounded-xl text-sm hover:scale-[1.02] transition-all"
-                      style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
-                <span class="material-symbols-outlined text-sm">save</span> Lưu script
-              </button>
-              <!-- Nút dịch tự động - Coming Soon -->
-              <div class="flex items-center gap-1.5 px-6 py-2.5 font-bold rounded-xl text-sm ml-auto cursor-not-allowed opacity-50"
-                   style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:white"
-                   title="Tính năng dịch tự động sắp ra mắt">
-                <span class="material-symbols-outlined text-sm">construction</span> Đang phát triển
-              </div>
-            </div>
-          </div>
-        </form>
-
-        @if (!string.IsNullOrEmpty(ViewBag.TtsScript as string))
-        {
-          <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
-            <span class="material-symbols-outlined text-emerald-600">check_circle</span>
-            <div>
-              <p class="text-sm font-bold text-emerald-700">Script đang hoạt động</p>
-              <p class="text-xs text-emerald-600 mt-0.5">
-                Bán kính kích hoạt: <strong>@(ViewBag.Radius ?? 100)m</strong>
-              </p>
-            </div>
-          </div>
-        }
+        
+        <button type="button" onclick="showAddTtsContentModal()"
+                class="mt-6 w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 font-bold rounded-xl text-sm hover:bg-blue-100 transition-colors">
+          <span class="material-symbols-outlined text-sm">add_circle</span> Thêm Script Mới
+        </button>
       </div>
     </div>
 
-    <!-- Bản dịch -->
-    <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-surface-container flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="p-2.5 bg-cyan-100 text-cyan-600 rounded-xl">
-            <span class="material-symbols-outlined">translate</span>
-          </div>
+    <!-- Modal Add/Edit TTS Content -->
+    <div id="ttsContentModal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center p-4">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 px-6 py-4 border-b border-surface-container flex items-center justify-between bg-surface-container-lowest">
+          <h2 class="text-xl font-bold">Quản lý TTS Script</h2>
+          <button onclick="closeModal()" type="button" class="text-on-surface-variant hover:text-on-surface">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        
+        <div class="p-6 space-y-4">
           <div>
-            <h3 class="font-bold text-base">Bản dịch đa ngôn ngữ</h3>
-            <p class="text-xs text-on-surface-variant mt-0.5">
-              Tự động dịch bởi AI — App mobile dùng đúng ngôn ngữ của khách
+            <label class="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Ngôn ngữ (Locale)</label>
+            <select id="localeSelect" class="w-full mt-2 px-4 py-2 bg-surface-container-high border border-surface-container rounded-xl text-on-surface font-semibold">
+              <option value="">-- Chọn ngôn ngữ --</option>
+              <option value="vi-VN">Tiếng Việt (vi-VN)</option>
+              <option value="en-US">English (en-US)</option>
+              <option value="zh-CN">中文 简体 (zh-CN)</option>
+              <option value="ko-KR">한국어 (ko-KR)</option>
+              <option value="ja-JP">日本語 (ja-JP)</option>
+              <option value="fr-FR">Français (fr-FR)</option>
+              <option value="th-TH">ไทย (th-TH)</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="text-sm font-bold text-on-surface-variant uppercase tracking-wider">Script Content</label>
+            <textarea id="scriptInput" class="w-full mt-2 px-4 py-3 bg-surface-container-high border border-surface-container rounded-xl text-on-surface font-mono text-sm resize-none"
+                      placeholder="Nhập nội dung TTS script..." rows="8"></textarea>
+            <p class="text-xs text-on-surface-variant mt-2">
+              <span id="charCount">0</span> ký tự (tối đa 500)
             </p>
           </div>
-        </div>
-        <span id="translate-status" class="text-xs font-bold px-3 py-1.5 rounded-xl
-              @(string.IsNullOrEmpty(ViewBag.TtsTranslations as string) ? "bg-slate-100 text-slate-500" : "bg-emerald-50 text-emerald-700")">
-          @(string.IsNullOrEmpty(ViewBag.TtsTranslations as string) ? "Chưa dịch" : "Đã dịch")
-        </span>
-      </div>
-
-      <!-- Loading state -->
-      <div id="translate-loading" class="hidden p-8 text-center">
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-10 h-10 rounded-full border-4 border-cyan-200 border-t-cyan-600 animate-spin"></div>
-          <p class="text-sm font-semibold text-on-surface-variant">Đang dịch tự động bằng AI...</p>
-          <p class="text-xs text-on-surface-variant">Quá trình này mất khoảng 10-20 giây</p>
-        </div>
-      </div>
-
-      <!-- Translations grid -->
-      <div id="translations-grid" class="p-6">
-        @{
-          var langs = new (string code, string name, string flag)[] {
-            ("vi","Tiếng Việt","🇻🇳"),
-            ("en","English","🇺🇸"),
-            ("zh","中文","🇨🇳"),
-            ("ko","한국어","🇰🇷"),
-            ("ja","日本語","🇯🇵"),
-            ("fr","Français","🇫🇷"),
-          };
-
-          Dictionary<string, string>? existing = null;
-          try {
-            var raw = ViewBag.TtsTranslations as string;
-            if (!string.IsNullOrEmpty(raw))
-              existing = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(raw);
-          } catch { }
-        }
-
-        @if (existing == null && string.IsNullOrEmpty(ViewBag.TtsScript as string))
-        {
-          <div class="flex flex-col items-center py-10 text-center">
-            <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">translate</span>
-            <p class="font-bold text-on-surface-variant">Chưa có script để dịch</p>
-            <p class="text-xs text-on-surface-variant mt-1">Nhập script tiếng Việt ở trên trước, sau đó bấm Dịch tự động.</p>
+          
+          <div class="flex gap-3 pt-4">
+            <button onclick="closeModal()" type="button"
+                    class="flex-1 px-4 py-2 bg-surface-container-high text-on-surface font-bold rounded-xl hover:bg-surface-container-high/80 transition-colors">
+              Hủy
+            </button>
+            <button onclick="saveTtsContent()" type="button"
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors">
+              <span class="material-symbols-outlined align-middle">save</span> Lưu
+            </button>
           </div>
-        }
-        else
-        {
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lang-cards">
-            @foreach (var (code, name, flag) in langs)
-            {
-              string? txt = null;
-              var hasText = existing != null && existing.TryGetValue(code, out txt) && !string.IsNullOrEmpty(txt);
-              <div class="p-4 bg-surface-container-low rounded-xl" id="card-@code">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="flex items-center gap-2 text-sm font-bold">
-                    <span class="text-xl">@flag</span> @name
-                  </span>
-                  <div class="flex items-center gap-2">
-                    @if (hasText)
-                    {
-                      <button type="button" onclick="previewTts('@code')"
-                              class="p-1.5 text-violet-600 hover:bg-violet-100 rounded-lg transition-colors" title="Nghe thử">
-                        <span class="material-symbols-outlined text-sm">play_circle</span>
-                      </button>
-                    }
-                    <span class="text-[10px] font-bold px-2 py-1 rounded-lg @(hasText ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400")">
-                      @(code == "vi" ? (string.IsNullOrEmpty(ViewBag.TtsScript as string) ? "Trống" : "Có sẵn") : (hasText ? "Đã dịch" : "Chưa dịch"))
-                    </span>
-                  </div>
-                </div>
-                <p class="text-xs text-on-surface-variant leading-relaxed line-clamp-3" id="text-@code">
-                  @if (code == "vi")
-                  {
-                    @(ViewBag.TtsScript as string ?? "—")
-                  }
-                  else if (hasText)
-                  {
-                    @txt
-                  }
-                  else
-                  {
-                    <span class="italic">Bấm "Dịch tự động" để tạo bản dịch...</span>
-                  }
-                </p>
-              </div>
-            }
-          </div>
-
-          @if (existing != null)
-          {
-            <div class="mt-4 p-3 bg-cyan-50 border border-cyan-100 rounded-xl flex items-center gap-2">
-              <span class="material-symbols-outlined text-cyan-600 text-sm">info</span>
-              <p class="text-xs text-cyan-700">
-                Bản dịch được tạo tự động bởi AI. Bạn có thể bấm <strong>Dịch tự động</strong> lại sau khi cập nhật script để đồng bộ.
-              </p>
-            </div>
-          }
-        }
+        </div>
       </div>
     </div>
 
@@ -782,6 +651,195 @@
       </div>
     `;
     document.body.appendChild(modal);
+  }
+
+  // ── TTS CONTENTS BY LOCALE ────────────────────────────────────
+  let placeId = '@ViewBag.PlaceId';
+  let currentEditingId = null;
+
+  // Load TTS Contents on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadTtsContents();
+    
+    // Character counter
+    document.getElementById('scriptInput')?.addEventListener('input', (e) => {
+      document.getElementById('charCount').textContent = e.target.value.length;
+    });
+  });
+
+  async function loadTtsContents() {
+    try {
+      const response = await fetch(`/api/places/${placeId}/tts-contents`);
+      if (!response.ok) throw new Error('Failed to load TTS contents');
+      
+      const data = await response.json();
+      const container = document.getElementById('ttsContentsContainer');
+      
+      if (!data.contents || data.contents.length === 0) {
+        container.innerHTML = `
+          <div class="flex flex-col items-center py-10 text-center">
+            <span class="material-symbols-outlined text-5xl text-slate-300 mb-3">language</span>
+            <p class="font-bold text-on-surface-variant">Chưa có script cho ngôn ngữ nào</p>
+            <p class="text-xs text-on-surface-variant mt-1">Hãy thêm script đầu tiên cho quán này.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = data.contents.map(content => `
+        <div class="bg-surface-container-high rounded-xl p-4 border border-surface-container">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Ngôn ngữ</p>
+              <p class="font-semibold text-on-surface">${getLocaleName(content.locale)}</p>
+              <p class="text-[10px] text-on-surface-variant mt-0.5">${content.locale}</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="editTtsContent(${content.id}, '${content.locale}', \`${content.script.replace(/`/g, '\\`')}\`)" 
+                      type="button" class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors">
+                <span class="material-symbols-outlined text-sm align-middle">edit</span>
+              </button>
+              <button onclick="deleteTtsContent(${content.id}, '${content.locale}')" type="button" 
+                      class="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors">
+                <span class="material-symbols-outlined text-sm align-middle">delete</span>
+              </button>
+            </div>
+          </div>
+          <p class="text-sm text-on-surface leading-relaxed bg-surface-container rounded-lg p-3 mb-2">
+            ${escapeHtml(content.script)}
+          </p>
+          <p class="text-[10px] text-on-surface-variant">${content.script.length} ký tự</p>
+        </div>
+      `).join('');
+    } catch (error) {
+      console.error('Error loading TTS contents:', error);
+      document.getElementById('ttsContentsContainer').innerHTML = `
+        <div class="text-center py-8 text-red-600">
+          Lỗi tải dữ liệu. Vui lòng tải lại trang.
+        </div>
+      `;
+    }
+  }
+
+  function getLocaleName(locale) {
+    const names = {
+      'vi-VN': 'Tiếng Việt',
+      'en-US': 'English',
+      'zh-CN': '中文 简体',
+      'ko-KR': '한국어',
+      'ja-JP': '日本語',
+      'fr-FR': 'Français',
+      'th-TH': 'ไทย'
+    };
+    return names[locale] || locale;
+  }
+
+  function showAddTtsContentModal() {
+    currentEditingId = null;
+    document.getElementById('localeSelect').value = '';
+    document.getElementById('scriptInput').value = '';
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('ttsContentModal').classList.remove('hidden');
+  }
+
+  function editTtsContent(contentId, locale, script) {
+    currentEditingId = contentId;
+    document.getElementById('localeSelect').value = locale;
+    document.getElementById('localeSelect').disabled = true;
+    document.getElementById('scriptInput').value = script;
+    document.getElementById('charCount').textContent = script.length;
+    document.getElementById('ttsContentModal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('ttsContentModal').classList.add('hidden');
+    document.getElementById('localeSelect').disabled = false;
+    currentEditingId = null;
+  }
+
+  async function saveTtsContent() {
+    const locale = document.getElementById('localeSelect').value;
+    const script = document.getElementById('scriptInput').value.trim();
+    
+    if (!locale) {
+      alert('Vui lòng chọn ngôn ngữ');
+      return;
+    }
+    
+    if (!script) {
+      alert('Vui lòng nhập nội dung script');
+      return;
+    }
+    
+    try {
+      let url, method, body;
+      
+      if (currentEditingId) {
+        // Update existing
+        url = `/api/places/${placeId}/tts-contents/${currentEditingId}`;
+        method = 'PUT';
+        body = { script };
+      } else {
+        // Create new
+        url = `/api/places/${placeId}/tts-contents`;
+        method = 'POST';
+        body = { locale, script };
+      }
+      
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: JSON.stringify(body)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert('Lỗi: ' + (errorData.message || 'Không thể lưu script'));
+        return;
+      }
+      
+      closeModal();
+      await loadTtsContents();
+      showToast('✅ Đã lưu TTS script thành công!', 'success');
+    } catch (error) {
+      console.error('Error saving TTS content:', error);
+      alert('Lỗi: ' + error.message);
+    }
+  }
+
+  async function deleteTtsContent(contentId, locale) {
+    if (!confirm(`Bạn chắc chắn muốn xóa script cho ngôn ngữ ${getLocaleName(locale)}?`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/places/${placeId}/tts-contents/${contentId}`, {
+        method: 'DELETE',
+        headers: {
+          'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        }
+      });
+      
+      if (!response.ok) {
+        alert('Lỗi khi xóa script');
+        return;
+      }
+      
+      await loadTtsContents();
+      showToast('✅ Đã xóa TTS script thành công!', 'success');
+    } catch (error) {
+      console.error('Error deleting TTS content:', error);
+      alert('Lỗi: ' + error.message);
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
 </script>

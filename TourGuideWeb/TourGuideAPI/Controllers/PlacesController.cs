@@ -682,4 +682,152 @@ public class PlacesController(
             .ToListAsync();
         return Ok(images);
     }
+
+    // ── GET /api/places/{id}/tts-contents ──────────────────────────────
+    [HttpGet("{id}/tts-contents")]
+    public async Task<IActionResult> GetTtsContents(int id)
+    {
+        var place = await db.Places.FirstOrDefaultAsync(p => p.PlaceId == id);
+        if (place == null) return NotFound();
+
+        var contents = await db.PlaceTtsContents
+            .Where(c => c.PlaceId == id)
+            .OrderBy(c => c.Locale)
+            .Select(c => new PlaceTtsContentDto
+            {
+                Id = c.Id,
+                PlaceId = c.PlaceId,
+                Locale = c.Locale,
+                Script = c.Script
+            })
+            .ToListAsync();
+
+        return Ok(new PlaceTtsContentListDto
+        {
+            PlaceId = id,
+            Contents = contents
+        });
+    }
+
+    // ── GET /api/places/{id}/tts-contents/{locale} ─────────────────────
+    [HttpGet("{id}/tts-contents/{locale}")]
+    public async Task<IActionResult> GetTtsContentByLocale(int id, string locale)
+    {
+        var place = await db.Places.FirstOrDefaultAsync(p => p.PlaceId == id);
+        if (place == null) return NotFound();
+
+        var content = await db.PlaceTtsContents
+            .FirstOrDefaultAsync(c => c.PlaceId == id && c.Locale == locale);
+        
+        if (content == null) return NotFound(new { message = $"Không tìm thấy script cho locale: {locale}" });
+
+        return Ok(new PlaceTtsContentDto
+        {
+            Id = content.Id,
+            PlaceId = content.PlaceId,
+            Locale = content.Locale,
+            Script = content.Script
+        });
+    }
+
+    // ── POST /api/places/{id}/tts-contents ─────────────────────────────
+    [HttpPost("{id}/tts-contents")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> CreateTtsContent(int id, [FromBody] CreatePlaceTtsContentDto dto)
+    {
+        var place = await db.Places
+            .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
+        if (place == null) return Forbid();
+
+        if (string.IsNullOrWhiteSpace(dto.Locale) || string.IsNullOrWhiteSpace(dto.Script))
+            return BadRequest(new { message = "Locale và Script không được để trống" });
+
+        // Check if already exists
+        var exists = await db.PlaceTtsContents
+            .AnyAsync(c => c.PlaceId == id && c.Locale == dto.Locale);
+        
+        if (exists)
+            return Conflict(new { message = $"Script cho locale '{dto.Locale}' đã tồn tại" });
+
+        var content = new PlaceTtsContent
+        {
+            PlaceId = id,
+            Locale = dto.Locale,
+            Script = dto.Script.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        db.PlaceTtsContents.Add(content);
+        await db.SaveChangesAsync();
+
+        // ✅ INVALIDATE CACHE
+        cache.Remove($"places:detail:{id}");
+        cache.RemoveByPattern("places:*");
+
+        return CreatedAtAction(nameof(GetTtsContentByLocale), 
+            new { id, locale = content.Locale }, 
+            new PlaceTtsContentDto
+            {
+                Id = content.Id,
+                PlaceId = content.PlaceId,
+                Locale = content.Locale,
+                Script = content.Script
+            });
+    }
+
+    // ── PUT /api/places/{id}/tts-contents/{contentId} ──────────────────
+    [HttpPut("{id}/tts-contents/{contentId}")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> UpdateTtsContent(int id, int contentId, [FromBody] UpdatePlaceTtsContentDto dto)
+    {
+        var place = await db.Places
+            .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
+        if (place == null) return Forbid();
+
+        var content = await db.PlaceTtsContents
+            .FirstOrDefaultAsync(c => c.Id == contentId && c.PlaceId == id);
+        if (content == null) return NotFound();
+
+        if (string.IsNullOrWhiteSpace(dto.Script))
+            return BadRequest(new { message = "Script không được để trống" });
+
+        content.Script = dto.Script.Trim();
+        content.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        // ✅ INVALIDATE CACHE
+        cache.Remove($"places:detail:{id}");
+        cache.RemoveByPattern("places:*");
+
+        return Ok(new PlaceTtsContentDto
+        {
+            Id = content.Id,
+            PlaceId = content.PlaceId,
+            Locale = content.Locale,
+            Script = content.Script
+        });
+    }
+
+    // ── DELETE /api/places/{id}/tts-contents/{contentId} ───────────────
+    [HttpDelete("{id}/tts-contents/{contentId}")]
+    [Authorize(Policy = "OwnerOnly")]
+    public async Task<IActionResult> DeleteTtsContent(int id, int contentId)
+    {
+        var place = await db.Places
+            .FirstOrDefaultAsync(p => p.PlaceId == id && p.OwnerId == OwnerId);
+        if (place == null) return Forbid();
+
+        var content = await db.PlaceTtsContents
+            .FirstOrDefaultAsync(c => c.Id == contentId && c.PlaceId == id);
+        if (content == null) return NotFound();
+
+        db.PlaceTtsContents.Remove(content);
+        await db.SaveChangesAsync();
+
+        // ✅ INVALIDATE CACHE
+        cache.Remove($"places:detail:{id}");
+        cache.RemoveByPattern("places:*");
+
+        return NoContent();
+    }
 }

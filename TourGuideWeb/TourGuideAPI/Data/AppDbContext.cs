@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users { get; set; }
     public DbSet<Place> Places { get; set; }
     public DbSet<PlaceImage> PlaceImages { get; set; }
+    public DbSet<PlaceTtsContent> PlaceTtsContents { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<UserTracking> UserTracking { get; set; }
     public DbSet<VisitHistory> VisitHistory { get; set; }
@@ -62,6 +63,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne(i => i.Place)
              .WithMany(p => p.Images)
              .HasForeignKey(i => i.PlaceId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        mb.Entity<PlaceTtsContent>(e => {
+            e.ToTable("PlaceTtsContents");
+            e.HasKey(c => c.Id);
+            e.HasIndex(c => new { c.PlaceId, c.Locale }).IsUnique();
+            e.HasOne(c => c.Place)
+             .WithMany(p => p.TtsContents)
+             .HasForeignKey(c => c.PlaceId)
              .OnDelete(DeleteBehavior.Cascade);
         });
 

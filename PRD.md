@@ -1694,7 +1694,46 @@ sequenceDiagram
 
 ---
 
-##### 13.5.2.3 Xem chi tiết device (Device Info)
+##### 13.5.2.3 Xem danh sách thiết bị đang online
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant DB as Supabase / PostgreSQL
+    participant Timer as Auto Reload Timer
+
+    Admin->>AdminUI: Mở tab "Devices" (Online Devices)
+    AdminUI->>API: GET /api/admin/devices?onlineOnly=true (JWT)
+    API->>DB: SELECT dr.*, COUNT(dpv.VisitId) as VisitCount FROM DeviceRegistrations dr LEFT JOIN DevicePoiVisits dpv ON dr.DeviceId=dpv.DeviceId
+    API->>DB: WHERE LastSeenAt >= NOW() - INTERVAL 15 seconds
+    API->>DB: LEFT JOIN AccessSessions acs ON dr.DeviceId=acs.DeviceId AND acs.IsActive=true
+    DB-->>API: {total: int, onlineCount: int, items: [{DeviceId, Platform, FirstSeenAt, LastSeenAt, VisitCount, HasActiveSession}]}
+    API-->>AdminUI: Danh sách devices online + stats
+    AdminUI-->>Admin: Hiển thị bảng với columns: DeviceId, Platform, Status (badge Đang dùng), LastSeen, #Visits
+    AdminUI->>AdminUI: Header card: "X đang hoạt động / Y tổng cộng"
+    
+    Timer->>AdminUI: Trigger mỗi 15 giây
+    AdminUI->>API: Auto-refresh GET /api/admin/devices?onlineOnly=true
+    API-->>AdminUI: Dữ liệu mới
+    AdminUI->>AdminUI: Cập nhật UI mà không reload trang (soft refresh)
+    
+    Admin->>AdminUI: Chọn một device từ danh sách → Xem "Device Details"
+    AdminUI->>API: GET /api/admin/devices/{deviceId}
+    API->>DB: SELECT * FROM DeviceRegistrations WHERE DeviceId = ?
+    DB-->>API: Device record chi tiết
+    API->>DB: SELECT * FROM AccessSessions WHERE DeviceId = ? ORDER BY CreatedAt DESC LIMIT 10
+    DB-->>API: Danh sách sessions của device
+    API->>DB: SELECT * FROM DevicePoiVisits WHERE DeviceId = ? ORDER BY VisitedAt DESC LIMIT 50
+    DB-->>API: Lịch sử 50 lượt visit POI gần nhất
+    API-->>AdminUI: Device info + sessions + visit history
+    AdminUI-->>Admin: Hiển thị detail page: Device profile, Active session, POI visit history
+```
+
+---
+
+##### 13.5.2.4 Xem chi tiết device (Device Info)
 
 ```mermaid
 sequenceDiagram
@@ -1718,7 +1757,7 @@ sequenceDiagram
 
 ---
 
-##### 13.5.2.4 Export báo cáo
+##### 13.5.2.5 Export báo cáo
 
 ```mermaid
 sequenceDiagram
@@ -1743,7 +1782,7 @@ sequenceDiagram
 
 ---
 
-##### 13.5.2.5 Audit Log — Xem lịch sử hành động
+##### 13.5.2.6 Audit Log — Xem lịch sử hành động
 
 ```mermaid
 sequenceDiagram

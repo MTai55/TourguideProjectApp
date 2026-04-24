@@ -68,7 +68,8 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
             TotalReviews = 15,
             HiddenReviews = 0,
             TotalVisitsToday = 0,
-            AvgRating = 2.93
+            AvgRating = 2.93,
+            OnlineDevices = 0
         });
     }
 

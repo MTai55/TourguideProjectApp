@@ -509,7 +509,37 @@ Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 10. User đi khỏi → distToLast > 50m → reset _lastSpokenPlaceId = null, _lastSpokenPlace = null
 ```
 
-### Kịch bản 3: Khám phá bản đồ & chỉ đường
+### Kịch bản 3: Đứng giữa 2 POI — xét PlaceId
+
+```mermaid
+sequenceDiagram
+    participant GE as GeofenceEngine
+    participant MapPage
+    participant NS as NarrationService
+
+    Note over GE: User đứng trong vùng overlap của 2 POI<br/>PlaceId=3 (Bưu điện, 30m) và PlaceId=7 (Chợ Bến Thành, 30m)
+
+    MapPage->>GE: FindNearestPOI(lat, lon, places)
+    GE->>GE: candidates = [PlaceId=3, PlaceId=7] (cả 2 trong radius, qua cooldown)
+    GE->>GE: sort PlaceId ASC → top = PlaceId=3 (Bưu điện)
+    GE->>GE: _pendingPlaceId = "3", _pendingFirstSeenAt = now → return null
+
+    Note over GE: 2 giây sau...
+    MapPage->>GE: FindNearestPOI(lat, lon, places)
+    GE->>GE: top vẫn = PlaceId=3, elapsed >= 2s → return Place "Bưu điện"
+    MapPage->>NS: SpeakFromGpsAsync("Bưu điện TP.HCM...")
+    MapPage->>MapPage: PlaceId=3 → LastPlayedAt = now (cooldown 30 phút)
+
+    Note over GE: GPS update tiếp theo...
+    MapPage->>GE: FindNearestPOI(lat, lon, places)
+    GE->>GE: candidates = [PlaceId=7] (PlaceId=3 bị lọc vì đang cooldown)
+    GE->>GE: top = PlaceId=7 (Chợ Bến Thành) → _pendingPlaceId = "7", debounce restart
+    Note over GE: 2 giây sau...
+    GE-->>MapPage: return Place "Chợ Bến Thành"
+    MapPage->>NS: SpeakFromGpsAsync("Chợ Bến Thành...")
+```
+
+### Kịch bản 4: Khám phá bản đồ & chỉ đường
 ```
 1. Tap marker đỏ → OnMapInfo → ShowPlaceCard(place)
 2. Bottom card: tên, rating, giờ mở/đóng, tags, địa chỉ
@@ -520,7 +550,7 @@ Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 7. Bấm Hủy → xóa Route + Destination layers → CancelRoutePanel.IsVisible = false
 ```
 
-### Kịch bản 4: Admin kích hoạt thanh toán
+### Kịch bản 5: Admin kích hoạt thanh toán
 ```
 1. Admin vào /Admin/Sessions → tab "Chờ kích hoạt"
 2. Thấy session: DeviceId=A3F8B2C1D4, gói 2h, giá 18.000đ, tạo lúc 14:30
@@ -1412,7 +1442,7 @@ sequenceDiagram
                 end
             end
         else candidates có POI
-            GE->>GE: top = sort Priority DESC → Distance ASC → PlaceId ASC
+            GE->>GE: top = sort PlaceId ASC (PlaceId nhỏ hơn → ưu tiên trước)
             alt POI mới khác _pendingPlaceId
                 GE->>GE: _pendingPlaceId = topId, _pendingFirstSeenAt = now
                 GE-->>MapPage: null (chờ debounce 2s)

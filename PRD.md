@@ -1617,7 +1617,6 @@ sequenceDiagram
 
 #### 13.5.2 Admin Dashboard Sequences — Chi tiết
 
-
 ##### 13.5.2.1 Xem danh sách chờ kích hoạt (Pending Payments)
 
 ```mermaid

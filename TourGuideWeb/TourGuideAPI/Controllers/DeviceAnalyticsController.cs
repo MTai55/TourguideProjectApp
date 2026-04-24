@@ -76,7 +76,11 @@ public class DeviceAnalyticsController(AppDbContext db) : ControllerBase
             };
         }).ToList();
 
-        return Ok(new { total, page, pageSize, items });
+        var onlineThreshold = DateTime.UtcNow.AddSeconds(-15);
+        var onlineCount = await db.DeviceRegistrations
+            .CountAsync(d => d.LastSeenAt >= onlineThreshold);
+
+        return Ok(new { total, page, pageSize, onlineCount, items });
     }
 
     // GET /api/admin/devices/{deviceId}/visits

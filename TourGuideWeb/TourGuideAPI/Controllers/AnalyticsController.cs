@@ -178,6 +178,7 @@ public class AnalyticsController(AppDbContext db) : ControllerBase
                 ActivePlaces = await db.Places.CountAsync(p => p.Status == "Active"),
                 TotalReviews = totalReviews,
                 HiddenReviews = hiddenReviews,
+                OnlineDevices = await db.DeviceRegistrations.CountAsync(d => d.LastSeenAt >= DateTime.UtcNow.AddSeconds(-15)),
                 // NOTE: VisitHistory table doesn't exist in Supabase - temporarily disabled
                 TotalVisitsToday = 0,   // await db.VisitHistory.CountAsync(v => v.CheckInTime >= DateTime.UtcNow.Date),
                 AvgRating = await db.Places

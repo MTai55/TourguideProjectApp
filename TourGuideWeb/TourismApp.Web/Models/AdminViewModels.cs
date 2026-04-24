@@ -10,6 +10,7 @@ public class AdminStatsViewModel
     public int TotalReviews { get; set; }
     public int HiddenReviews { get; set; }
     public double AvgRating { get; set; }
+    public int OnlineDevices { get; set; }
 }
 
 public class UserViewModel

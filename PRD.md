@@ -1775,8 +1775,9 @@ sequenceDiagram
     Admin->>DashMVC: GET /Admin/AdminDashboard
     DashMVC->>API: GET /api/analytics/admin/stats
     AnalyticsAPI->>DB: COUNT users/places + SUM revenue active sessions
-    DB-->>DashMVC: {totalUsers, totalPlaces, totalRevenue, ...}
-    DashMVC-->>Admin: Dashboard thống kê + bản đồ tất cả địa điểm
+    AnalyticsAPI->>DB: COUNT DeviceRegistrations WHERE LastSeenAt >= UtcNow-15s
+    DB-->>DashMVC: {totalUsers, totalPlaces, totalRevenue, onlineDevices, ...}
+    DashMVC-->>Admin: Dashboard thống kê + card "Thiết bị online"
 
     Admin->>PlacesMVC: GET /Admin/AdminPlaces?pendingOnly=true
     PlacesMVC->>API: GET /api/admin/places?pendingOnly=true
@@ -2019,10 +2020,11 @@ graph LR
     F7 --> F7_1["7.1 /Admin/Sessions\nstats + filter + paginate 20"]
     F7 --> F7_2["7.2 Activate / Cancel / Deactivate\n3 POST actions"]
     F7 --> F7_3["7.3 /Admin/Packages\nPUT /api/access-packages/id"]
-    F7 --> F7_4["7.4 /Admin/Devices\nDeviceRegistrations LEFT JOIN visits+sessions\nbadge Online nếu LastSeenAt ≤ 15s\nauto-reload 15s"]
+    F7 --> F7_4["7.4 /Admin/Devices\nDeviceRegistrations LEFT JOIN visits+sessions\nbadge Online nếu LastSeenAt ≤ 15s\nauto-reload 15s\ncounter thiết bị đang hoạt động"]
     F7 --> F7_5["7.5 Detail device\n50 visits gần nhất"]
     F7 --> F7_6["7.6 Duyệt địa điểm\nIsApproved + IsActive"]
     F7 --> F7_7["7.7 Quản lý tài khoản\nlock/role"]
+    F7 --> F7_8["7.8 /Admin/Dashboard\ncard Thiết bị online\nCOUNT LastSeenAt ≤ 15s"]
 ```
 
 ---
@@ -2058,4 +2060,4 @@ graph LR
 
 **Nhóm phát triển:** Sinh viên đồ án  
 **Cập nhật lần cuối:** Tháng 4, 2026  
-**Phiên bản:** 2.4 — Cập nhật: heartbeat 5s online monitoring, GeofenceEngine sort PlaceId tiebreaker, OnSleep/OnResume lifecycle, web admin badge Đang dùng + auto-reload 15s
+**Phiên bản:** 2.5 — Cập nhật: heartbeat 5s online monitoring, GeofenceEngine sort PlaceId tiebreaker, OnSleep/OnResume lifecycle, web admin badge Đang dùng + auto-reload 15s, counter thiết bị online trang Devices, card Thiết bị online Dashboard

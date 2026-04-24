@@ -383,10 +383,11 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
 
     public class DeviceStatsResponse
     {
-        [JsonProperty("total")]    public int Total { get; set; }
-        [JsonProperty("page")]     public int Page { get; set; }
-        [JsonProperty("pageSize")] public int PageSize { get; set; }
-        [JsonProperty("items")]    public List<DeviceStatItem> Items { get; set; } = new();
+        [JsonProperty("total")]       public int Total { get; set; }
+        [JsonProperty("page")]        public int Page { get; set; }
+        [JsonProperty("pageSize")]    public int PageSize { get; set; }
+        [JsonProperty("onlineCount")] public int OnlineCount { get; set; }
+        [JsonProperty("items")]       public List<DeviceStatItem> Items { get; set; } = new();
     }
 
     public class DeviceStatItem

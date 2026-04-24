@@ -22,8 +22,7 @@
     var stats = new (string icon, string val, string label, string bg, string color)[] {
       ("people",       (Model?.TotalUsers ?? 0).ToString(),        "Tổng users",      "bg-primary/10",   "text-primary"),
       ("storefront",   (Model?.TotalPlaces ?? 0).ToString(),       "Tổng quán",       "bg-emerald-100",  "text-emerald-600"),
-      ("rate_review",  (Model?.TotalReviews ?? 0).ToString(),      "Tổng review",     "bg-blue-100",     "text-blue-600"),
-      ("visibility_off",(Model?.HiddenReviews ?? 0).ToString(),    "Review ẩn",       "bg-slate-100",    "text-slate-600"),
+      ("smartphone",   (Model?.OnlineDevices ?? 0).ToString(),   "Thiết bị online", "bg-emerald-100",  "text-emerald-600"),
     };
   }
   @foreach (var (icon, val, label, bg, color) in stats)

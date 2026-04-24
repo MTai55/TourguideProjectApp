@@ -2,10 +2,11 @@
 @{
     ViewData["Title"] = "Người dùng thiết bị";
     ViewData["AutoRefresh"] = 15;
-    var search     = ViewBag.Search as string ?? string.Empty;
-    var page       = (int)ViewBag.Page;
-    var totalPages = (int)ViewBag.TotalPages;
-    var total      = (int)ViewBag.Total;
+    var search      = ViewBag.Search as string ?? string.Empty;
+    var page        = (int)ViewBag.Page;
+    var totalPages  = (int)ViewBag.TotalPages;
+    var total       = (int)ViewBag.Total;
+    var onlineCount = (int)ViewBag.OnlineCount;
 }
 
 @section Scripts {
@@ -26,9 +27,14 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
       <h2 class="text-xl font-extrabold text-on-surface">Người dùng thiết bị</h2>
-      <p class="text-sm text-on-surface-variant mt-0.5">@total thiết bị đã mở app
-        <span class="ml-2 text-xs text-slate-400">· tự làm mới sau <span id="countdown">15</span>s</span>
-      </p>
+      <div class="flex items-center gap-3 mt-0.5">
+        <p class="text-sm text-on-surface-variant">@total thiết bị đã mở app</p>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
+          @onlineCount đang hoạt động
+        </span>
+        <span class="text-xs text-slate-400">· tự làm mới sau <span id="countdown">15</span>s</span>
+      </div>
     </div>
     <form method="get" class="flex gap-2">
       <input name="search" value="@search" placeholder="Tìm Device ID..."

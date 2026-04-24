@@ -2030,7 +2030,186 @@ graph LR
 
 ---
 
-**Tổng:** 1 ER + 2 Class + 11 Sequence + 5 Activity + 1 BFD + 1 Use Case = **21 diagrams**
+#### 13.5.7 Admin Dashboard Sequences — Chi tiết
+
+##### 13.5.7.1 Admin Đăng nhập
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant AuthService
+    participant DB as Supabase / PostgreSQL
+    participant JWTToken as JWT Token Store
+
+    Admin->>AdminUI: Nhập email và mật khẩu
+    AdminUI->>API: POST /api/auth/login
+    API->>AuthService: Xác thực thông tin
+    AuthService->>DB: Query Users table (email)
+    DB-->>AuthService: Trả user record (nếu có)
+    
+    alt Email + mật khẩu đúng
+        AuthService->>AuthService: Tạo JWT token (expires 24h)
+        AuthService-->>API: Token + refresh token
+        API-->>AdminUI: Login success + JWT
+        AdminUI->>JWTToken: Lưu token (localStorage / sessionStorage)
+        AdminUI-->>Admin: Redirect tới dashboard
+    else Sai email hoặc mật khẩu
+        AuthService-->>API: Auth failed
+        API-->>AdminUI: Login error
+        AdminUI-->>Admin: Hiển thị thông báo lỗi
+    end
+```
+
+---
+
+##### 13.5.7.2 Xem danh sách chờ kích hoạt (Pending Payments)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant AuthService
+    participant DB as Supabase / PostgreSQL
+
+    Admin->>AdminUI: Mở tab "Pending Payments"
+    AdminUI->>API: GET /api/admin/pending-sessions (JWT)
+    API->>AuthService: Validate JWT token
+    AuthService-->>API: Token valid + user role
+    
+    alt Người dùng có quyền admin
+        API->>DB: SELECT * FROM AccessSessions WHERE IsActive = false AND CreatedAt > NOW() - 24h
+        DB-->>API: Trả danh sách pending
+        API-->>AdminUI: [{ SessionId, DeviceId, PackageId, Amount, DeviceInfo, CreatedAt }, ...]
+        AdminUI-->>Admin: Hiển thị bảng pending payments
+    else Không phải admin
+        API-->>AdminUI: Forbidden 403
+        AdminUI-->>Admin: Hiển thị lỗi quyền truy cập
+    end
+```
+
+---
+
+##### 13.5.7.3 Kích hoạt một session (Approve Payment)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant AuthService
+    participant AccessSessionService
+    participant DB as Supabase / PostgreSQL
+    participant AuditLog as Audit Log
+
+    Admin->>AdminUI: Xem thông tin pending session (DeviceId, số tiền, nội dung chuyển khoản)
+    Admin->>AdminUI: Kiểm tra ngân hàng → Xác nhận đã nhận tiền
+    Admin->>AdminUI: Bấm "Approve Payment"
+    
+    AdminUI->>API: POST /api/admin/activate-session { SessionId, DeviceId, Notes }
+    API->>AuthService: Validate JWT
+    AuthService-->>API: Token valid + admin role
+    
+    API->>DB: BEGIN TRANSACTION
+    
+    API->>DB: SELECT * FROM AccessSessions WHERE SessionId = ? AND IsActive = false
+    DB-->>API: Session record
+    
+    alt Session tồn tại và chưa active
+        API->>AccessSessionService: Tính toán ExpiresAt từ PackageId
+        AccessSessionService-->>API: ExpiresAt (VD: now + 1 giờ)
+        
+        API->>DB: UPDATE AccessSessions SET IsActive = true, ActivatedAt = NOW(), ExpiresAt = ?
+        DB-->>API: Update success
+        
+        API->>AuditLog: Log { Action: "ACTIVATE_SESSION", SessionId, DeviceId, AdminId, Timestamp }
+        AuditLog-->>API: Logged
+        
+        API->>DB: COMMIT
+        API-->>AdminUI: { success: true, message: "Session activated", ExpiresAt }
+        AdminUI-->>Admin: Thông báo "Kích hoạt thành công"
+        AdminUI->>AdminUI: Xóa item khỏi danh sách pending
+        
+    else Session không tồn tại hoặc đã active
+        API->>DB: ROLLBACK
+        API-->>AdminUI: { success: false, message: "Session not found or already active" }
+        AdminUI-->>Admin: Hiển thị lỗi
+    end
+```
+
+---
+
+##### 13.5.7.4 Xem chi tiết device (Device Info)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant DB as Supabase / PostgreSQL
+
+    Admin->>AdminUI: Chọn một session → Xem "Device Details"
+    
+    AdminUI->>API: GET /api/admin/devices/{deviceId} (JWT)
+    API->>DB: SELECT * FROM DeviceRegistrations WHERE DeviceId = ?
+    DB-->>API: { DeviceId, FirstSeenAt, LastSeenAt, UserAgent, OS, Model, ... }
+    
+    API->>DB: SELECT * FROM AccessSessions WHERE DeviceId = ? ORDER BY CreatedAt DESC LIMIT 10
+    DB-->>API: Danh sách sessions của device
+    
+    API-->>AdminUI: Device info + session history
+    AdminUI-->>Admin: Hiển thị profile device và lịch sử sử dụng
+```
+
+---
+
+##### 13.5.7.5 Export báo cáo
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant ExportService
+    participant DB as Supabase / PostgreSQL
+    participant FileService as File Storage
+
+    Admin->>AdminUI: Chọn ngày từ-đến + chọn loại báo cáo (Payment, Device, Place Usage, ...)
+    AdminUI->>API: GET /api/admin/export?type=payments&dateFrom=2026-01-01&dateTo=2026-01-31
+    API->>DB: Query dữ liệu theo filter
+    DB-->>API: Dữ liệu chi tiết
+    API->>ExportService: Tạo file Excel / CSV
+    ExportService-->>API: File stream
+    API->>FileService: Lưu file tạm (nếu cần)
+    FileService-->>API: Download URL
+    API-->>AdminUI: File stream (Content-Disposition: attachment)
+    AdminUI-->>Admin: Tải file Excel / CSV
+```
+
+---
+
+##### 13.5.7.9 Audit Log — Xem lịch sử hành động
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant DB as Supabase / PostgreSQL
+
+    Admin->>AdminUI: Mở tab "Audit Log"
+    AdminUI->>API: GET /api/admin/audit-logs?page=1&limit=50
+    API->>DB: SELECT * FROM AuditLogs ORDER BY Timestamp DESC LIMIT 50
+    DB-->>API: [{ LogId, Action, AdminId, Target (PlaceId/SessionId/DeviceId), Details, Timestamp }, ...]
+    API-->>AdminUI: Audit log data
+    AdminUI-->>Admin: Hiển thị bảng: "Admin X sửa Place Y lúc Z" "Admin A kích hoạt session B lúc C" etc.
+```
+
+---
+
+**Tổng:** 1 ER + 2 Class + 18 Sequence + 5 Activity + 1 BFD + 1 Use Case = **28 diagrams**
 
 ---
 

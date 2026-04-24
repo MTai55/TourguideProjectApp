@@ -56,8 +56,8 @@ public partial class App : Application
     protected override void OnResume()
     {
         base.OnResume();
-        // Cập nhật ngay + khởi động lại heartbeat khi app quay lại foreground
-        _ = _accessService.RegisterDeviceAsync();
+        // StartHeartbeatTimer tự cập nhật LastSeenAt ngay lập tức khi start
+        // KHÔNG gọi RegisterDeviceAsync ở đây vì nó sẽ overwrite FirstSeenAt
         _accessService.StartHeartbeatTimer();
     }
 

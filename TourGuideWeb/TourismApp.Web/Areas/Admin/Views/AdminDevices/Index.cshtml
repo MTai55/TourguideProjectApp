@@ -125,11 +125,13 @@
               else if (lastSeenLocal.HasValue)
               {
                 var diff = nowUtc - lastSeenUtc!.Value;
-                var ago  = diff.TotalMinutes < 60
-                           ? $"{(int)diff.TotalMinutes} phút trước"
-                           : diff.TotalHours < 24
-                             ? $"{(int)diff.TotalHours} giờ trước"
-                             : lastSeenLocal.Value.ToString("dd/MM HH:mm");
+                var ago  = diff.TotalSeconds < 60
+                           ? "vừa xong"
+                           : diff.TotalMinutes < 60
+                             ? $"{(int)diff.TotalMinutes} phút trước"
+                             : diff.TotalHours < 24
+                               ? $"{(int)diff.TotalHours} giờ trước"
+                               : lastSeenLocal.Value.ToString("dd/MM HH:mm");
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-500 border border-slate-100" title="@lastSeenLocal.Value.ToString("dd/MM/yyyy HH:mm:ss")">
                   <span class="w-1.5 h-1.5 rounded-full bg-slate-300 inline-block"></span> @ago
                 </span>

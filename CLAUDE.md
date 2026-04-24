@@ -33,7 +33,7 @@ TourGuideAPP/
 │   ├── PlaceDetailPage           — Chi tiết địa điểm (push từ MainPage/MapPage)
 │   └── QRScanPage                — Quét QR check-in (ZXing)
 ├── Services/
-│   ├── AccessSessionService.cs   — Quản lý subscription: DeviceId, session, polling, expiry timer
+│   ├── AccessSessionService.cs   — Quản lý subscription: DeviceId, session, polling, expiry timer, heartbeat online
 │   ├── PlaceService.cs           — Load Places + PlaceImages + PlaceTtsContents từ Supabase, cache RAM
 │   ├── LocationService.cs        — GPS (ForegroundService Android / polling iOS), LocationChanged event
 │   ├── GeofenceEngine.cs         — Tìm POI gần nhất, debounce 2s, cooldown mặc định 30 phút
@@ -109,7 +109,17 @@ App.CreateWindow()
                → PaymentQRPage   — hiện QR VietQR + polling 5s/lần
                    → admin kích hoạt IsActive=true trên Supabase
                    → polling detect → lưu ExpiresAt → new AppShell()
+
+Mọi trường hợp (cả có và không có access):
+  → RegisterDeviceAsync()     — upsert DeviceRegistrations (FirstSeenAt + LastSeenAt)
+  → StartHeartbeatTimer()     — cập nhật LastSeenAt Supabase mỗi 5s khi foreground
 ```
+
+App lifecycle:
+- `OnSleep()` → `StopHeartbeat()` — dừng timer khi vào background/tắt
+- `OnResume()` → `StartHeartbeatTimer()` — cập nhật ngay + chạy lại timer
+
+**KHÔNG gọi `RegisterDeviceAsync()` trong `OnResume`** — sẽ overwrite `FirstSeenAt`.
 
 Khi hết hạn: `AccessSessionService.AccessExpired` → `App.OnAccessExpired()` → quay về `LanguageSelectionPage`.
 
@@ -286,7 +296,10 @@ OnSelectTourClicked → TourDetailPage(tour, services...)
 - `CreatePendingSessionAsync()`: insert vào Supabase với `IsActive=false`
 - `StartPollingForActivation()`: poll Supabase mỗi 5s, detect `IsActive=true` → lưu `ExpiresAt` local
 - `StartExpiryTimer()`: check mỗi 60s, khi hết hạn fire `AccessExpired` event
-- `ClearLocalSession()`: xóa `access_expires_at` và `access_session_id` khỏi Preferences
+- `StartHeartbeatTimer()`: cập nhật `LastSeenAt` lên Supabase ngay lập tức rồi mỗi 5s, chạy khi foreground
+- `StopHeartbeat()`: hủy heartbeat (gọi từ `App.OnSleep`)
+- `UpdateLastSeenAsync()` (private): chỉ update `LastSeenAt`, KHÔNG đụng `FirstSeenAt`
+- `ClearLocalSession()`: xóa `access_expires_at`, `access_session_id`, cancel cả heartbeat
 
 ### PlaceService
 - `GetAllPlacesAsync()`: load Places → PlaceImages (IsMain=true) → PlaceTtsContents theo thứ tự, lỗi bước nào bỏ qua bước đó
@@ -294,7 +307,8 @@ OnSelectTourClicked → TourDetailPage(tour, services...)
 - `LastPlayedAt` trên Place objects tồn tại trong RAM cho đến khi `GetAllPlacesAsync()` tạo objects mới
 
 ### GeofenceEngine
-- `FindNearestPOI()`: lọc candidates (trong radius + qua cooldown) → debounce 2s → trả về top priority
+- `FindNearestPOI()`: lọc candidates (trong radius + qua cooldown) → sort → debounce 2s → trả về top
+- Sort order: `Priority DESC` → `Distance ASC` → `PlaceId ASC` (tiebreaker deterministic khi bằng nhau)
 - Sau khi debounce satisfied: KHÔNG reset `_pendingPlaceId` (để handler thứ 2 không restart debounce)
 - Khi candidates rỗng (không có POI hoặc tất cả trong cooldown): reset debounce
 - `GetDistance()`: Haversine formula, trả về mét

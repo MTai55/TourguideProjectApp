@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## TourGuideAPP — Ứng dụng Hướng dẫn Du lịch Thông minh TP.HCM
 
-**Phiên bản:** 2.3  
+**Phiên bản:** 2.4  
 **Ngày cập nhật:** Tháng 4, 2026  
 **Trạng thái:** Đang phát triển  
 
@@ -268,7 +268,10 @@ Timer background (mỗi 60 giây):
 
 2. Nếu candidates rỗng → reset _pendingPlaceId, _pendingFirstSeenAt → return null
 
-3. Lấy top = candidates[0] (sort: Priority DESC, Distance ASC)
+3. Lấy top = candidates[0] (sort: Priority DESC → Distance ASC → PlaceId ASC)
+   - Priority DESC: POI có priority cao hơn → ưu tiên trước
+   - Distance ASC: cùng priority → POI gần hơn → ưu tiên trước
+   - PlaceId ASC: tiebreaker deterministic khi khoảng cách bằng nhau chính xác
 
 4. Debounce:
    - Nếu top.PlaceId != _pendingPlaceId → gán _pendingPlaceId = topId, _pendingFirstSeenAt = now → return null
@@ -371,8 +374,16 @@ Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 ### 5.10 Web Admin — Theo dõi thiết bị (Devices)
 - Route: `/Admin/Devices` | API: `GET /api/admin/devices`, `GET /api/admin/devices/{id}/visits`
 - Nguồn: `DeviceRegistrations` (tất cả device đã mở app) LEFT JOIN `DevicePoiVisits`, `AccessSessions`
-- Mỗi row: DeviceId, Platform, FirstSeenAt, LastSeenAt, VisitCount, PoiCount, HasActive session, LastPackage
+- Mỗi row: DeviceId, Platform, FirstSeenAt, VisitCount, PoiCount, LastPackage, **Kết nối**, **Gói hiện tại**
 - Chi tiết: `/Admin/Devices/{deviceId}` → lịch sử 50 visits gần nhất
+
+**Trạng thái kết nối realtime:**
+- App gửi heartbeat lên `DeviceRegistrations.LastSeenAt` mỗi **5 giây** khi đang foreground
+- `OnSleep()` → dừng heartbeat; `OnResume()` → cập nhật ngay + khởi động lại heartbeat
+- Web kiểm tra: `(UtcNow - LastSeenAt) ≤ 15 giây` → badge **"Đang dùng"** (xanh nhấp nháy)
+- Ngoài ngưỡng: hiện **"X phút/giờ trước"** với tooltip thời gian chính xác
+- Trang tự reload mỗi **15 giây** (`<meta http-equiv="refresh" content="15">`) — không cần F5
+- Thời gian tối đa để phát hiện offline sau khi app tắt: **~30 giây** (15s threshold + 15s reload)
 
 ---
 
@@ -452,8 +463,8 @@ Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 |---|---|---|
 | DeviceId | text PK | 10 ký tự uppercase |
 | Platform | text? | "Android" / "iOS" |
-| FirstSeenAt | timestamptz? | Lần đầu mở app |
-| LastSeenAt | timestamptz? | Upsert mỗi lần khởi động |
+| FirstSeenAt | timestamptz? | Lần đầu mở app (upsert từ `RegisterDeviceAsync`) |
+| LastSeenAt | timestamptz? | Cập nhật mỗi **5 giây** qua heartbeat khi app foreground; dừng khi `OnSleep` |
 
 ### Bảng `DevicePoiVisits`
 | Cột | Kiểu | Ghi chú |
@@ -532,6 +543,8 @@ Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 | Polling xác nhận thanh toán | Mỗi 5 giây |
 | Timer kiểm tra hết hạn | Mỗi 60 giây |
 | GPS TTS cooldown toàn cục | 60 giây (NarrationService._lastGpsTtsAt) |
+| Heartbeat cập nhật LastSeenAt | Mỗi 5 giây (foreground) |
+| Phát hiện offline trên web | Tối đa ~30 giây sau khi app tắt |
 
 ### 8.2 Độ tin cậy
 - GPS Foreground Service không bị Android kill khi chạy nền
@@ -605,6 +618,9 @@ Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 | GPS TTS global cooldown | 60s | `NarrationService.GpsMinGapSeconds` |
 | Polling kích hoạt | 5000ms | `AccessSessionService.StartPollingForActivation` |
 | Timer hết hạn | 60000ms | `AccessSessionService.StartExpiryTimer` |
+| Heartbeat interval | 5000ms | `AccessSessionService.StartHeartbeatTimer` |
+| Online threshold (web) | 15 giây | `AdminDevices/Index.cshtml` — `TotalSeconds <= 15` |
+| Page auto-refresh (web) | 15 giây | `AdminDevices/Index.cshtml` — `meta http-equiv=refresh` |
 | Reverse geocode cache | 15s / 30m | `LocationService.GetAddressAsync` |
 | History tối đa | 100 items | `UserProfileService.AddHistoryAsync` |
 | OSRM Endpoint | `router.project-osrm.org/route/v1/driving` | `MapPage` |
@@ -648,6 +664,7 @@ Khi CancelRoutePanel.IsVisible == true → early return (không ghi đè label)
 - ✅ Web Admin UI xem danh sách thiết bị + lịch sử visit
 - ✅ Supabase trigger tự tăng `Places.TotalVisits`
 - ✅ Cấu hình ngân hàng VietQR: VIB — 310822005 — NGUYEN HUY TOAN
+- ✅ **Monitoring online/offline realtime** — heartbeat 5s từ app, web hiển thị trạng thái kết nối, tự reload 15s
 
 ### Giai đoạn 3 — Nội dung thật (Q3 2026)
 - [ ] Enrich dữ liệu từ Google Places API (ảnh, rating, giờ mở cửa thật)
@@ -953,6 +970,9 @@ classDiagram
         -const string ExpiresAtKey
         -const string SessionIdKey
         -Supabase.Client _supabase
+        -CancellationTokenSource? _pollCts
+        -CancellationTokenSource? _expiryCts
+        -CancellationTokenSource? _heartbeatCts
         -static List~AccessPackage~ _fallbackPackages
         +event Action? AccessExpired
         +GetDeviceId() string
@@ -964,6 +984,9 @@ classDiagram
         +StartPollingForActivation(sessionId, onActivated) void
         +StopPolling() void
         +StartExpiryTimer() void
+        +StartHeartbeatTimer() void
+        +StopHeartbeat() void
+        -UpdateLastSeenAsync() Task
         +ClearLocalSession() void
     }
 
@@ -1248,7 +1271,8 @@ sequenceDiagram
 
     User->>App: Mở ứng dụng
     App->>ASS: RegisterDeviceAsync() [fire-and-forget]
-    ASS->>Supabase: UPSERT DeviceRegistrations {DeviceId, Platform, LastSeenAt}
+    ASS->>Supabase: UPSERT DeviceRegistrations {DeviceId, Platform, FirstSeenAt, LastSeenAt}
+    App->>ASS: StartHeartbeatTimer() [cập nhật LastSeenAt ngay + mỗi 5s]
 
     App->>ASS: IsAccessValid()
     ASS->>Prefs: Get("access_expires_at")
@@ -1388,7 +1412,7 @@ sequenceDiagram
                 end
             end
         else candidates có POI
-            GE->>GE: top = sort Priority DESC, Distance ASC
+            GE->>GE: top = sort Priority DESC → Distance ASC → PlaceId ASC
             alt POI mới khác _pendingPlaceId
                 GE->>GE: _pendingPlaceId = topId, _pendingFirstSeenAt = now
                 GE-->>MapPage: null (chờ debounce 2s)
@@ -1813,8 +1837,8 @@ sequenceDiagram
     Admin->>DevMVC: GET /Admin/AdminDevices?search=...
     DevMVC->>API: GET /api/admin/devices
     DevAPI->>DB: SELECT DeviceRegistrations LEFT JOIN DevicePoiVisits, AccessSessions
-    DB-->>DevMVC: [{DeviceId, Platform, FirstSeen, LastSeen, VisitCount, HasActive}]
-    DevMVC-->>Admin: Bảng thiết bị với thống kê
+    DB-->>DevMVC: [{DeviceId, Platform, FirstSeen, LastSeenAt, VisitCount, HasActive}]
+    DevMVC-->>Admin: Bảng thiết bị + badge Kết nối (Đang dùng nếu LastSeenAt ≤ 15s)\nTrang tự reload mỗi 15s
 
     Admin->>DevMVC: GET /Admin/AdminDevices/{deviceId}
     DevMVC->>API: GET /api/admin/devices/{deviceId}/visits
@@ -1831,13 +1855,17 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A([Mở app]) --> B[RegisterDeviceAsync fire-and-forget\nUPSERT DeviceRegistrations]
-    B --> C[IsAccessValid\nĐọc access_expires_at Preferences]
+    A([Mở app\nApp constructor]) --> AA{IsAccessValid?}
+    AA -->|Có| AB[StartExpiryTimer loop 60s]
+    AA -->|Không| AC[Bỏ qua]
+    AB --> B
+    AC --> B
+    B[RegisterDeviceAsync fire-and-forget\nUPSERT DeviceRegistrations] --> B2[StartHeartbeatTimer\ncập nhật LastSeenAt ngay + mỗi 5s]
+    B2 --> C[CreateWindow\nIsAccessValid]
     C --> D{ExpiresAt tồn tại\nvà > UtcNow?}
     D -->|Không| E[LanguageSelectionPage]
     D -->|Có| F[new AppShell]
-    F --> G[StartExpiryTimer loop 60s]
-    G --> H[PlaceService.GetAllPlacesAsync\nPlaces + Images + TtsContents]
+    F --> H[PlaceService.GetAllPlacesAsync\nPlaces + Images + TtsContents]
     H --> I[MapPage.SetupMap\nCartoDB Voyager tiles]
     I --> J[LoadPOIsAsync\nPOIsGlow + POIs layers]
     J --> K[StartGPS → LocationChanged handler\n_gpsStarted=true]
@@ -1959,6 +1987,7 @@ graph LR
     F1 --> F1_4["1.4 Tạo QR thanh toán VietQR\nVIB - 310822005"]
     F1 --> F1_5["1.5 Polling kích hoạt mỗi 5s\nchờ IsActive=true"]
     F1 --> F1_6["1.6 Timer hết hạn mỗi 60s\nAccessExpired event"]
+    F1 --> F1_7["1.7 Heartbeat mỗi 5s\nLastSeenAt → Supabase\ndừng khi OnSleep"]
 
     F2 --> F2_1["2.1 Load Places + Images + TTS\n3 bước riêng biệt"]
     F2 --> F2_2["2.2 Tìm kiếm realtime\nName/Address/Specialty"]
@@ -1990,7 +2019,7 @@ graph LR
     F7 --> F7_1["7.1 /Admin/Sessions\nstats + filter + paginate 20"]
     F7 --> F7_2["7.2 Activate / Cancel / Deactivate\n3 POST actions"]
     F7 --> F7_3["7.3 /Admin/Packages\nPUT /api/access-packages/id"]
-    F7 --> F7_4["7.4 /Admin/Devices\nDeviceRegistrations LEFT JOIN visits+sessions"]
+    F7 --> F7_4["7.4 /Admin/Devices\nDeviceRegistrations LEFT JOIN visits+sessions\nbadge Online nếu LastSeenAt ≤ 15s\nauto-reload 15s"]
     F7 --> F7_5["7.5 Detail device\n50 visits gần nhất"]
     F7 --> F7_6["7.6 Duyệt địa điểm\nIsApproved + IsActive"]
     F7 --> F7_7["7.7 Quản lý tài khoản\nlock/role"]
@@ -2022,11 +2051,11 @@ graph LR
 | **DeviceId** | 10 ký tự uppercase random từ GUID, tạo lần đầu và lưu Preferences mãi mãi |
 | **AccessSession** | Phiên truy cập B2C của 1 thiết bị — lưu lịch sử thanh toán + thời hạn |
 | **AccessPackage** | Gói truy cập cấu hình trong DB — Admin chỉnh giá, app load động |
-| **DeviceRegistration** | Record ghi nhận mỗi thiết bị lần đầu và lần cuối mở app |
+| **DeviceRegistration** | Record ghi nhận mỗi thiết bị: `FirstSeenAt` (lần đầu), `LastSeenAt` (heartbeat mỗi 5s khi foreground) |
 | **DevicePoiVisit** | Record ghi nhận mỗi lượt GPS geofence trigger thành công |
 
 ---
 
 **Nhóm phát triển:** Sinh viên đồ án  
 **Cập nhật lần cuối:** Tháng 4, 2026  
-**Phiên bản:** 2.3 — Cập nhật toàn bộ sơ đồ theo code thực tế: SpeakFromGpsAsync 60s cooldown, GeofenceEngine debounce logic chính xác, AccessSessionService methods đúng, AppDbContext đầy đủ DbSets, Web Admin controllers đúng routes
+**Phiên bản:** 2.4 — Cập nhật: heartbeat 5s online monitoring, GeofenceEngine sort PlaceId tiebreaker, OnSleep/OnResume lifecycle, web admin badge Đang dùng + auto-reload 15s

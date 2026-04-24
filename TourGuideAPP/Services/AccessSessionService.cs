@@ -232,6 +232,9 @@ public class AccessSessionService
 
         _ = Task.Run(async () =>
         {
+            // Cập nhật ngay lập tức khi start (tránh 5s dead zone khi OnResume)
+            await UpdateLastSeenAsync();
+
             while (!token.IsCancellationRequested)
             {
                 try { await Task.Delay(5_000, token); }

@@ -359,6 +359,7 @@ public class ApiService(HttpClient http, IHttpContextAccessor accessor, ILogger<
         [JsonProperty("visitedAt")]  public DateTime? VisitedAt { get; set; }
     }
 
+
     // ── Helper class phân trang ───────────────────────────────────────
     public class PlaceListResponse
     {

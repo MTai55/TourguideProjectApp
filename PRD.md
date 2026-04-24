@@ -1645,7 +1645,195 @@ sequenceDiagram
 
 ---
 
-#### 13.5.2 Quản lý địa điểm — Owner (UC17, UC18, UC19, UC20)
+#### 13.5.2 Admin Dashboard Sequences — Chi tiết
+
+##### 13.5.2.1 Xem danh sách chờ kích hoạt (Pending Payments)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant AuthService
+    participant DB as Supabase / PostgreSQL
+
+    Admin->>AdminUI: Mở tab "Pending Payments"
+    AdminUI->>API: GET /api/admin/pending-sessions (JWT)
+    API->>AuthService: Validate JWT token
+    AuthService-->>API: Token valid + user role
+    
+    alt Người dùng có quyền admin
+        API->>DB: SELECT * FROM AccessSessions WHERE IsActive = false AND CreatedAt > NOW() - 24h
+        DB-->>API: Trả danh sách pending
+        API-->>AdminUI: [{ SessionId, DeviceId, PackageId, Amount, DeviceInfo, CreatedAt }, ...]
+        AdminUI-->>Admin: Hiển thị bảng pending payments
+    else Không phải admin
+        API-->>AdminUI: Forbidden 403
+        AdminUI-->>Admin: Hiển thị lỗi quyền truy cập
+    end
+```
+
+---
+
+##### 13.5.2.2 Kích hoạt một session (Approve Payment)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant AuthService
+    participant AccessSessionService
+    participant DB as Supabase / PostgreSQL
+    participant AuditLog as Audit Log
+
+    Admin->>AdminUI: Xem thông tin pending session (DeviceId, số tiền, nội dung chuyển khoản)
+    Admin->>AdminUI: Kiểm tra ngân hàng → Xác nhận đã nhận tiền
+    Admin->>AdminUI: Bấm "Approve Payment"
+    
+    AdminUI->>API: POST /api/admin/activate-session { SessionId, DeviceId, Notes }
+    API->>AuthService: Validate JWT
+    AuthService-->>API: Token valid + admin role
+    
+    API->>DB: BEGIN TRANSACTION
+    
+    API->>DB: SELECT * FROM AccessSessions WHERE SessionId = ? AND IsActive = false
+    DB-->>API: Session record
+    
+    alt Session tồn tại và chưa active
+        API->>AccessSessionService: Tính toán ExpiresAt từ PackageId
+        AccessSessionService-->>API: ExpiresAt (VD: now + 1 giờ)
+        
+        API->>DB: UPDATE AccessSessions SET IsActive = true, ActivatedAt = NOW(), ExpiresAt = ?
+        DB-->>API: Update success
+        
+        API->>AuditLog: Log { Action: "ACTIVATE_SESSION", SessionId, DeviceId, AdminId, Timestamp }
+        AuditLog-->>API: Logged
+        
+        API->>DB: COMMIT
+        API-->>AdminUI: { success: true, message: "Session activated", ExpiresAt }
+        AdminUI-->>Admin: Thông báo "Kích hoạt thành công"
+        AdminUI->>AdminUI: Xóa item khỏi danh sách pending
+        
+    else Session không tồn tại hoặc đã active
+        API->>DB: ROLLBACK
+        API-->>AdminUI: { success: false, message: "Session not found or already active" }
+        AdminUI-->>Admin: Hiển thị lỗi
+    end
+```
+
+---
+
+##### 13.5.2.3 Xem danh sách thiết bị đang online
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant DB as Supabase / PostgreSQL
+    participant Timer as Auto Reload Timer
+
+    Admin->>AdminUI: Mở tab "Devices" (Online Devices)
+    AdminUI->>API: GET /api/admin/devices?onlineOnly=true (JWT)
+    API->>DB: SELECT dr.*, COUNT(dpv.VisitId) as VisitCount FROM DeviceRegistrations dr LEFT JOIN DevicePoiVisits dpv ON dr.DeviceId=dpv.DeviceId
+    API->>DB: WHERE LastSeenAt >= NOW() - INTERVAL 15 seconds
+    API->>DB: LEFT JOIN AccessSessions acs ON dr.DeviceId=acs.DeviceId AND acs.IsActive=true
+    DB-->>API: {total: int, onlineCount: int, items: [{DeviceId, Platform, FirstSeenAt, LastSeenAt, VisitCount, HasActiveSession}]}
+    API-->>AdminUI: Danh sách devices online + stats
+    AdminUI-->>Admin: Hiển thị bảng với columns: DeviceId, Platform, Status (badge Đang dùng), LastSeen, #Visits
+    AdminUI->>AdminUI: Header card: "X đang hoạt động / Y tổng cộng"
+    
+    Timer->>AdminUI: Trigger mỗi 15 giây
+    AdminUI->>API: Auto-refresh GET /api/admin/devices?onlineOnly=true
+    API-->>AdminUI: Dữ liệu mới
+    AdminUI->>AdminUI: Cập nhật UI mà không reload trang (soft refresh)
+    
+    Admin->>AdminUI: Chọn một device từ danh sách → Xem "Device Details"
+    AdminUI->>API: GET /api/admin/devices/{deviceId}
+    API->>DB: SELECT * FROM DeviceRegistrations WHERE DeviceId = ?
+    DB-->>API: Device record chi tiết
+    API->>DB: SELECT * FROM AccessSessions WHERE DeviceId = ? ORDER BY CreatedAt DESC LIMIT 10
+    DB-->>API: Danh sách sessions của device
+    API->>DB: SELECT * FROM DevicePoiVisits WHERE DeviceId = ? ORDER BY VisitedAt DESC LIMIT 50
+    DB-->>API: Lịch sử 50 lượt visit POI gần nhất
+    API-->>AdminUI: Device info + sessions + visit history
+    AdminUI-->>Admin: Hiển thị detail page: Device profile, Active session, POI visit history
+```
+
+---
+
+##### 13.5.2.4 Xem chi tiết device (Device Info)
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant DB as Supabase / PostgreSQL
+
+    Admin->>AdminUI: Chọn một session → Xem "Device Details"
+    
+    AdminUI->>API: GET /api/admin/devices/{deviceId} (JWT)
+    API->>DB: SELECT * FROM DeviceRegistrations WHERE DeviceId = ?
+    DB-->>API: { DeviceId, FirstSeenAt, LastSeenAt, UserAgent, OS, Model, ... }
+    
+    API->>DB: SELECT * FROM AccessSessions WHERE DeviceId = ? ORDER BY CreatedAt DESC LIMIT 10
+    DB-->>API: Danh sách sessions của device
+    
+    API-->>AdminUI: Device info + session history
+    AdminUI-->>Admin: Hiển thị profile device và lịch sử sử dụng
+```
+
+---
+
+##### 13.5.2.5 Export báo cáo
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant ExportService
+    participant DB as Supabase / PostgreSQL
+    participant FileService as File Storage
+
+    Admin->>AdminUI: Chọn ngày từ-đến + chọn loại báo cáo (Payment, Device, Place Usage, ...)
+    AdminUI->>API: GET /api/admin/export?type=payments&dateFrom=2026-01-01&dateTo=2026-01-31
+    API->>DB: Query dữ liệu theo filter
+    DB-->>API: Dữ liệu chi tiết
+    API->>ExportService: Tạo file Excel / CSV
+    ExportService-->>API: File stream
+    API->>FileService: Lưu file tạm (nếu cần)
+    FileService-->>API: Download URL
+    API-->>AdminUI: File stream (Content-Disposition: attachment)
+    AdminUI-->>Admin: Tải file Excel / CSV
+```
+
+---
+
+##### 13.5.2.6 Audit Log — Xem lịch sử hành động
+
+```mermaid
+sequenceDiagram
+    actor Admin
+    participant AdminUI as Admin Web
+    participant API as TourGuideAPI
+    participant DB as Supabase / PostgreSQL
+
+    Admin->>AdminUI: Mở tab "Audit Log"
+    AdminUI->>API: GET /api/admin/audit-logs?page=1&limit=50
+    API->>DB: SELECT * FROM AuditLogs ORDER BY Timestamp DESC LIMIT 50
+    DB-->>API: [{ LogId, Action, AdminId, Target (PlaceId/SessionId/DeviceId), Details, Timestamp }, ...]
+    API-->>AdminUI: Audit log data
+    AdminUI-->>Admin: Hiển thị bảng: "Admin X sửa Place Y lúc Z" "Admin A kích hoạt session B lúc C" etc.
+```
+
+---
+
+---
+
+#### 13.5.3 Quản lý địa điểm — Owner (UC17, UC18, UC19, UC20)
 
 ```mermaid
 sequenceDiagram
@@ -1692,7 +1880,7 @@ sequenceDiagram
 
 ---
 
-#### 13.5.3 Tài khoản & Subscription — Owner (UC21, UC22)
+#### 13.5.4 Tài khoản & Subscription — Owner (UC21, UC22)
 
 ```mermaid
 sequenceDiagram
@@ -1744,7 +1932,7 @@ sequenceDiagram
 
 ---
 
-#### 13.5.4 Quản lý session thanh toán — Admin (UC26)
+#### 13.5.5 Quản lý session thanh toán — Admin (UC26)
 
 ```mermaid
 sequenceDiagram
@@ -1789,7 +1977,7 @@ sequenceDiagram
 
 ---
 
-#### 13.5.5 Quản lý nội dung — Admin (UC23, UC24, UC25)
+#### 13.5.6 Quản lý nội dung — Admin (UC23, UC24, UC25)
 
 ```mermaid
 sequenceDiagram
@@ -1842,7 +2030,7 @@ sequenceDiagram
 
 ---
 
-#### 13.5.6 Cấu hình hệ thống — Admin (UC27, UC28, UC29)
+#### 13.5.7 Cấu hình hệ thống — Admin (UC27, UC28, UC29)
 
 ```mermaid
 sequenceDiagram
@@ -2057,10 +2245,6 @@ graph LR
     F7 --> F7_7["7.7 Quản lý tài khoản\nlock/role"]
     F7 --> F7_8["7.8 /Admin/Dashboard\ncard Thiết bị online\nCOUNT LastSeenAt ≤ 15s"]
 ```
-
----
-
-**Tổng:** 1 ER + 2 Class + 11 Sequence + 5 Activity + 1 BFD + 1 Use Case = **21 diagrams**
 
 ---
 
